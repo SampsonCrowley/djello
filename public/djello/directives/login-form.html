@@ -1,0 +1,29 @@
+<h2>Log in</h2>
+
+<form name="loginForm" ng-submit="login(loginForm, loginData)">
+  <div class="field">
+    <label for="email">
+      Email:
+    </label>
+    <input type="email" name="email" autofocus="false" ng-model="loginData.email">
+  </div>
+
+  <div class="field">
+    <label for="password">
+      Password:
+    </label>
+    <input type="password" name="password" autocomplete="off" ng-model="loginData.password">
+  </div>
+
+  <div class="field">
+    <label for="remember_me">
+      <input type="checkbox" name="remember_me" ng-value="{{1}}" ng-model="loginData.remember_me">
+    </label>
+  </div>
+
+  <div class="actions">
+    <input type="submit" value="Log In" class='btn btn-primary'>
+  </div>
+
+</form>
+<a href="/users/sign_up">Sign Up</a>

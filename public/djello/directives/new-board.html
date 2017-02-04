@@ -1,0 +1,9 @@
+<form class="form-inline" name="newBoardForm" ng-submit="createBoard({valid: newBoardForm.$valid, data: newBoard, form: newBoardForm})">
+  <div class="form-group">
+    <label>
+      Title:
+      <input type="text" name="title" ng-model="newBoard.title" class="form-control">
+    </label>
+    <button type="submit" name="button">Create Board</button>
+  </div>
+</form>

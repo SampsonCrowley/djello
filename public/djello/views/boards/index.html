@@ -1,0 +1,11 @@
+<h1>Boards</h1>
+<new-board create-board="createBoard(valid, data, form)"></new-board>
+<div ng-repeat="board in boards" id="board_well_{{board.id}}">
+  <div class="well well-sm clickable" ng-click="goToBoard(board.id)">
+    <div class="col-xs-12">
+      <h3 style="text-transform:capitalize;">{{ board.title }}<a ng-click="deleteBoard(board.id, $event)" class="pull-right">Delete</a></h3>
+      <h5 class="text-muted">Created: {{ board.created | date }}</h5>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+</div>

@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="col-xs-12">
+    <div class=pull-right>
+
+    </div>
+    <h1>{{ board.title || "Add Board Title.." }}</h1>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-sm-6" ng-repeat="list in board.lists">
+    <div class="panel panel-default companies visible" id="list_{{ list.id }}">
+      <div class="panel-heading clearfix">
+        <img ng-src="{{ list.img }}" ng-if="list.img">
+        <h3 class="panel-title pull-left" editable edit-model="list" edit-val="title" update="updateList(model)">{{ list.title || "Add List Title.." }}</h3>
+      </div>
+      <div class="list-group">
+        <div class="list-group-item" ng-repeat="card in list.cards" ng-click="activeCard.value = card._id">
+          <h4 class="list-group-item-heading" editable edit-model="card" edit-val="title" update="updateCard(model)">{{ card.title }}</h4>
+          <p class="list-group-item-text" editable edit-model="card" edit-val="description" update="updateCard(model)">{{ card.description }}</p>
+          <div ng-if="activeCard.value === card._id">
+            <p>
+              {{card.members}}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <small>{{ list.title }}<a class="pull-right">New Card</a></small>
+      </div>
+    </div>
+  </div>
+</div>
