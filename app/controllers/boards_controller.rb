@@ -6,7 +6,7 @@ class BoardsController < ApplicationController
   # GET /boards.json
   def index
     @boards = current_user.boards
-    render json: @boards
+    render json: @boards.as_json(include: [lists: {include: [cards: {methods: :user_ids}]}])
   end
 
   # GET /boards/1

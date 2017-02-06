@@ -1,5 +1,6 @@
 GEM
   remote: https://rubygems.org/
+  remote: https://rails-assets.org/
   specs:
     actioncable (5.0.1)
       actionpack (= 5.0.1)
@@ -187,7 +188,7 @@ DEPENDENCIES
   pg (~> 0.18)
   puma (~> 3.0)
   rails (~> 5.0.1)
-  rails-assets-angular-devise
+  rails-assets-angular-devise!
   sass-rails (~> 5.0)
   spring
   spring-watcher-listen (~> 2.0.0)

@@ -35,7 +35,7 @@ djello.controller('BoardsShowCtrl',[
     }
 
     $scope.addList = function addList(data) {
-      boardService.createList(data);
+      $scope.board.addList(data);
     }
 
     $scope.updateList = function updateList(data) {

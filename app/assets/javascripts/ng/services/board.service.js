@@ -1,20 +1,46 @@
 djello.factory('boardService',[
-  'Restangular', 'listService', 'cardService',
-  function(restangular, listService, cardService){
-
-    // PRIVATE
+  '$q', '_', 'Restangular', 'listService',
+  function($q, _, restangular, listService){
+        //store resource for DRYer calls;
     var _rest = restangular.all('boards'),
-        _boards = {},
-        _current = {};
+        //private wrapper for all boards
+        _boards = {};
+
+    // Private method for creating a Board
+    var _createBoard = function _createBoard(params) {
+      return _rest.post({
+        board: {
+          title: params.title,
+        }
+      })
+      .then(function(response) {
+        _boards.unshift(response);
+        return _boards;
+      });
+    };
+
+    restangular.extendModel('boards', function(model) {
+
+      // that will create an associated List
+      model.addList = function(params) {
+        return model.lists.post().then(function(response){
+          model.lists.push(response)
+          return response;
+        })
+      };
+
+      model.destroy = function(){
+        destroy(board)
+      }
+
+      listService.all(model);
+
+      return model;
+    });
 
     var _denormalize = function _denormalize(board){
       var id = board.id
-      _boards[id] = {
-        id: id,
-        title: board["title"],
-        created: new Date(board['created_at']),
-        members: board["members"]
-      }
+      _boards[id] = board;
       return _boards[id]
     }
 
@@ -25,51 +51,47 @@ djello.factory('boardService',[
       return _boards
     }
 
-
-    // PUBLIC
-    var index = function index(){
-      return _rest.getList().then(function(boards){
-        angular.copy({}, _boards);
-
-        return _denormalizeCollection(boards);
-      }).catch(function(err){
-        console.log(err)
-      })
+    //extend the board collection to create new boards
+    _extend = function _extend() {
+      _boards.create = _createBoard;
     }
+
+    var index = function index (){
+      if(_.isEmpty(_boards)){
+        return _rest.getList().then(function(boards){
+          angular.copy({}, _boards);
+          _extend()
+
+          return _denormalizeCollection(boards);
+        }).catch(function(err){
+          console.log(err)
+        })
+      }
+      return $q.resolve(_boards);
+    }
+
+    // We also make the create method
+    // available on the service
+    var create = function create (params) {
+      return _createBoard(params);
+    };
 
     var show = function show(id){
-      return restangular.one('boards', id).get().then(function(board){
-        return restangular.copy(board, _current)
-      }).catch(function(err){
-        console.log(err)
+      return index().then(function(){
+        console.log(_boards)
+        if(!_boards[id]) throw 'Board Not Found';
+        return _boards[id]
       })
     }
 
-    var create = function create(data){
-      return _rest.post({board: {title: data.title}}).then(function(board){
-        return _denormalize(board)
-      })
-    }
-
-    var destroy = function destroy(id){
-      return restangular.one('boards', id).remove().then(function(resp){
-        return delete _boards[id];
-      })
-      .catch(function(err){
-        alert(err)
-      })
-    }
-
-    createList = function createList(){
-      return _current.all('lists').post({list: {title: void(0)}})
-    }
-
-    var updateList = function updateList(list){
-      return listService.update(list)
-    }
-
-    var updateCard = function updateCard(card){
-      return cardService.update(card)
+    var destroy = function destroy(board){
+      return board.remove()
+        .catch(function(err){
+          console.log(err);
+        })
+        .finally(function(){
+          delete _boards[board.id]
+        })
     }
 
     return {
@@ -77,9 +99,6 @@ djello.factory('boardService',[
       show: show,
       create: create,
       destroy: destroy,
-      createList: createList,
-      updateList: updateList,
-      updateCard: updateCard
     }
   }
 ])

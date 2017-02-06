@@ -1,8 +1,10 @@
 djello.directive('editable', [
-  '$document',
-  function($document){
+  '$document', '$timeout',
+  function($document, $timeout){
 
     var setup = function setup(s,el,a){
+      s.input = el[0].querySelector('input[type="text"].form-control.editable-input')
+
       s.get = function() {
         return s.editModel[s.editVal];
       }
@@ -15,6 +17,9 @@ djello.directive('editable', [
         s.newVal = s.get();
         s.active = true
         s.clicked = true;
+        $timeout(function(){
+          s.input.focus()
+        });
       };
 
 
@@ -30,12 +35,11 @@ djello.directive('editable', [
         $ev.stopPropagation();
         s.set(s.newVal);
         s.active = false;
-        s.update({model: s.editModel})
+        s.editModel.put()
       }
     }
     return {
       scope: {
-        update: "&",
         editVal: '@',
         editModel: '='
       },
@@ -45,7 +49,7 @@ djello.directive('editable', [
       <div ng-click="edit($event)">
         <span ng-show="!active" ng-transclude></span>
         <div class="input-group" ng-show="active">
-          <input type="text" class="form-control" ng-model="newVal">
+          <input type="text" class="form-control editable-input" ng-model="newVal">
           <span class="input-group-btn">
             <button class="btn btn-secondary" type="button" ng-click="save($event)">Save</button>
           </span>

@@ -7,7 +7,7 @@ class ListsController < ApplicationController
   # GET /lists.json
   def index
     @lists = @board.lists
-    render json: @lists
+    render json: @lists.as_json(include: [cards: {methods: :user_ids}])
   end
 
   # GET /lists/1
@@ -17,7 +17,7 @@ class ListsController < ApplicationController
   end
 
   def create
-    list = @board.lists.build(list_params)
+    list = build_list
     if list.save
       render json: list, status: 200
     else
@@ -52,7 +52,14 @@ class ListsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def list_params
-      puts params[:list]
       params.require(:list).permit(:title)
+    end
+
+    def build_list
+      if params[:list].empty?
+        @board.lists.build()
+      else
+        @board.lists.build(list_params)
+      end
     end
 end

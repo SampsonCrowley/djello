@@ -1,17 +1,40 @@
-djello.factory('listService',[
-  'Restangular',
-  function(restangular){
+djello.factory('listService', [
+  'Restangular', 'cardService',
+  function(restangular, cardService){
 
-    // PRIVATE
-    var _rest = restangular.all('lists'),
-        _lists = {};
+    //extend the list collection to create new lists
+    restangular.extendCollection('lists', function(collection) {
+      collection.create = function _createList(params){
+        collection.post(params);
+      }
+      return collection;
+    });
 
-        var update = function update(list){
-          return restangular.one('lists', list.id).doPUT({list: list})
-        }
+    restangular.extendModel('lists', function(model) {
+
+      // that will create an associated List
+      model.addCard = function(params) {
+        return model.cards.post().then(function(response){
+          model.cards.push(response)
+          return response;
+        })
+      };
+
+      cardService.all(model);
+
+      return model;
+    });
+
+    var boardLists = function boardLists(board){
+      if(board.lists){
+        restangular.restangularizeCollection(board, board.lists, 'lists');
+      } else {
+        board.lists = board.getList("lists").$object;
+      }
+    }
 
     return {
-      update: update
+      all: boardLists
     }
   }
 ])

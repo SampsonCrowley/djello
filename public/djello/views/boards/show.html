@@ -11,12 +11,12 @@
     <div class="panel panel-default companies visible" id="list_{{ list.id }}">
       <div class="panel-heading clearfix">
         <img ng-src="{{ list.img }}" ng-if="list.img">
-        <h3 class="panel-title pull-left" editable edit-model="list" edit-val="title" update="updateList(model)">{{ list.title || "Add List Title.." }}</h3>
+        <h3 class="panel-title pull-left" editable edit-model="list" edit-val="title">{{ list.title || "Add List Title.." }}</h3>
       </div>
       <div class="list-group">
         <div class="list-group-item" ng-repeat="card in list.cards" ng-click="activeCard.value = card._id">
-          <h4 class="list-group-item-heading" editable edit-model="card" edit-val="title" update="updateCard(model)">{{ card.title }}</h4>
-          <p class="list-group-item-text" editable edit-model="card" edit-val="description" update="updateCard(model)">{{ card.description }}</p>
+          <h4 class="list-group-item-heading" editable edit-model="card" edit-val="title">{{ card.title || "Add Card Title.." }}</h4>
+          <p class="list-group-item-text" editable edit-model="card" edit-val="description">{{ card.description || "Add Card Description.."}}</p>
           <div ng-if="activeCard.value === card._id">
             <p>
               {{card.members}}
@@ -25,7 +25,7 @@
         </div>
       </div>
       <div class="panel-footer">
-        <small>{{ list.title }}<a class="pull-right">New Card</a></small>
+        <small>{{ list.title }}<a class="pull-right" ng-click="list.addCard()">New Card</a></small>
       </div>
     </div>
   </div>
