@@ -9,7 +9,9 @@ end
 gem 'devise'
 gem 'angular_rails_csrf'
 gem 'npm-rails'
-gem "rails-assets-angular-devise"
+source 'https://rails-assets.org' do
+  gem "rails-assets-angular-devise"
+end
 gem 'bootstrap-sass'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
