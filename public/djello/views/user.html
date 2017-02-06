@@ -1,2 +1,4 @@
-<login-form ng-if="!currentUser"></login-form>
+<login-form ng-if="!currentUser && !signup"></login-form>
+<signup-form ng-if="signup"></signup-form>
+<a ng-click="signup = !signup">{{ signup ? "Sign In" : "Sign Up" }}</a>
 <loading ng-if="currentUser" />

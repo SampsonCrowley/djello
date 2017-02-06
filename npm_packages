@@ -4,6 +4,7 @@ npm 'browserify', require: false, development: true
 
 # Add some npm packages
 npm "angular"
+npm 'angular-messages'
 npm "angular-ui-router"
 npm 'lodash'
 npm "restangular-umd"

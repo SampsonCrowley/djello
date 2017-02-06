@@ -1,0 +1,32 @@
+<form name="newUserForm" accept-charset="UTF-8" ng-submit="newSignUp(newUser, newUserForm)">
+
+  <div class="field">
+    <label for="user_email">Email</label><br>
+    <input autofocus="autofocus" type="email" name="email" ng-model="newUser.email" id="user_email" required>
+    <div ng-messages="newUserForm.email.$error" role="alert">
+      <div ng-messages-include="djello/directives/error-messages.html"></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="user_password">Password</label>
+    <em>(6 characters minimum)</em>
+    <br>
+    <input autocomplete="off" type="password" name="password" ng-model="newUser.password" ng-minlength="8" required ng-keyup="passwordMatch(newUser, newUserForm)">
+    <div ng-messages="newUserForm.password.$error" role="alert">
+      <div ng-messages-include="djello/directives/error-messages.html"></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="user_password_confirmation">Password confirmation</label><br>
+    <input autocomplete="off" type="password" name="password_confirmation" ng-model="newUser.password_confirmation" ng-minlength="8" required ng-keyup="passwordMatch(newUser, newUserForm)">
+    <div ng-messages="newUserForm.password_confirmation.$error" role="alert">
+      <div ng-messages-include="djello/directives/error-messages.html"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <input type="submit" name="commit" value="Sign up" data-disable-with="Sign up">
+  </div>
+</form>

@@ -1,11 +1,12 @@
 class ListsController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_board
   before_action :set_list, only: [:show, :edit, :update, :destroy]
 
   # GET /lists
   # GET /lists.json
   def index
-    @lists = current_user.lists
+    @lists = @board.lists
     render json: @lists
   end
 
@@ -16,7 +17,7 @@ class ListsController < ApplicationController
   end
 
   def create
-    list = current_user.lists.build(list_params)
+    list = @board.lists.build(list_params)
     if list.save
       render json: list, status: 200
     else
@@ -33,23 +34,25 @@ class ListsController < ApplicationController
   end
 
   def destroy
-    if @list
-      @list.destroy
-      render json: @list, status: 200
-    else
-      render json: { error: "Card Not Found" }, status: 422
-    end
+    @list.destroy
+    render json: @list, status: 200
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
+    def set_board
+      @board = current_user.boards.find_by(id: params[:board_id])
+      render(json: {error: "Board Not Found"}, status: 404) if !@board
+    end
+
     def set_list
-      list = List.includes(:board).find_by(id: params[:id])
-      @list = list if(current_user.board_ids.include?(list.board.id))
+      @list = @board.lists.find_by(id: params[:id])
+      render(json: {error: "List Not Found"}, status: 404) if !@list
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def list_params
+      puts params[:list]
       params.require(:list).permit(:title)
     end
 end

@@ -4,7 +4,8 @@ djello.factory('boardService',[
 
     // PRIVATE
     var _rest = restangular.all('boards'),
-        _boards = {};
+        _boards = {},
+        _current = {};
 
     var _denormalize = function _denormalize(board){
       var id = board.id
@@ -38,7 +39,7 @@ djello.factory('boardService',[
 
     var show = function show(id){
       return restangular.one('boards', id).get().then(function(board){
-        return board
+        return restangular.copy(board, _current)
       }).catch(function(err){
         console.log(err)
       })
@@ -59,6 +60,10 @@ djello.factory('boardService',[
       })
     }
 
+    createList = function createList(){
+      return _current.all('lists').post({list: {title: void(0)}})
+    }
+
     var updateList = function updateList(list){
       return listService.update(list)
     }
@@ -72,6 +77,7 @@ djello.factory('boardService',[
       show: show,
       create: create,
       destroy: destroy,
+      createList: createList,
       updateList: updateList,
       updateCard: updateCard
     }

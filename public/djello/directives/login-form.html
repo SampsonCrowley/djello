@@ -17,7 +17,8 @@
 
   <div class="field">
     <label for="remember_me">
-      <input type="checkbox" name="remember_me" ng-value="{{1}}" ng-model="loginData.remember_me">
+      {{loginData.remember_me}}
+      <input type="checkbox" name="remember_me" ng-true-value="true" ng-false-value="undefined" ng-model="loginData.remember_me">
     </label>
   </div>
 
@@ -26,4 +27,3 @@
   </div>
 
 </form>
-<a href="/users/sign_up">Sign Up</a>

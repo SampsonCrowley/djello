@@ -30,11 +30,15 @@ djello.controller('BoardsShowCtrl',[
       $state.go('boards.show', { id: id })
     }
 
-    $scope.updateCard = function (data){
+    $scope.updateCard = function updateCard(data) {
       boardService.updateCard(data);
     }
 
-    $scope.updateList = function (data){
+    $scope.addList = function addList(data) {
+      boardService.createList(data);
+    }
+
+    $scope.updateList = function updateList(data) {
       boardService.updateList(data);
     }
   }
