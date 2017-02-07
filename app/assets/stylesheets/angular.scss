@@ -4,6 +4,10 @@
 @import 'bootstrap-sprockets';
 @import 'bootstrap';
 
+* {
+  box-sizing: border-box!important;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -12,6 +16,42 @@ html, body {
 
 body {
   padding-top:70px
+}
+
+.board-header {
+  margin: 0 0 10px 0;
+}
+
+.horizontal-scroll {
+  white-space: nowrap;
+  width: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  transition: all 1s;
+
+  .scroll-item {
+    display: inline-block;
+    float: none;
+    vertical-align: top;
+    height: 100%;
+
+    .panel {
+      height: calc(100% - 15px);
+      .panel-title{
+        margin:0;
+      }
+      .list-group {
+        height: 100%;
+        max-height: calc(100% - 83px);
+        overflow-y: auto;
+      }
+    }
+  }
+}
+
+.align-bottom {
+  display: inline-block;
+  vertical-align: bottom;
 }
 
 a, .clickable {
@@ -23,12 +63,17 @@ a.list-group-item:before {
 }
 
 .list-group-item {
-  margin-left: 0px;
-  padding-left: 15px;
+  margin: 0px;
+  padding: 0;
+
+  .face {
+    padding:10px 15px;
+  }
 }
 
 .list-group-item .row > div.col-sm-5 {
   margin-left: 10px;
+
 }
 
 .list-group-item .row > div.col-sm-6 {
@@ -52,7 +97,7 @@ a.list-group-item:before {
 .form-inline .btn-primary {
   margin-top: 0.5em;
 }
-// 
+//
 // .panel > .list-group .list-group-item:hover{
 //   color: #555;
 //   text-decoration: none;
@@ -83,5 +128,36 @@ a.list-group-item:before {
 @media (max-width: 250px) {
   #search {
     padding-left: 10px;
+  }
+}
+
+.flip {
+  -webkit-perspective: 800;
+  position: relative;
+}
+
+.flip .list-group-item {
+  margin: 0px;
+  -webkit-transform-style: preserve-3d;
+  transition: all 0.5s;
+  .face {
+    -webkit-backface-visibility: hidden ;
+  }
+  .front {
+    cursor: pointer;
+    &:hover{
+      background: #ddd;
+    }
+  }
+  .back {
+    -webkit-transform: rotatey(-180deg);
+    background: #eee;
+  }
+  &.flipped {
+    -webkit-transform: rotatey(-180deg);
+    .front {
+      height: 0;
+      padding: 0;
+    }
   }
 }

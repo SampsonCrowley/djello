@@ -9,7 +9,7 @@ djello.controller('BoardsShowCtrl',[
       $scope.board = board
     }).catch(function(err){
       console.log(err)
-
+      $state.go('boards.index')
     });
 
     $scope.createBoard = function createBoard(valid, data, form){
@@ -22,24 +22,17 @@ djello.controller('BoardsShowCtrl',[
       }
     }
 
-    $scope.deleteBoard = function deleteBoard(id) {
-      boardService.destroy(id);
+    $scope.setActive = function setActive(card){
+      $scope.activeCard.value = card.id
     }
 
     $scope.goToBoard = function goToBoard(id) {
       $state.go('boards.show', { id: id })
     }
 
-    $scope.updateCard = function updateCard(data) {
-      boardService.updateCard(data);
+    $scope.addCard = function addList(list) {
+      list.addCard().then($scope.setActive)
     }
 
-    $scope.addList = function addList(data) {
-      $scope.board.addList(data);
-    }
-
-    $scope.updateList = function updateList(data) {
-      boardService.updateList(data);
-    }
   }
 ])

@@ -744,6 +744,7788 @@ require('./angular-messages');
 module.exports = 'ngMessages';
 
 },{"./angular-messages":1}],3:[function(require,module,exports){
+/*
+ * angular-ui-bootstrap
+ * http://angular-ui.github.io/bootstrap/
+
+ * Version: 2.5.0 - 2017-01-28
+ * License: MIT
+ */angular.module("ui.bootstrap", ["ui.bootstrap.tpls", "ui.bootstrap.collapse","ui.bootstrap.tabindex","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.dateparser","ui.bootstrap.isClass","ui.bootstrap.datepicker","ui.bootstrap.position","ui.bootstrap.datepickerPopup","ui.bootstrap.debounce","ui.bootstrap.multiMap","ui.bootstrap.dropdown","ui.bootstrap.stackedMap","ui.bootstrap.modal","ui.bootstrap.paging","ui.bootstrap.pager","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
+angular.module("ui.bootstrap.tpls", ["uib/template/accordion/accordion-group.html","uib/template/accordion/accordion.html","uib/template/alert/alert.html","uib/template/carousel/carousel.html","uib/template/carousel/slide.html","uib/template/datepicker/datepicker.html","uib/template/datepicker/day.html","uib/template/datepicker/month.html","uib/template/datepicker/year.html","uib/template/datepickerPopup/popup.html","uib/template/modal/window.html","uib/template/pager/pager.html","uib/template/pagination/pagination.html","uib/template/tooltip/tooltip-html-popup.html","uib/template/tooltip/tooltip-popup.html","uib/template/tooltip/tooltip-template-popup.html","uib/template/popover/popover-html.html","uib/template/popover/popover-template.html","uib/template/popover/popover.html","uib/template/progressbar/bar.html","uib/template/progressbar/progress.html","uib/template/progressbar/progressbar.html","uib/template/rating/rating.html","uib/template/tabs/tab.html","uib/template/tabs/tabset.html","uib/template/timepicker/timepicker.html","uib/template/typeahead/typeahead-match.html","uib/template/typeahead/typeahead-popup.html"]);
+angular.module('ui.bootstrap.collapse', [])
+
+  .directive('uibCollapse', ['$animate', '$q', '$parse', '$injector', function($animate, $q, $parse, $injector) {
+    var $animateCss = $injector.has('$animateCss') ? $injector.get('$animateCss') : null;
+    return {
+      link: function(scope, element, attrs) {
+        var expandingExpr = $parse(attrs.expanding),
+          expandedExpr = $parse(attrs.expanded),
+          collapsingExpr = $parse(attrs.collapsing),
+          collapsedExpr = $parse(attrs.collapsed),
+          horizontal = false,
+          css = {},
+          cssTo = {};
+
+        init();
+
+        function init() {
+          horizontal = !!('horizontal' in attrs);
+          if (horizontal) {
+            css = {
+              width: ''
+            };
+            cssTo = {width: '0'};
+          } else {
+            css = {
+              height: ''
+            };
+            cssTo = {height: '0'};
+          }
+          if (!scope.$eval(attrs.uibCollapse)) {
+            element.addClass('in')
+              .addClass('collapse')
+              .attr('aria-expanded', true)
+              .attr('aria-hidden', false)
+              .css(css);
+          }
+        }
+
+        function getScrollFromElement(element) {
+          if (horizontal) {
+            return {width: element.scrollWidth + 'px'};
+          }
+          return {height: element.scrollHeight + 'px'};
+        }
+
+        function expand() {
+          if (element.hasClass('collapse') && element.hasClass('in')) {
+            return;
+          }
+
+          $q.resolve(expandingExpr(scope))
+            .then(function() {
+              element.removeClass('collapse')
+                .addClass('collapsing')
+                .attr('aria-expanded', true)
+                .attr('aria-hidden', false);
+
+              if ($animateCss) {
+                $animateCss(element, {
+                  addClass: 'in',
+                  easing: 'ease',
+                  css: {
+                    overflow: 'hidden'
+                  },
+                  to: getScrollFromElement(element[0])
+                }).start()['finally'](expandDone);
+              } else {
+                $animate.addClass(element, 'in', {
+                  css: {
+                    overflow: 'hidden'
+                  },
+                  to: getScrollFromElement(element[0])
+                }).then(expandDone);
+              }
+            }, angular.noop);
+        }
+
+        function expandDone() {
+          element.removeClass('collapsing')
+            .addClass('collapse')
+            .css(css);
+          expandedExpr(scope);
+        }
+
+        function collapse() {
+          if (!element.hasClass('collapse') && !element.hasClass('in')) {
+            return collapseDone();
+          }
+
+          $q.resolve(collapsingExpr(scope))
+            .then(function() {
+              element
+              // IMPORTANT: The width must be set before adding "collapsing" class.
+              // Otherwise, the browser attempts to animate from width 0 (in
+              // collapsing class) to the given width here.
+                .css(getScrollFromElement(element[0]))
+                // initially all panel collapse have the collapse class, this removal
+                // prevents the animation from jumping to collapsed state
+                .removeClass('collapse')
+                .addClass('collapsing')
+                .attr('aria-expanded', false)
+                .attr('aria-hidden', true);
+
+              if ($animateCss) {
+                $animateCss(element, {
+                  removeClass: 'in',
+                  to: cssTo
+                }).start()['finally'](collapseDone);
+              } else {
+                $animate.removeClass(element, 'in', {
+                  to: cssTo
+                }).then(collapseDone);
+              }
+            }, angular.noop);
+        }
+
+        function collapseDone() {
+          element.css(cssTo); // Required so that collapse works when animation is disabled
+          element.removeClass('collapsing')
+            .addClass('collapse');
+          collapsedExpr(scope);
+        }
+
+        scope.$watch(attrs.uibCollapse, function(shouldCollapse) {
+          if (shouldCollapse) {
+            collapse();
+          } else {
+            expand();
+          }
+        });
+      }
+    };
+  }]);
+
+angular.module('ui.bootstrap.tabindex', [])
+
+.directive('uibTabindexToggle', function() {
+  return {
+    restrict: 'A',
+    link: function(scope, elem, attrs) {
+      attrs.$observe('disabled', function(disabled) {
+        attrs.$set('tabindex', disabled ? -1 : null);
+      });
+    }
+  };
+});
+
+angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse', 'ui.bootstrap.tabindex'])
+
+.constant('uibAccordionConfig', {
+  closeOthers: true
+})
+
+.controller('UibAccordionController', ['$scope', '$attrs', 'uibAccordionConfig', function($scope, $attrs, accordionConfig) {
+  // This array keeps track of the accordion groups
+  this.groups = [];
+
+  // Ensure that all the groups in this accordion are closed, unless close-others explicitly says not to
+  this.closeOthers = function(openGroup) {
+    var closeOthers = angular.isDefined($attrs.closeOthers) ?
+      $scope.$eval($attrs.closeOthers) : accordionConfig.closeOthers;
+    if (closeOthers) {
+      angular.forEach(this.groups, function(group) {
+        if (group !== openGroup) {
+          group.isOpen = false;
+        }
+      });
+    }
+  };
+
+  // This is called from the accordion-group directive to add itself to the accordion
+  this.addGroup = function(groupScope) {
+    var that = this;
+    this.groups.push(groupScope);
+
+    groupScope.$on('$destroy', function(event) {
+      that.removeGroup(groupScope);
+    });
+  };
+
+  // This is called from the accordion-group directive when to remove itself
+  this.removeGroup = function(group) {
+    var index = this.groups.indexOf(group);
+    if (index !== -1) {
+      this.groups.splice(index, 1);
+    }
+  };
+}])
+
+// The accordion directive simply sets up the directive controller
+// and adds an accordion CSS class to itself element.
+.directive('uibAccordion', function() {
+  return {
+    controller: 'UibAccordionController',
+    controllerAs: 'accordion',
+    transclude: true,
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/accordion/accordion.html';
+    }
+  };
+})
+
+// The accordion-group directive indicates a block of html that will expand and collapse in an accordion
+.directive('uibAccordionGroup', function() {
+  return {
+    require: '^uibAccordion',         // We need this directive to be inside an accordion
+    transclude: true,              // It transcludes the contents of the directive into the template
+    restrict: 'A',
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/accordion/accordion-group.html';
+    },
+    scope: {
+      heading: '@',               // Interpolate the heading attribute onto this scope
+      panelClass: '@?',           // Ditto with panelClass
+      isOpen: '=?',
+      isDisabled: '=?'
+    },
+    controller: function() {
+      this.setHeading = function(element) {
+        this.heading = element;
+      };
+    },
+    link: function(scope, element, attrs, accordionCtrl) {
+      element.addClass('panel');
+      accordionCtrl.addGroup(scope);
+
+      scope.openClass = attrs.openClass || 'panel-open';
+      scope.panelClass = attrs.panelClass || 'panel-default';
+      scope.$watch('isOpen', function(value) {
+        element.toggleClass(scope.openClass, !!value);
+        if (value) {
+          accordionCtrl.closeOthers(scope);
+        }
+      });
+
+      scope.toggleOpen = function($event) {
+        if (!scope.isDisabled) {
+          if (!$event || $event.which === 32) {
+            scope.isOpen = !scope.isOpen;
+          }
+        }
+      };
+
+      var id = 'accordiongroup-' + scope.$id + '-' + Math.floor(Math.random() * 10000);
+      scope.headingId = id + '-tab';
+      scope.panelId = id + '-panel';
+    }
+  };
+})
+
+// Use accordion-heading below an accordion-group to provide a heading containing HTML
+.directive('uibAccordionHeading', function() {
+  return {
+    transclude: true,   // Grab the contents to be used as the heading
+    template: '',       // In effect remove this element!
+    replace: true,
+    require: '^uibAccordionGroup',
+    link: function(scope, element, attrs, accordionGroupCtrl, transclude) {
+      // Pass the heading to the accordion-group controller
+      // so that it can be transcluded into the right place in the template
+      // [The second parameter to transclude causes the elements to be cloned so that they work in ng-repeat]
+      accordionGroupCtrl.setHeading(transclude(scope, angular.noop));
+    }
+  };
+})
+
+// Use in the accordion-group template to indicate where you want the heading to be transcluded
+// You must provide the property on the accordion-group controller that will hold the transcluded element
+.directive('uibAccordionTransclude', function() {
+  return {
+    require: '^uibAccordionGroup',
+    link: function(scope, element, attrs, controller) {
+      scope.$watch(function() { return controller[attrs.uibAccordionTransclude]; }, function(heading) {
+        if (heading) {
+          var elem = angular.element(element[0].querySelector(getHeaderSelectors()));
+          elem.html('');
+          elem.append(heading);
+        }
+      });
+    }
+  };
+
+  function getHeaderSelectors() {
+      return 'uib-accordion-header,' +
+          'data-uib-accordion-header,' +
+          'x-uib-accordion-header,' +
+          'uib\\:accordion-header,' +
+          '[uib-accordion-header],' +
+          '[data-uib-accordion-header],' +
+          '[x-uib-accordion-header]';
+  }
+});
+
+angular.module('ui.bootstrap.alert', [])
+
+.controller('UibAlertController', ['$scope', '$element', '$attrs', '$interpolate', '$timeout', function($scope, $element, $attrs, $interpolate, $timeout) {
+  $scope.closeable = !!$attrs.close;
+  $element.addClass('alert');
+  $attrs.$set('role', 'alert');
+  if ($scope.closeable) {
+    $element.addClass('alert-dismissible');
+  }
+
+  var dismissOnTimeout = angular.isDefined($attrs.dismissOnTimeout) ?
+    $interpolate($attrs.dismissOnTimeout)($scope.$parent) : null;
+
+  if (dismissOnTimeout) {
+    $timeout(function() {
+      $scope.close();
+    }, parseInt(dismissOnTimeout, 10));
+  }
+}])
+
+.directive('uibAlert', function() {
+  return {
+    controller: 'UibAlertController',
+    controllerAs: 'alert',
+    restrict: 'A',
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/alert/alert.html';
+    },
+    transclude: true,
+    scope: {
+      close: '&'
+    }
+  };
+});
+
+angular.module('ui.bootstrap.buttons', [])
+
+.constant('uibButtonConfig', {
+  activeClass: 'active',
+  toggleEvent: 'click'
+})
+
+.controller('UibButtonsController', ['uibButtonConfig', function(buttonConfig) {
+  this.activeClass = buttonConfig.activeClass || 'active';
+  this.toggleEvent = buttonConfig.toggleEvent || 'click';
+}])
+
+.directive('uibBtnRadio', ['$parse', function($parse) {
+  return {
+    require: ['uibBtnRadio', 'ngModel'],
+    controller: 'UibButtonsController',
+    controllerAs: 'buttons',
+    link: function(scope, element, attrs, ctrls) {
+      var buttonsCtrl = ctrls[0], ngModelCtrl = ctrls[1];
+      var uncheckableExpr = $parse(attrs.uibUncheckable);
+
+      element.find('input').css({display: 'none'});
+
+      //model -> UI
+      ngModelCtrl.$render = function() {
+        element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, scope.$eval(attrs.uibBtnRadio)));
+      };
+
+      //ui->model
+      element.on(buttonsCtrl.toggleEvent, function() {
+        if (attrs.disabled) {
+          return;
+        }
+
+        var isActive = element.hasClass(buttonsCtrl.activeClass);
+
+        if (!isActive || angular.isDefined(attrs.uncheckable)) {
+          scope.$apply(function() {
+            ngModelCtrl.$setViewValue(isActive ? null : scope.$eval(attrs.uibBtnRadio));
+            ngModelCtrl.$render();
+          });
+        }
+      });
+
+      if (attrs.uibUncheckable) {
+        scope.$watch(uncheckableExpr, function(uncheckable) {
+          attrs.$set('uncheckable', uncheckable ? '' : undefined);
+        });
+      }
+    }
+  };
+}])
+
+.directive('uibBtnCheckbox', function() {
+  return {
+    require: ['uibBtnCheckbox', 'ngModel'],
+    controller: 'UibButtonsController',
+    controllerAs: 'button',
+    link: function(scope, element, attrs, ctrls) {
+      var buttonsCtrl = ctrls[0], ngModelCtrl = ctrls[1];
+
+      element.find('input').css({display: 'none'});
+
+      function getTrueValue() {
+        return getCheckboxValue(attrs.btnCheckboxTrue, true);
+      }
+
+      function getFalseValue() {
+        return getCheckboxValue(attrs.btnCheckboxFalse, false);
+      }
+
+      function getCheckboxValue(attribute, defaultValue) {
+        return angular.isDefined(attribute) ? scope.$eval(attribute) : defaultValue;
+      }
+
+      //model -> UI
+      ngModelCtrl.$render = function() {
+        element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, getTrueValue()));
+      };
+
+      //ui->model
+      element.on(buttonsCtrl.toggleEvent, function() {
+        if (attrs.disabled) {
+          return;
+        }
+
+        scope.$apply(function() {
+          ngModelCtrl.$setViewValue(element.hasClass(buttonsCtrl.activeClass) ? getFalseValue() : getTrueValue());
+          ngModelCtrl.$render();
+        });
+      });
+    }
+  };
+});
+
+angular.module('ui.bootstrap.carousel', [])
+
+.controller('UibCarouselController', ['$scope', '$element', '$interval', '$timeout', '$animate', function($scope, $element, $interval, $timeout, $animate) {
+  var self = this,
+    slides = self.slides = $scope.slides = [],
+    SLIDE_DIRECTION = 'uib-slideDirection',
+    currentIndex = $scope.active,
+    currentInterval, isPlaying;
+
+  var destroyed = false;
+  $element.addClass('carousel');
+
+  self.addSlide = function(slide, element) {
+    slides.push({
+      slide: slide,
+      element: element
+    });
+    slides.sort(function(a, b) {
+      return +a.slide.index - +b.slide.index;
+    });
+    //if this is the first slide or the slide is set to active, select it
+    if (slide.index === $scope.active || slides.length === 1 && !angular.isNumber($scope.active)) {
+      if ($scope.$currentTransition) {
+        $scope.$currentTransition = null;
+      }
+
+      currentIndex = slide.index;
+      $scope.active = slide.index;
+      setActive(currentIndex);
+      self.select(slides[findSlideIndex(slide)]);
+      if (slides.length === 1) {
+        $scope.play();
+      }
+    }
+  };
+
+  self.getCurrentIndex = function() {
+    for (var i = 0; i < slides.length; i++) {
+      if (slides[i].slide.index === currentIndex) {
+        return i;
+      }
+    }
+  };
+
+  self.next = $scope.next = function() {
+    var newIndex = (self.getCurrentIndex() + 1) % slides.length;
+
+    if (newIndex === 0 && $scope.noWrap()) {
+      $scope.pause();
+      return;
+    }
+
+    return self.select(slides[newIndex], 'next');
+  };
+
+  self.prev = $scope.prev = function() {
+    var newIndex = self.getCurrentIndex() - 1 < 0 ? slides.length - 1 : self.getCurrentIndex() - 1;
+
+    if ($scope.noWrap() && newIndex === slides.length - 1) {
+      $scope.pause();
+      return;
+    }
+
+    return self.select(slides[newIndex], 'prev');
+  };
+
+  self.removeSlide = function(slide) {
+    var index = findSlideIndex(slide);
+
+    //get the index of the slide inside the carousel
+    slides.splice(index, 1);
+    if (slides.length > 0 && currentIndex === index) {
+      if (index >= slides.length) {
+        currentIndex = slides.length - 1;
+        $scope.active = currentIndex;
+        setActive(currentIndex);
+        self.select(slides[slides.length - 1]);
+      } else {
+        currentIndex = index;
+        $scope.active = currentIndex;
+        setActive(currentIndex);
+        self.select(slides[index]);
+      }
+    } else if (currentIndex > index) {
+      currentIndex--;
+      $scope.active = currentIndex;
+    }
+
+    //clean the active value when no more slide
+    if (slides.length === 0) {
+      currentIndex = null;
+      $scope.active = null;
+    }
+  };
+
+  /* direction: "prev" or "next" */
+  self.select = $scope.select = function(nextSlide, direction) {
+    var nextIndex = findSlideIndex(nextSlide.slide);
+    //Decide direction if it's not given
+    if (direction === undefined) {
+      direction = nextIndex > self.getCurrentIndex() ? 'next' : 'prev';
+    }
+    //Prevent this user-triggered transition from occurring if there is already one in progress
+    if (nextSlide.slide.index !== currentIndex &&
+      !$scope.$currentTransition) {
+      goNext(nextSlide.slide, nextIndex, direction);
+    }
+  };
+
+  /* Allow outside people to call indexOf on slides array */
+  $scope.indexOfSlide = function(slide) {
+    return +slide.slide.index;
+  };
+
+  $scope.isActive = function(slide) {
+    return $scope.active === slide.slide.index;
+  };
+
+  $scope.isPrevDisabled = function() {
+    return $scope.active === 0 && $scope.noWrap();
+  };
+
+  $scope.isNextDisabled = function() {
+    return $scope.active === slides.length - 1 && $scope.noWrap();
+  };
+
+  $scope.pause = function() {
+    if (!$scope.noPause) {
+      isPlaying = false;
+      resetTimer();
+    }
+  };
+
+  $scope.play = function() {
+    if (!isPlaying) {
+      isPlaying = true;
+      restartTimer();
+    }
+  };
+
+  $element.on('mouseenter', $scope.pause);
+  $element.on('mouseleave', $scope.play);
+
+  $scope.$on('$destroy', function() {
+    destroyed = true;
+    resetTimer();
+  });
+
+  $scope.$watch('noTransition', function(noTransition) {
+    $animate.enabled($element, !noTransition);
+  });
+
+  $scope.$watch('interval', restartTimer);
+
+  $scope.$watchCollection('slides', resetTransition);
+
+  $scope.$watch('active', function(index) {
+    if (angular.isNumber(index) && currentIndex !== index) {
+      for (var i = 0; i < slides.length; i++) {
+        if (slides[i].slide.index === index) {
+          index = i;
+          break;
+        }
+      }
+
+      var slide = slides[index];
+      if (slide) {
+        setActive(index);
+        self.select(slides[index]);
+        currentIndex = index;
+      }
+    }
+  });
+
+  function getSlideByIndex(index) {
+    for (var i = 0, l = slides.length; i < l; ++i) {
+      if (slides[i].index === index) {
+        return slides[i];
+      }
+    }
+  }
+
+  function setActive(index) {
+    for (var i = 0; i < slides.length; i++) {
+      slides[i].slide.active = i === index;
+    }
+  }
+
+  function goNext(slide, index, direction) {
+    if (destroyed) {
+      return;
+    }
+
+    angular.extend(slide, {direction: direction});
+    angular.extend(slides[currentIndex].slide || {}, {direction: direction});
+    if ($animate.enabled($element) && !$scope.$currentTransition &&
+      slides[index].element && self.slides.length > 1) {
+      slides[index].element.data(SLIDE_DIRECTION, slide.direction);
+      var currentIdx = self.getCurrentIndex();
+
+      if (angular.isNumber(currentIdx) && slides[currentIdx].element) {
+        slides[currentIdx].element.data(SLIDE_DIRECTION, slide.direction);
+      }
+
+      $scope.$currentTransition = true;
+      $animate.on('addClass', slides[index].element, function(element, phase) {
+        if (phase === 'close') {
+          $scope.$currentTransition = null;
+          $animate.off('addClass', element);
+        }
+      });
+    }
+
+    $scope.active = slide.index;
+    currentIndex = slide.index;
+    setActive(index);
+
+    //every time you change slides, reset the timer
+    restartTimer();
+  }
+
+  function findSlideIndex(slide) {
+    for (var i = 0; i < slides.length; i++) {
+      if (slides[i].slide === slide) {
+        return i;
+      }
+    }
+  }
+
+  function resetTimer() {
+    if (currentInterval) {
+      $interval.cancel(currentInterval);
+      currentInterval = null;
+    }
+  }
+
+  function resetTransition(slides) {
+    if (!slides.length) {
+      $scope.$currentTransition = null;
+    }
+  }
+
+  function restartTimer() {
+    resetTimer();
+    var interval = +$scope.interval;
+    if (!isNaN(interval) && interval > 0) {
+      currentInterval = $interval(timerFn, interval);
+    }
+  }
+
+  function timerFn() {
+    var interval = +$scope.interval;
+    if (isPlaying && !isNaN(interval) && interval > 0 && slides.length) {
+      $scope.next();
+    } else {
+      $scope.pause();
+    }
+  }
+}])
+
+.directive('uibCarousel', function() {
+  return {
+    transclude: true,
+    controller: 'UibCarouselController',
+    controllerAs: 'carousel',
+    restrict: 'A',
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/carousel/carousel.html';
+    },
+    scope: {
+      active: '=',
+      interval: '=',
+      noTransition: '=',
+      noPause: '=',
+      noWrap: '&'
+    }
+  };
+})
+
+.directive('uibSlide', ['$animate', function($animate) {
+  return {
+    require: '^uibCarousel',
+    restrict: 'A',
+    transclude: true,
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/carousel/slide.html';
+    },
+    scope: {
+      actual: '=?',
+      index: '=?'
+    },
+    link: function (scope, element, attrs, carouselCtrl) {
+      element.addClass('item');
+      carouselCtrl.addSlide(scope, element);
+      //when the scope is destroyed then remove the slide from the current slides array
+      scope.$on('$destroy', function() {
+        carouselCtrl.removeSlide(scope);
+      });
+
+      scope.$watch('active', function(active) {
+        $animate[active ? 'addClass' : 'removeClass'](element, 'active');
+      });
+    }
+  };
+}])
+
+.animation('.item', ['$animateCss',
+function($animateCss) {
+  var SLIDE_DIRECTION = 'uib-slideDirection';
+
+  function removeClass(element, className, callback) {
+    element.removeClass(className);
+    if (callback) {
+      callback();
+    }
+  }
+
+  return {
+    beforeAddClass: function(element, className, done) {
+      if (className === 'active') {
+        var stopped = false;
+        var direction = element.data(SLIDE_DIRECTION);
+        var directionClass = direction === 'next' ? 'left' : 'right';
+        var removeClassFn = removeClass.bind(this, element,
+          directionClass + ' ' + direction, done);
+        element.addClass(direction);
+
+        $animateCss(element, {addClass: directionClass})
+          .start()
+          .done(removeClassFn);
+
+        return function() {
+          stopped = true;
+        };
+      }
+      done();
+    },
+    beforeRemoveClass: function (element, className, done) {
+      if (className === 'active') {
+        var stopped = false;
+        var direction = element.data(SLIDE_DIRECTION);
+        var directionClass = direction === 'next' ? 'left' : 'right';
+        var removeClassFn = removeClass.bind(this, element, directionClass, done);
+
+        $animateCss(element, {addClass: directionClass})
+          .start()
+          .done(removeClassFn);
+
+        return function() {
+          stopped = true;
+        };
+      }
+      done();
+    }
+  };
+}]);
+
+angular.module('ui.bootstrap.dateparser', [])
+
+.service('uibDateParser', ['$log', '$locale', 'dateFilter', 'orderByFilter', 'filterFilter', function($log, $locale, dateFilter, orderByFilter, filterFilter) {
+  // Pulled from https://github.com/mbostock/d3/blob/master/src/format/requote.js
+  var SPECIAL_CHARACTERS_REGEXP = /[\\\^\$\*\+\?\|\[\]\(\)\.\{\}]/g;
+
+  var localeId;
+  var formatCodeToRegex;
+
+  this.init = function() {
+    localeId = $locale.id;
+
+    this.parsers = {};
+    this.formatters = {};
+
+    formatCodeToRegex = [
+      {
+        key: 'yyyy',
+        regex: '\\d{4}',
+        apply: function(value) { this.year = +value; },
+        formatter: function(date) {
+          var _date = new Date();
+          _date.setFullYear(Math.abs(date.getFullYear()));
+          return dateFilter(_date, 'yyyy');
+        }
+      },
+      {
+        key: 'yy',
+        regex: '\\d{2}',
+        apply: function(value) { value = +value; this.year = value < 69 ? value + 2000 : value + 1900; },
+        formatter: function(date) {
+          var _date = new Date();
+          _date.setFullYear(Math.abs(date.getFullYear()));
+          return dateFilter(_date, 'yy');
+        }
+      },
+      {
+        key: 'y',
+        regex: '\\d{1,4}',
+        apply: function(value) { this.year = +value; },
+        formatter: function(date) {
+          var _date = new Date();
+          _date.setFullYear(Math.abs(date.getFullYear()));
+          return dateFilter(_date, 'y');
+        }
+      },
+      {
+        key: 'M!',
+        regex: '0?[1-9]|1[0-2]',
+        apply: function(value) { this.month = value - 1; },
+        formatter: function(date) {
+          var value = date.getMonth();
+          if (/^[0-9]$/.test(value)) {
+            return dateFilter(date, 'MM');
+          }
+
+          return dateFilter(date, 'M');
+        }
+      },
+      {
+        key: 'MMMM',
+        regex: $locale.DATETIME_FORMATS.MONTH.join('|'),
+        apply: function(value) { this.month = $locale.DATETIME_FORMATS.MONTH.indexOf(value); },
+        formatter: function(date) { return dateFilter(date, 'MMMM'); }
+      },
+      {
+        key: 'MMM',
+        regex: $locale.DATETIME_FORMATS.SHORTMONTH.join('|'),
+        apply: function(value) { this.month = $locale.DATETIME_FORMATS.SHORTMONTH.indexOf(value); },
+        formatter: function(date) { return dateFilter(date, 'MMM'); }
+      },
+      {
+        key: 'MM',
+        regex: '0[1-9]|1[0-2]',
+        apply: function(value) { this.month = value - 1; },
+        formatter: function(date) { return dateFilter(date, 'MM'); }
+      },
+      {
+        key: 'M',
+        regex: '[1-9]|1[0-2]',
+        apply: function(value) { this.month = value - 1; },
+        formatter: function(date) { return dateFilter(date, 'M'); }
+      },
+      {
+        key: 'd!',
+        regex: '[0-2]?[0-9]{1}|3[0-1]{1}',
+        apply: function(value) { this.date = +value; },
+        formatter: function(date) {
+          var value = date.getDate();
+          if (/^[1-9]$/.test(value)) {
+            return dateFilter(date, 'dd');
+          }
+
+          return dateFilter(date, 'd');
+        }
+      },
+      {
+        key: 'dd',
+        regex: '[0-2][0-9]{1}|3[0-1]{1}',
+        apply: function(value) { this.date = +value; },
+        formatter: function(date) { return dateFilter(date, 'dd'); }
+      },
+      {
+        key: 'd',
+        regex: '[1-2]?[0-9]{1}|3[0-1]{1}',
+        apply: function(value) { this.date = +value; },
+        formatter: function(date) { return dateFilter(date, 'd'); }
+      },
+      {
+        key: 'EEEE',
+        regex: $locale.DATETIME_FORMATS.DAY.join('|'),
+        formatter: function(date) { return dateFilter(date, 'EEEE'); }
+      },
+      {
+        key: 'EEE',
+        regex: $locale.DATETIME_FORMATS.SHORTDAY.join('|'),
+        formatter: function(date) { return dateFilter(date, 'EEE'); }
+      },
+      {
+        key: 'HH',
+        regex: '(?:0|1)[0-9]|2[0-3]',
+        apply: function(value) { this.hours = +value; },
+        formatter: function(date) { return dateFilter(date, 'HH'); }
+      },
+      {
+        key: 'hh',
+        regex: '0[0-9]|1[0-2]',
+        apply: function(value) { this.hours = +value; },
+        formatter: function(date) { return dateFilter(date, 'hh'); }
+      },
+      {
+        key: 'H',
+        regex: '1?[0-9]|2[0-3]',
+        apply: function(value) { this.hours = +value; },
+        formatter: function(date) { return dateFilter(date, 'H'); }
+      },
+      {
+        key: 'h',
+        regex: '[0-9]|1[0-2]',
+        apply: function(value) { this.hours = +value; },
+        formatter: function(date) { return dateFilter(date, 'h'); }
+      },
+      {
+        key: 'mm',
+        regex: '[0-5][0-9]',
+        apply: function(value) { this.minutes = +value; },
+        formatter: function(date) { return dateFilter(date, 'mm'); }
+      },
+      {
+        key: 'm',
+        regex: '[0-9]|[1-5][0-9]',
+        apply: function(value) { this.minutes = +value; },
+        formatter: function(date) { return dateFilter(date, 'm'); }
+      },
+      {
+        key: 'sss',
+        regex: '[0-9][0-9][0-9]',
+        apply: function(value) { this.milliseconds = +value; },
+        formatter: function(date) { return dateFilter(date, 'sss'); }
+      },
+      {
+        key: 'ss',
+        regex: '[0-5][0-9]',
+        apply: function(value) { this.seconds = +value; },
+        formatter: function(date) { return dateFilter(date, 'ss'); }
+      },
+      {
+        key: 's',
+        regex: '[0-9]|[1-5][0-9]',
+        apply: function(value) { this.seconds = +value; },
+        formatter: function(date) { return dateFilter(date, 's'); }
+      },
+      {
+        key: 'a',
+        regex: $locale.DATETIME_FORMATS.AMPMS.join('|'),
+        apply: function(value) {
+          if (this.hours === 12) {
+            this.hours = 0;
+          }
+
+          if (value === 'PM') {
+            this.hours += 12;
+          }
+        },
+        formatter: function(date) { return dateFilter(date, 'a'); }
+      },
+      {
+        key: 'Z',
+        regex: '[+-]\\d{4}',
+        apply: function(value) {
+          var matches = value.match(/([+-])(\d{2})(\d{2})/),
+            sign = matches[1],
+            hours = matches[2],
+            minutes = matches[3];
+          this.hours += toInt(sign + hours);
+          this.minutes += toInt(sign + minutes);
+        },
+        formatter: function(date) {
+          return dateFilter(date, 'Z');
+        }
+      },
+      {
+        key: 'ww',
+        regex: '[0-4][0-9]|5[0-3]',
+        formatter: function(date) { return dateFilter(date, 'ww'); }
+      },
+      {
+        key: 'w',
+        regex: '[0-9]|[1-4][0-9]|5[0-3]',
+        formatter: function(date) { return dateFilter(date, 'w'); }
+      },
+      {
+        key: 'GGGG',
+        regex: $locale.DATETIME_FORMATS.ERANAMES.join('|').replace(/\s/g, '\\s'),
+        formatter: function(date) { return dateFilter(date, 'GGGG'); }
+      },
+      {
+        key: 'GGG',
+        regex: $locale.DATETIME_FORMATS.ERAS.join('|'),
+        formatter: function(date) { return dateFilter(date, 'GGG'); }
+      },
+      {
+        key: 'GG',
+        regex: $locale.DATETIME_FORMATS.ERAS.join('|'),
+        formatter: function(date) { return dateFilter(date, 'GG'); }
+      },
+      {
+        key: 'G',
+        regex: $locale.DATETIME_FORMATS.ERAS.join('|'),
+        formatter: function(date) { return dateFilter(date, 'G'); }
+      }
+    ];
+
+    if (angular.version.major >= 1 && angular.version.minor > 4) {
+      formatCodeToRegex.push({
+        key: 'LLLL',
+        regex: $locale.DATETIME_FORMATS.STANDALONEMONTH.join('|'),
+        apply: function(value) { this.month = $locale.DATETIME_FORMATS.STANDALONEMONTH.indexOf(value); },
+        formatter: function(date) { return dateFilter(date, 'LLLL'); }
+      });
+    }
+  };
+
+  this.init();
+
+  function getFormatCodeToRegex(key) {
+    return filterFilter(formatCodeToRegex, {key: key}, true)[0];
+  }
+
+  this.getParser = function (key) {
+    var f = getFormatCodeToRegex(key);
+    return f && f.apply || null;
+  };
+
+  this.overrideParser = function (key, parser) {
+    var f = getFormatCodeToRegex(key);
+    if (f && angular.isFunction(parser)) {
+      this.parsers = {};
+      f.apply = parser;
+    }
+  }.bind(this);
+
+  function createParser(format) {
+    var map = [], regex = format.split('');
+
+    // check for literal values
+    var quoteIndex = format.indexOf('\'');
+    if (quoteIndex > -1) {
+      var inLiteral = false;
+      format = format.split('');
+      for (var i = quoteIndex; i < format.length; i++) {
+        if (inLiteral) {
+          if (format[i] === '\'') {
+            if (i + 1 < format.length && format[i+1] === '\'') { // escaped single quote
+              format[i+1] = '$';
+              regex[i+1] = '';
+            } else { // end of literal
+              regex[i] = '';
+              inLiteral = false;
+            }
+          }
+          format[i] = '$';
+        } else {
+          if (format[i] === '\'') { // start of literal
+            format[i] = '$';
+            regex[i] = '';
+            inLiteral = true;
+          }
+        }
+      }
+
+      format = format.join('');
+    }
+
+    angular.forEach(formatCodeToRegex, function(data) {
+      var index = format.indexOf(data.key);
+
+      if (index > -1) {
+        format = format.split('');
+
+        regex[index] = '(' + data.regex + ')';
+        format[index] = '$'; // Custom symbol to define consumed part of format
+        for (var i = index + 1, n = index + data.key.length; i < n; i++) {
+          regex[i] = '';
+          format[i] = '$';
+        }
+        format = format.join('');
+
+        map.push({
+          index: index,
+          key: data.key,
+          apply: data.apply,
+          matcher: data.regex
+        });
+      }
+    });
+
+    return {
+      regex: new RegExp('^' + regex.join('') + '$'),
+      map: orderByFilter(map, 'index')
+    };
+  }
+
+  function createFormatter(format) {
+    var formatters = [];
+    var i = 0;
+    var formatter, literalIdx;
+    while (i < format.length) {
+      if (angular.isNumber(literalIdx)) {
+        if (format.charAt(i) === '\'') {
+          if (i + 1 >= format.length || format.charAt(i + 1) !== '\'') {
+            formatters.push(constructLiteralFormatter(format, literalIdx, i));
+            literalIdx = null;
+          }
+        } else if (i === format.length) {
+          while (literalIdx < format.length) {
+            formatter = constructFormatterFromIdx(format, literalIdx);
+            formatters.push(formatter);
+            literalIdx = formatter.endIdx;
+          }
+        }
+
+        i++;
+        continue;
+      }
+
+      if (format.charAt(i) === '\'') {
+        literalIdx = i;
+        i++;
+        continue;
+      }
+
+      formatter = constructFormatterFromIdx(format, i);
+
+      formatters.push(formatter.parser);
+      i = formatter.endIdx;
+    }
+
+    return formatters;
+  }
+
+  function constructLiteralFormatter(format, literalIdx, endIdx) {
+    return function() {
+      return format.substr(literalIdx + 1, endIdx - literalIdx - 1);
+    };
+  }
+
+  function constructFormatterFromIdx(format, i) {
+    var currentPosStr = format.substr(i);
+    for (var j = 0; j < formatCodeToRegex.length; j++) {
+      if (new RegExp('^' + formatCodeToRegex[j].key).test(currentPosStr)) {
+        var data = formatCodeToRegex[j];
+        return {
+          endIdx: i + data.key.length,
+          parser: data.formatter
+        };
+      }
+    }
+
+    return {
+      endIdx: i + 1,
+      parser: function() {
+        return currentPosStr.charAt(0);
+      }
+    };
+  }
+
+  this.filter = function(date, format) {
+    if (!angular.isDate(date) || isNaN(date) || !format) {
+      return '';
+    }
+
+    format = $locale.DATETIME_FORMATS[format] || format;
+
+    if ($locale.id !== localeId) {
+      this.init();
+    }
+
+    if (!this.formatters[format]) {
+      this.formatters[format] = createFormatter(format);
+    }
+
+    var formatters = this.formatters[format];
+
+    return formatters.reduce(function(str, formatter) {
+      return str + formatter(date);
+    }, '');
+  };
+
+  this.parse = function(input, format, baseDate) {
+    if (!angular.isString(input) || !format) {
+      return input;
+    }
+
+    format = $locale.DATETIME_FORMATS[format] || format;
+    format = format.replace(SPECIAL_CHARACTERS_REGEXP, '\\$&');
+
+    if ($locale.id !== localeId) {
+      this.init();
+    }
+
+    if (!this.parsers[format]) {
+      this.parsers[format] = createParser(format, 'apply');
+    }
+
+    var parser = this.parsers[format],
+        regex = parser.regex,
+        map = parser.map,
+        results = input.match(regex),
+        tzOffset = false;
+    if (results && results.length) {
+      var fields, dt;
+      if (angular.isDate(baseDate) && !isNaN(baseDate.getTime())) {
+        fields = {
+          year: baseDate.getFullYear(),
+          month: baseDate.getMonth(),
+          date: baseDate.getDate(),
+          hours: baseDate.getHours(),
+          minutes: baseDate.getMinutes(),
+          seconds: baseDate.getSeconds(),
+          milliseconds: baseDate.getMilliseconds()
+        };
+      } else {
+        if (baseDate) {
+          $log.warn('dateparser:', 'baseDate is not a valid date');
+        }
+        fields = { year: 1900, month: 0, date: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 };
+      }
+
+      for (var i = 1, n = results.length; i < n; i++) {
+        var mapper = map[i - 1];
+        if (mapper.matcher === 'Z') {
+          tzOffset = true;
+        }
+
+        if (mapper.apply) {
+          mapper.apply.call(fields, results[i]);
+        }
+      }
+
+      var datesetter = tzOffset ? Date.prototype.setUTCFullYear :
+        Date.prototype.setFullYear;
+      var timesetter = tzOffset ? Date.prototype.setUTCHours :
+        Date.prototype.setHours;
+
+      if (isValid(fields.year, fields.month, fields.date)) {
+        if (angular.isDate(baseDate) && !isNaN(baseDate.getTime()) && !tzOffset) {
+          dt = new Date(baseDate);
+          datesetter.call(dt, fields.year, fields.month, fields.date);
+          timesetter.call(dt, fields.hours, fields.minutes,
+            fields.seconds, fields.milliseconds);
+        } else {
+          dt = new Date(0);
+          datesetter.call(dt, fields.year, fields.month, fields.date);
+          timesetter.call(dt, fields.hours || 0, fields.minutes || 0,
+            fields.seconds || 0, fields.milliseconds || 0);
+        }
+      }
+
+      return dt;
+    }
+  };
+
+  // Check if date is valid for specific month (and year for February).
+  // Month: 0 = Jan, 1 = Feb, etc
+  function isValid(year, month, date) {
+    if (date < 1) {
+      return false;
+    }
+
+    if (month === 1 && date > 28) {
+      return date === 29 && (year % 4 === 0 && year % 100 !== 0 || year % 400 === 0);
+    }
+
+    if (month === 3 || month === 5 || month === 8 || month === 10) {
+      return date < 31;
+    }
+
+    return true;
+  }
+
+  function toInt(str) {
+    return parseInt(str, 10);
+  }
+
+  this.toTimezone = toTimezone;
+  this.fromTimezone = fromTimezone;
+  this.timezoneToOffset = timezoneToOffset;
+  this.addDateMinutes = addDateMinutes;
+  this.convertTimezoneToLocal = convertTimezoneToLocal;
+
+  function toTimezone(date, timezone) {
+    return date && timezone ? convertTimezoneToLocal(date, timezone) : date;
+  }
+
+  function fromTimezone(date, timezone) {
+    return date && timezone ? convertTimezoneToLocal(date, timezone, true) : date;
+  }
+
+  //https://github.com/angular/angular.js/blob/622c42169699ec07fc6daaa19fe6d224e5d2f70e/src/Angular.js#L1207
+  function timezoneToOffset(timezone, fallback) {
+    timezone = timezone.replace(/:/g, '');
+    var requestedTimezoneOffset = Date.parse('Jan 01, 1970 00:00:00 ' + timezone) / 60000;
+    return isNaN(requestedTimezoneOffset) ? fallback : requestedTimezoneOffset;
+  }
+
+  function addDateMinutes(date, minutes) {
+    date = new Date(date.getTime());
+    date.setMinutes(date.getMinutes() + minutes);
+    return date;
+  }
+
+  function convertTimezoneToLocal(date, timezone, reverse) {
+    reverse = reverse ? -1 : 1;
+    var dateTimezoneOffset = date.getTimezoneOffset();
+    var timezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
+    return addDateMinutes(date, reverse * (timezoneOffset - dateTimezoneOffset));
+  }
+}]);
+
+// Avoiding use of ng-class as it creates a lot of watchers when a class is to be applied to
+// at most one element.
+angular.module('ui.bootstrap.isClass', [])
+.directive('uibIsClass', [
+         '$animate',
+function ($animate) {
+  //                    11111111          22222222
+  var ON_REGEXP = /^\s*([\s\S]+?)\s+on\s+([\s\S]+?)\s*$/;
+  //                    11111111           22222222
+  var IS_REGEXP = /^\s*([\s\S]+?)\s+for\s+([\s\S]+?)\s*$/;
+
+  var dataPerTracked = {};
+
+  return {
+    restrict: 'A',
+    compile: function(tElement, tAttrs) {
+      var linkedScopes = [];
+      var instances = [];
+      var expToData = {};
+      var lastActivated = null;
+      var onExpMatches = tAttrs.uibIsClass.match(ON_REGEXP);
+      var onExp = onExpMatches[2];
+      var expsStr = onExpMatches[1];
+      var exps = expsStr.split(',');
+
+      return linkFn;
+
+      function linkFn(scope, element, attrs) {
+        linkedScopes.push(scope);
+        instances.push({
+          scope: scope,
+          element: element
+        });
+
+        exps.forEach(function(exp, k) {
+          addForExp(exp, scope);
+        });
+
+        scope.$on('$destroy', removeScope);
+      }
+
+      function addForExp(exp, scope) {
+        var matches = exp.match(IS_REGEXP);
+        var clazz = scope.$eval(matches[1]);
+        var compareWithExp = matches[2];
+        var data = expToData[exp];
+        if (!data) {
+          var watchFn = function(compareWithVal) {
+            var newActivated = null;
+            instances.some(function(instance) {
+              var thisVal = instance.scope.$eval(onExp);
+              if (thisVal === compareWithVal) {
+                newActivated = instance;
+                return true;
+              }
+            });
+            if (data.lastActivated !== newActivated) {
+              if (data.lastActivated) {
+                $animate.removeClass(data.lastActivated.element, clazz);
+              }
+              if (newActivated) {
+                $animate.addClass(newActivated.element, clazz);
+              }
+              data.lastActivated = newActivated;
+            }
+          };
+          expToData[exp] = data = {
+            lastActivated: null,
+            scope: scope,
+            watchFn: watchFn,
+            compareWithExp: compareWithExp,
+            watcher: scope.$watch(compareWithExp, watchFn)
+          };
+        }
+        data.watchFn(scope.$eval(compareWithExp));
+      }
+
+      function removeScope(e) {
+        var removedScope = e.targetScope;
+        var index = linkedScopes.indexOf(removedScope);
+        linkedScopes.splice(index, 1);
+        instances.splice(index, 1);
+        if (linkedScopes.length) {
+          var newWatchScope = linkedScopes[0];
+          angular.forEach(expToData, function(data) {
+            if (data.scope === removedScope) {
+              data.watcher = newWatchScope.$watch(data.compareWithExp, data.watchFn);
+              data.scope = newWatchScope;
+            }
+          });
+        } else {
+          expToData = {};
+        }
+      }
+    }
+  };
+}]);
+angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootstrap.isClass'])
+
+.value('$datepickerSuppressError', false)
+
+.value('$datepickerLiteralWarning', true)
+
+.constant('uibDatepickerConfig', {
+  datepickerMode: 'day',
+  formatDay: 'dd',
+  formatMonth: 'MMMM',
+  formatYear: 'yyyy',
+  formatDayHeader: 'EEE',
+  formatDayTitle: 'MMMM yyyy',
+  formatMonthTitle: 'yyyy',
+  maxDate: null,
+  maxMode: 'year',
+  minDate: null,
+  minMode: 'day',
+  monthColumns: 3,
+  ngModelOptions: {},
+  shortcutPropagation: false,
+  showWeeks: true,
+  yearColumns: 5,
+  yearRows: 4
+})
+
+.controller('UibDatepickerController', ['$scope', '$element', '$attrs', '$parse', '$interpolate', '$locale', '$log', 'dateFilter', 'uibDatepickerConfig', '$datepickerLiteralWarning', '$datepickerSuppressError', 'uibDateParser',
+  function($scope, $element, $attrs, $parse, $interpolate, $locale, $log, dateFilter, datepickerConfig, $datepickerLiteralWarning, $datepickerSuppressError, dateParser) {
+  var self = this,
+      ngModelCtrl = { $setViewValue: angular.noop }, // nullModelCtrl;
+      ngModelOptions = {},
+      watchListeners = [];
+
+  $element.addClass('uib-datepicker');
+  $attrs.$set('role', 'application');
+
+  if (!$scope.datepickerOptions) {
+    $scope.datepickerOptions = {};
+  }
+
+  // Modes chain
+  this.modes = ['day', 'month', 'year'];
+
+  [
+    'customClass',
+    'dateDisabled',
+    'datepickerMode',
+    'formatDay',
+    'formatDayHeader',
+    'formatDayTitle',
+    'formatMonth',
+    'formatMonthTitle',
+    'formatYear',
+    'maxDate',
+    'maxMode',
+    'minDate',
+    'minMode',
+    'monthColumns',
+    'showWeeks',
+    'shortcutPropagation',
+    'startingDay',
+    'yearColumns',
+    'yearRows'
+  ].forEach(function(key) {
+    switch (key) {
+      case 'customClass':
+      case 'dateDisabled':
+        $scope[key] = $scope.datepickerOptions[key] || angular.noop;
+        break;
+      case 'datepickerMode':
+        $scope.datepickerMode = angular.isDefined($scope.datepickerOptions.datepickerMode) ?
+          $scope.datepickerOptions.datepickerMode : datepickerConfig.datepickerMode;
+        break;
+      case 'formatDay':
+      case 'formatDayHeader':
+      case 'formatDayTitle':
+      case 'formatMonth':
+      case 'formatMonthTitle':
+      case 'formatYear':
+        self[key] = angular.isDefined($scope.datepickerOptions[key]) ?
+          $interpolate($scope.datepickerOptions[key])($scope.$parent) :
+          datepickerConfig[key];
+        break;
+      case 'monthColumns':
+      case 'showWeeks':
+      case 'shortcutPropagation':
+      case 'yearColumns':
+      case 'yearRows':
+        self[key] = angular.isDefined($scope.datepickerOptions[key]) ?
+          $scope.datepickerOptions[key] : datepickerConfig[key];
+        break;
+      case 'startingDay':
+        if (angular.isDefined($scope.datepickerOptions.startingDay)) {
+          self.startingDay = $scope.datepickerOptions.startingDay;
+        } else if (angular.isNumber(datepickerConfig.startingDay)) {
+          self.startingDay = datepickerConfig.startingDay;
+        } else {
+          self.startingDay = ($locale.DATETIME_FORMATS.FIRSTDAYOFWEEK + 8) % 7;
+        }
+
+        break;
+      case 'maxDate':
+      case 'minDate':
+        $scope.$watch('datepickerOptions.' + key, function(value) {
+          if (value) {
+            if (angular.isDate(value)) {
+              self[key] = dateParser.fromTimezone(new Date(value), ngModelOptions.getOption('timezone'));
+            } else {
+              if ($datepickerLiteralWarning) {
+                $log.warn('Literal date support has been deprecated, please switch to date object usage');
+              }
+
+              self[key] = new Date(dateFilter(value, 'medium'));
+            }
+          } else {
+            self[key] = datepickerConfig[key] ?
+              dateParser.fromTimezone(new Date(datepickerConfig[key]), ngModelOptions.getOption('timezone')) :
+              null;
+          }
+
+          self.refreshView();
+        });
+
+        break;
+      case 'maxMode':
+      case 'minMode':
+        if ($scope.datepickerOptions[key]) {
+          $scope.$watch(function() { return $scope.datepickerOptions[key]; }, function(value) {
+            self[key] = $scope[key] = angular.isDefined(value) ? value : $scope.datepickerOptions[key];
+            if (key === 'minMode' && self.modes.indexOf($scope.datepickerOptions.datepickerMode) < self.modes.indexOf(self[key]) ||
+              key === 'maxMode' && self.modes.indexOf($scope.datepickerOptions.datepickerMode) > self.modes.indexOf(self[key])) {
+              $scope.datepickerMode = self[key];
+              $scope.datepickerOptions.datepickerMode = self[key];
+            }
+          });
+        } else {
+          self[key] = $scope[key] = datepickerConfig[key] || null;
+        }
+
+        break;
+    }
+  });
+
+  $scope.uniqueId = 'datepicker-' + $scope.$id + '-' + Math.floor(Math.random() * 10000);
+
+  $scope.disabled = angular.isDefined($attrs.disabled) || false;
+  if (angular.isDefined($attrs.ngDisabled)) {
+    watchListeners.push($scope.$parent.$watch($attrs.ngDisabled, function(disabled) {
+      $scope.disabled = disabled;
+      self.refreshView();
+    }));
+  }
+
+  $scope.isActive = function(dateObject) {
+    if (self.compare(dateObject.date, self.activeDate) === 0) {
+      $scope.activeDateId = dateObject.uid;
+      return true;
+    }
+    return false;
+  };
+
+  this.init = function(ngModelCtrl_) {
+    ngModelCtrl = ngModelCtrl_;
+    ngModelOptions = extractOptions(ngModelCtrl);
+
+    if ($scope.datepickerOptions.initDate) {
+      self.activeDate = dateParser.fromTimezone($scope.datepickerOptions.initDate, ngModelOptions.getOption('timezone')) || new Date();
+      $scope.$watch('datepickerOptions.initDate', function(initDate) {
+        if (initDate && (ngModelCtrl.$isEmpty(ngModelCtrl.$modelValue) || ngModelCtrl.$invalid)) {
+          self.activeDate = dateParser.fromTimezone(initDate, ngModelOptions.getOption('timezone'));
+          self.refreshView();
+        }
+      });
+    } else {
+      self.activeDate = new Date();
+    }
+
+    var date = ngModelCtrl.$modelValue ? new Date(ngModelCtrl.$modelValue) : new Date();
+    this.activeDate = !isNaN(date) ?
+      dateParser.fromTimezone(date, ngModelOptions.getOption('timezone')) :
+      dateParser.fromTimezone(new Date(), ngModelOptions.getOption('timezone'));
+
+    ngModelCtrl.$render = function() {
+      self.render();
+    };
+  };
+
+  this.render = function() {
+    if (ngModelCtrl.$viewValue) {
+      var date = new Date(ngModelCtrl.$viewValue),
+          isValid = !isNaN(date);
+
+      if (isValid) {
+        this.activeDate = dateParser.fromTimezone(date, ngModelOptions.getOption('timezone'));
+      } else if (!$datepickerSuppressError) {
+        $log.error('Datepicker directive: "ng-model" value must be a Date object');
+      }
+    }
+    this.refreshView();
+  };
+
+  this.refreshView = function() {
+    if (this.element) {
+      $scope.selectedDt = null;
+      this._refreshView();
+      if ($scope.activeDt) {
+        $scope.activeDateId = $scope.activeDt.uid;
+      }
+
+      var date = ngModelCtrl.$viewValue ? new Date(ngModelCtrl.$viewValue) : null;
+      date = dateParser.fromTimezone(date, ngModelOptions.getOption('timezone'));
+      ngModelCtrl.$setValidity('dateDisabled', !date ||
+        this.element && !this.isDisabled(date));
+    }
+  };
+
+  this.createDateObject = function(date, format) {
+    var model = ngModelCtrl.$viewValue ? new Date(ngModelCtrl.$viewValue) : null;
+    model = dateParser.fromTimezone(model, ngModelOptions.getOption('timezone'));
+    var today = new Date();
+    today = dateParser.fromTimezone(today, ngModelOptions.getOption('timezone'));
+    var time = this.compare(date, today);
+    var dt = {
+      date: date,
+      label: dateParser.filter(date, format),
+      selected: model && this.compare(date, model) === 0,
+      disabled: this.isDisabled(date),
+      past: time < 0,
+      current: time === 0,
+      future: time > 0,
+      customClass: this.customClass(date) || null
+    };
+
+    if (model && this.compare(date, model) === 0) {
+      $scope.selectedDt = dt;
+    }
+
+    if (self.activeDate && this.compare(dt.date, self.activeDate) === 0) {
+      $scope.activeDt = dt;
+    }
+
+    return dt;
+  };
+
+  this.isDisabled = function(date) {
+    return $scope.disabled ||
+      this.minDate && this.compare(date, this.minDate) < 0 ||
+      this.maxDate && this.compare(date, this.maxDate) > 0 ||
+      $scope.dateDisabled && $scope.dateDisabled({date: date, mode: $scope.datepickerMode});
+  };
+
+  this.customClass = function(date) {
+    return $scope.customClass({date: date, mode: $scope.datepickerMode});
+  };
+
+  // Split array into smaller arrays
+  this.split = function(arr, size) {
+    var arrays = [];
+    while (arr.length > 0) {
+      arrays.push(arr.splice(0, size));
+    }
+    return arrays;
+  };
+
+  $scope.select = function(date) {
+    if ($scope.datepickerMode === self.minMode) {
+      var dt = ngModelCtrl.$viewValue ? dateParser.fromTimezone(new Date(ngModelCtrl.$viewValue), ngModelOptions.getOption('timezone')) : new Date(0, 0, 0, 0, 0, 0, 0);
+      dt.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+      dt = dateParser.toTimezone(dt, ngModelOptions.getOption('timezone'));
+      ngModelCtrl.$setViewValue(dt);
+      ngModelCtrl.$render();
+    } else {
+      self.activeDate = date;
+      setMode(self.modes[self.modes.indexOf($scope.datepickerMode) - 1]);
+
+      $scope.$emit('uib:datepicker.mode');
+    }
+
+    $scope.$broadcast('uib:datepicker.focus');
+  };
+
+  $scope.move = function(direction) {
+    var year = self.activeDate.getFullYear() + direction * (self.step.years || 0),
+        month = self.activeDate.getMonth() + direction * (self.step.months || 0);
+    self.activeDate.setFullYear(year, month, 1);
+    self.refreshView();
+  };
+
+  $scope.toggleMode = function(direction) {
+    direction = direction || 1;
+
+    if ($scope.datepickerMode === self.maxMode && direction === 1 ||
+      $scope.datepickerMode === self.minMode && direction === -1) {
+      return;
+    }
+
+    setMode(self.modes[self.modes.indexOf($scope.datepickerMode) + direction]);
+
+    $scope.$emit('uib:datepicker.mode');
+  };
+
+  // Key event mapper
+  $scope.keys = { 13: 'enter', 32: 'space', 33: 'pageup', 34: 'pagedown', 35: 'end', 36: 'home', 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
+
+  var focusElement = function() {
+    self.element[0].focus();
+  };
+
+  // Listen for focus requests from popup directive
+  $scope.$on('uib:datepicker.focus', focusElement);
+
+  $scope.keydown = function(evt) {
+    var key = $scope.keys[evt.which];
+
+    if (!key || evt.shiftKey || evt.altKey || $scope.disabled) {
+      return;
+    }
+
+    evt.preventDefault();
+    if (!self.shortcutPropagation) {
+      evt.stopPropagation();
+    }
+
+    if (key === 'enter' || key === 'space') {
+      if (self.isDisabled(self.activeDate)) {
+        return; // do nothing
+      }
+      $scope.select(self.activeDate);
+    } else if (evt.ctrlKey && (key === 'up' || key === 'down')) {
+      $scope.toggleMode(key === 'up' ? 1 : -1);
+    } else {
+      self.handleKeyDown(key, evt);
+      self.refreshView();
+    }
+  };
+
+  $element.on('keydown', function(evt) {
+    $scope.$apply(function() {
+      $scope.keydown(evt);
+    });
+  });
+
+  $scope.$on('$destroy', function() {
+    //Clear all watch listeners on destroy
+    while (watchListeners.length) {
+      watchListeners.shift()();
+    }
+  });
+
+  function setMode(mode) {
+    $scope.datepickerMode = mode;
+    $scope.datepickerOptions.datepickerMode = mode;
+  }
+
+  function extractOptions(ngModelCtrl) {
+    var ngModelOptions;
+
+    if (angular.version.minor < 6) { // in angular < 1.6 $options could be missing
+      // guarantee a value
+      ngModelOptions = ngModelCtrl.$options ||
+        $scope.datepickerOptions.ngModelOptions ||
+        datepickerConfig.ngModelOptions ||
+        {};
+
+      // mimic 1.6+ api
+      ngModelOptions.getOption = function (key) {
+        return ngModelOptions[key];
+      };
+    } else { // in angular >=1.6 $options is always present
+      // ng-model-options defaults timezone to null; don't let its precedence squash a non-null value
+      var timezone = ngModelCtrl.$options.getOption('timezone') ||
+        ($scope.datepickerOptions.ngModelOptions ? $scope.datepickerOptions.ngModelOptions.timezone : null) ||
+        (datepickerConfig.ngModelOptions ? datepickerConfig.ngModelOptions.timezone : null);
+
+      // values passed to createChild override existing values
+      ngModelOptions = ngModelCtrl.$options // start with a ModelOptions instance
+        .createChild(datepickerConfig.ngModelOptions) // lowest precedence
+        .createChild($scope.datepickerOptions.ngModelOptions)
+        .createChild(ngModelCtrl.$options) // highest precedence
+        .createChild({timezone: timezone}); // to keep from squashing a non-null value
+    }
+
+    return ngModelOptions;
+  }
+}])
+
+.controller('UibDaypickerController', ['$scope', '$element', 'dateFilter', function(scope, $element, dateFilter) {
+  var DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  this.step = { months: 1 };
+  this.element = $element;
+  function getDaysInMonth(year, month) {
+    return month === 1 && year % 4 === 0 &&
+      (year % 100 !== 0 || year % 400 === 0) ? 29 : DAYS_IN_MONTH[month];
+  }
+
+  this.init = function(ctrl) {
+    angular.extend(ctrl, this);
+    scope.showWeeks = ctrl.showWeeks;
+    ctrl.refreshView();
+  };
+
+  this.getDates = function(startDate, n) {
+    var dates = new Array(n), current = new Date(startDate), i = 0, date;
+    while (i < n) {
+      date = new Date(current);
+      dates[i++] = date;
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  };
+
+  this._refreshView = function() {
+    var year = this.activeDate.getFullYear(),
+      month = this.activeDate.getMonth(),
+      firstDayOfMonth = new Date(this.activeDate);
+
+    firstDayOfMonth.setFullYear(year, month, 1);
+
+    var difference = this.startingDay - firstDayOfMonth.getDay(),
+      numDisplayedFromPreviousMonth = difference > 0 ?
+        7 - difference : - difference,
+      firstDate = new Date(firstDayOfMonth);
+
+    if (numDisplayedFromPreviousMonth > 0) {
+      firstDate.setDate(-numDisplayedFromPreviousMonth + 1);
+    }
+
+    // 42 is the number of days on a six-week calendar
+    var days = this.getDates(firstDate, 42);
+    for (var i = 0; i < 42; i ++) {
+      days[i] = angular.extend(this.createDateObject(days[i], this.formatDay), {
+        secondary: days[i].getMonth() !== month,
+        uid: scope.uniqueId + '-' + i
+      });
+    }
+
+    scope.labels = new Array(7);
+    for (var j = 0; j < 7; j++) {
+      scope.labels[j] = {
+        abbr: dateFilter(days[j].date, this.formatDayHeader),
+        full: dateFilter(days[j].date, 'EEEE')
+      };
+    }
+
+    scope.title = dateFilter(this.activeDate, this.formatDayTitle);
+    scope.rows = this.split(days, 7);
+
+    if (scope.showWeeks) {
+      scope.weekNumbers = [];
+      var thursdayIndex = (4 + 7 - this.startingDay) % 7,
+          numWeeks = scope.rows.length;
+      for (var curWeek = 0; curWeek < numWeeks; curWeek++) {
+        scope.weekNumbers.push(
+          getISO8601WeekNumber(scope.rows[curWeek][thursdayIndex].date));
+      }
+    }
+  };
+
+  this.compare = function(date1, date2) {
+    var _date1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate());
+    var _date2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
+    _date1.setFullYear(date1.getFullYear());
+    _date2.setFullYear(date2.getFullYear());
+    return _date1 - _date2;
+  };
+
+  function getISO8601WeekNumber(date) {
+    var checkDate = new Date(date);
+    checkDate.setDate(checkDate.getDate() + 4 - (checkDate.getDay() || 7)); // Thursday
+    var time = checkDate.getTime();
+    checkDate.setMonth(0); // Compare with Jan 1
+    checkDate.setDate(1);
+    return Math.floor(Math.round((time - checkDate) / 86400000) / 7) + 1;
+  }
+
+  this.handleKeyDown = function(key, evt) {
+    var date = this.activeDate.getDate();
+
+    if (key === 'left') {
+      date = date - 1;
+    } else if (key === 'up') {
+      date = date - 7;
+    } else if (key === 'right') {
+      date = date + 1;
+    } else if (key === 'down') {
+      date = date + 7;
+    } else if (key === 'pageup' || key === 'pagedown') {
+      var month = this.activeDate.getMonth() + (key === 'pageup' ? - 1 : 1);
+      this.activeDate.setMonth(month, 1);
+      date = Math.min(getDaysInMonth(this.activeDate.getFullYear(), this.activeDate.getMonth()), date);
+    } else if (key === 'home') {
+      date = 1;
+    } else if (key === 'end') {
+      date = getDaysInMonth(this.activeDate.getFullYear(), this.activeDate.getMonth());
+    }
+    this.activeDate.setDate(date);
+  };
+}])
+
+.controller('UibMonthpickerController', ['$scope', '$element', 'dateFilter', function(scope, $element, dateFilter) {
+  this.step = { years: 1 };
+  this.element = $element;
+
+  this.init = function(ctrl) {
+    angular.extend(ctrl, this);
+    ctrl.refreshView();
+  };
+
+  this._refreshView = function() {
+    var months = new Array(12),
+        year = this.activeDate.getFullYear(),
+        date;
+
+    for (var i = 0; i < 12; i++) {
+      date = new Date(this.activeDate);
+      date.setFullYear(year, i, 1);
+      months[i] = angular.extend(this.createDateObject(date, this.formatMonth), {
+        uid: scope.uniqueId + '-' + i
+      });
+    }
+
+    scope.title = dateFilter(this.activeDate, this.formatMonthTitle);
+    scope.rows = this.split(months, this.monthColumns);
+    scope.yearHeaderColspan = this.monthColumns > 3 ? this.monthColumns - 2 : 1;
+  };
+
+  this.compare = function(date1, date2) {
+    var _date1 = new Date(date1.getFullYear(), date1.getMonth());
+    var _date2 = new Date(date2.getFullYear(), date2.getMonth());
+    _date1.setFullYear(date1.getFullYear());
+    _date2.setFullYear(date2.getFullYear());
+    return _date1 - _date2;
+  };
+
+  this.handleKeyDown = function(key, evt) {
+    var date = this.activeDate.getMonth();
+
+    if (key === 'left') {
+      date = date - 1;
+    } else if (key === 'up') {
+      date = date - this.monthColumns;
+    } else if (key === 'right') {
+      date = date + 1;
+    } else if (key === 'down') {
+      date = date + this.monthColumns;
+    } else if (key === 'pageup' || key === 'pagedown') {
+      var year = this.activeDate.getFullYear() + (key === 'pageup' ? - 1 : 1);
+      this.activeDate.setFullYear(year);
+    } else if (key === 'home') {
+      date = 0;
+    } else if (key === 'end') {
+      date = 11;
+    }
+    this.activeDate.setMonth(date);
+  };
+}])
+
+.controller('UibYearpickerController', ['$scope', '$element', 'dateFilter', function(scope, $element, dateFilter) {
+  var columns, range;
+  this.element = $element;
+
+  function getStartingYear(year) {
+    return parseInt((year - 1) / range, 10) * range + 1;
+  }
+
+  this.yearpickerInit = function() {
+    columns = this.yearColumns;
+    range = this.yearRows * columns;
+    this.step = { years: range };
+  };
+
+  this._refreshView = function() {
+    var years = new Array(range), date;
+
+    for (var i = 0, start = getStartingYear(this.activeDate.getFullYear()); i < range; i++) {
+      date = new Date(this.activeDate);
+      date.setFullYear(start + i, 0, 1);
+      years[i] = angular.extend(this.createDateObject(date, this.formatYear), {
+        uid: scope.uniqueId + '-' + i
+      });
+    }
+
+    scope.title = [years[0].label, years[range - 1].label].join(' - ');
+    scope.rows = this.split(years, columns);
+    scope.columns = columns;
+  };
+
+  this.compare = function(date1, date2) {
+    return date1.getFullYear() - date2.getFullYear();
+  };
+
+  this.handleKeyDown = function(key, evt) {
+    var date = this.activeDate.getFullYear();
+
+    if (key === 'left') {
+      date = date - 1;
+    } else if (key === 'up') {
+      date = date - columns;
+    } else if (key === 'right') {
+      date = date + 1;
+    } else if (key === 'down') {
+      date = date + columns;
+    } else if (key === 'pageup' || key === 'pagedown') {
+      date += (key === 'pageup' ? - 1 : 1) * range;
+    } else if (key === 'home') {
+      date = getStartingYear(this.activeDate.getFullYear());
+    } else if (key === 'end') {
+      date = getStartingYear(this.activeDate.getFullYear()) + range - 1;
+    }
+    this.activeDate.setFullYear(date);
+  };
+}])
+
+.directive('uibDatepicker', function() {
+  return {
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/datepicker/datepicker.html';
+    },
+    scope: {
+      datepickerOptions: '=?'
+    },
+    require: ['uibDatepicker', '^ngModel'],
+    restrict: 'A',
+    controller: 'UibDatepickerController',
+    controllerAs: 'datepicker',
+    link: function(scope, element, attrs, ctrls) {
+      var datepickerCtrl = ctrls[0], ngModelCtrl = ctrls[1];
+
+      datepickerCtrl.init(ngModelCtrl);
+    }
+  };
+})
+
+.directive('uibDaypicker', function() {
+  return {
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/datepicker/day.html';
+    },
+    require: ['^uibDatepicker', 'uibDaypicker'],
+    restrict: 'A',
+    controller: 'UibDaypickerController',
+    link: function(scope, element, attrs, ctrls) {
+      var datepickerCtrl = ctrls[0],
+        daypickerCtrl = ctrls[1];
+
+      daypickerCtrl.init(datepickerCtrl);
+    }
+  };
+})
+
+.directive('uibMonthpicker', function() {
+  return {
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/datepicker/month.html';
+    },
+    require: ['^uibDatepicker', 'uibMonthpicker'],
+    restrict: 'A',
+    controller: 'UibMonthpickerController',
+    link: function(scope, element, attrs, ctrls) {
+      var datepickerCtrl = ctrls[0],
+        monthpickerCtrl = ctrls[1];
+
+      monthpickerCtrl.init(datepickerCtrl);
+    }
+  };
+})
+
+.directive('uibYearpicker', function() {
+  return {
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/datepicker/year.html';
+    },
+    require: ['^uibDatepicker', 'uibYearpicker'],
+    restrict: 'A',
+    controller: 'UibYearpickerController',
+    link: function(scope, element, attrs, ctrls) {
+      var ctrl = ctrls[0];
+      angular.extend(ctrl, ctrls[1]);
+      ctrl.yearpickerInit();
+
+      ctrl.refreshView();
+    }
+  };
+});
+
+angular.module('ui.bootstrap.position', [])
+
+/**
+ * A set of utility methods for working with the DOM.
+ * It is meant to be used where we need to absolute-position elements in
+ * relation to another element (this is the case for tooltips, popovers,
+ * typeahead suggestions etc.).
+ */
+  .factory('$uibPosition', ['$document', '$window', function($document, $window) {
+    /**
+     * Used by scrollbarWidth() function to cache scrollbar's width.
+     * Do not access this variable directly, use scrollbarWidth() instead.
+     */
+    var SCROLLBAR_WIDTH;
+    /**
+     * scrollbar on body and html element in IE and Edge overlay
+     * content and should be considered 0 width.
+     */
+    var BODY_SCROLLBAR_WIDTH;
+    var OVERFLOW_REGEX = {
+      normal: /(auto|scroll)/,
+      hidden: /(auto|scroll|hidden)/
+    };
+    var PLACEMENT_REGEX = {
+      auto: /\s?auto?\s?/i,
+      primary: /^(top|bottom|left|right)$/,
+      secondary: /^(top|bottom|left|right|center)$/,
+      vertical: /^(top|bottom)$/
+    };
+    var BODY_REGEX = /(HTML|BODY)/;
+
+    return {
+
+      /**
+       * Provides a raw DOM element from a jQuery/jQLite element.
+       *
+       * @param {element} elem - The element to convert.
+       *
+       * @returns {element} A HTML element.
+       */
+      getRawNode: function(elem) {
+        return elem.nodeName ? elem : elem[0] || elem;
+      },
+
+      /**
+       * Provides a parsed number for a style property.  Strips
+       * units and casts invalid numbers to 0.
+       *
+       * @param {string} value - The style value to parse.
+       *
+       * @returns {number} A valid number.
+       */
+      parseStyle: function(value) {
+        value = parseFloat(value);
+        return isFinite(value) ? value : 0;
+      },
+
+      /**
+       * Provides the closest positioned ancestor.
+       *
+       * @param {element} element - The element to get the offest parent for.
+       *
+       * @returns {element} The closest positioned ancestor.
+       */
+      offsetParent: function(elem) {
+        elem = this.getRawNode(elem);
+
+        var offsetParent = elem.offsetParent || $document[0].documentElement;
+
+        function isStaticPositioned(el) {
+          return ($window.getComputedStyle(el).position || 'static') === 'static';
+        }
+
+        while (offsetParent && offsetParent !== $document[0].documentElement && isStaticPositioned(offsetParent)) {
+          offsetParent = offsetParent.offsetParent;
+        }
+
+        return offsetParent || $document[0].documentElement;
+      },
+
+      /**
+       * Provides the scrollbar width, concept from TWBS measureScrollbar()
+       * function in https://github.com/twbs/bootstrap/blob/master/js/modal.js
+       * In IE and Edge, scollbar on body and html element overlay and should
+       * return a width of 0.
+       *
+       * @returns {number} The width of the browser scollbar.
+       */
+      scrollbarWidth: function(isBody) {
+        if (isBody) {
+          if (angular.isUndefined(BODY_SCROLLBAR_WIDTH)) {
+            var bodyElem = $document.find('body');
+            bodyElem.addClass('uib-position-body-scrollbar-measure');
+            BODY_SCROLLBAR_WIDTH = $window.innerWidth - bodyElem[0].clientWidth;
+            BODY_SCROLLBAR_WIDTH = isFinite(BODY_SCROLLBAR_WIDTH) ? BODY_SCROLLBAR_WIDTH : 0;
+            bodyElem.removeClass('uib-position-body-scrollbar-measure');
+          }
+          return BODY_SCROLLBAR_WIDTH;
+        }
+
+        if (angular.isUndefined(SCROLLBAR_WIDTH)) {
+          var scrollElem = angular.element('<div class="uib-position-scrollbar-measure"></div>');
+          $document.find('body').append(scrollElem);
+          SCROLLBAR_WIDTH = scrollElem[0].offsetWidth - scrollElem[0].clientWidth;
+          SCROLLBAR_WIDTH = isFinite(SCROLLBAR_WIDTH) ? SCROLLBAR_WIDTH : 0;
+          scrollElem.remove();
+        }
+
+        return SCROLLBAR_WIDTH;
+      },
+
+      /**
+       * Provides the padding required on an element to replace the scrollbar.
+       *
+       * @returns {object} An object with the following properties:
+       *   <ul>
+       *     <li>**scrollbarWidth**: the width of the scrollbar</li>
+       *     <li>**widthOverflow**: whether the the width is overflowing</li>
+       *     <li>**right**: the amount of right padding on the element needed to replace the scrollbar</li>
+       *     <li>**rightOriginal**: the amount of right padding currently on the element</li>
+       *     <li>**heightOverflow**: whether the the height is overflowing</li>
+       *     <li>**bottom**: the amount of bottom padding on the element needed to replace the scrollbar</li>
+       *     <li>**bottomOriginal**: the amount of bottom padding currently on the element</li>
+       *   </ul>
+       */
+      scrollbarPadding: function(elem) {
+        elem = this.getRawNode(elem);
+
+        var elemStyle = $window.getComputedStyle(elem);
+        var paddingRight = this.parseStyle(elemStyle.paddingRight);
+        var paddingBottom = this.parseStyle(elemStyle.paddingBottom);
+        var scrollParent = this.scrollParent(elem, false, true);
+        var scrollbarWidth = this.scrollbarWidth(BODY_REGEX.test(scrollParent.tagName));
+
+        return {
+          scrollbarWidth: scrollbarWidth,
+          widthOverflow: scrollParent.scrollWidth > scrollParent.clientWidth,
+          right: paddingRight + scrollbarWidth,
+          originalRight: paddingRight,
+          heightOverflow: scrollParent.scrollHeight > scrollParent.clientHeight,
+          bottom: paddingBottom + scrollbarWidth,
+          originalBottom: paddingBottom
+         };
+      },
+
+      /**
+       * Checks to see if the element is scrollable.
+       *
+       * @param {element} elem - The element to check.
+       * @param {boolean=} [includeHidden=false] - Should scroll style of 'hidden' be considered,
+       *   default is false.
+       *
+       * @returns {boolean} Whether the element is scrollable.
+       */
+      isScrollable: function(elem, includeHidden) {
+        elem = this.getRawNode(elem);
+
+        var overflowRegex = includeHidden ? OVERFLOW_REGEX.hidden : OVERFLOW_REGEX.normal;
+        var elemStyle = $window.getComputedStyle(elem);
+        return overflowRegex.test(elemStyle.overflow + elemStyle.overflowY + elemStyle.overflowX);
+      },
+
+      /**
+       * Provides the closest scrollable ancestor.
+       * A port of the jQuery UI scrollParent method:
+       * https://github.com/jquery/jquery-ui/blob/master/ui/scroll-parent.js
+       *
+       * @param {element} elem - The element to find the scroll parent of.
+       * @param {boolean=} [includeHidden=false] - Should scroll style of 'hidden' be considered,
+       *   default is false.
+       * @param {boolean=} [includeSelf=false] - Should the element being passed be
+       * included in the scrollable llokup.
+       *
+       * @returns {element} A HTML element.
+       */
+      scrollParent: function(elem, includeHidden, includeSelf) {
+        elem = this.getRawNode(elem);
+
+        var overflowRegex = includeHidden ? OVERFLOW_REGEX.hidden : OVERFLOW_REGEX.normal;
+        var documentEl = $document[0].documentElement;
+        var elemStyle = $window.getComputedStyle(elem);
+        if (includeSelf && overflowRegex.test(elemStyle.overflow + elemStyle.overflowY + elemStyle.overflowX)) {
+          return elem;
+        }
+        var excludeStatic = elemStyle.position === 'absolute';
+        var scrollParent = elem.parentElement || documentEl;
+
+        if (scrollParent === documentEl || elemStyle.position === 'fixed') {
+          return documentEl;
+        }
+
+        while (scrollParent.parentElement && scrollParent !== documentEl) {
+          var spStyle = $window.getComputedStyle(scrollParent);
+          if (excludeStatic && spStyle.position !== 'static') {
+            excludeStatic = false;
+          }
+
+          if (!excludeStatic && overflowRegex.test(spStyle.overflow + spStyle.overflowY + spStyle.overflowX)) {
+            break;
+          }
+          scrollParent = scrollParent.parentElement;
+        }
+
+        return scrollParent;
+      },
+
+      /**
+       * Provides read-only equivalent of jQuery's position function:
+       * http://api.jquery.com/position/ - distance to closest positioned
+       * ancestor.  Does not account for margins by default like jQuery position.
+       *
+       * @param {element} elem - The element to caclulate the position on.
+       * @param {boolean=} [includeMargins=false] - Should margins be accounted
+       * for, default is false.
+       *
+       * @returns {object} An object with the following properties:
+       *   <ul>
+       *     <li>**width**: the width of the element</li>
+       *     <li>**height**: the height of the element</li>
+       *     <li>**top**: distance to top edge of offset parent</li>
+       *     <li>**left**: distance to left edge of offset parent</li>
+       *   </ul>
+       */
+      position: function(elem, includeMagins) {
+        elem = this.getRawNode(elem);
+
+        var elemOffset = this.offset(elem);
+        if (includeMagins) {
+          var elemStyle = $window.getComputedStyle(elem);
+          elemOffset.top -= this.parseStyle(elemStyle.marginTop);
+          elemOffset.left -= this.parseStyle(elemStyle.marginLeft);
+        }
+        var parent = this.offsetParent(elem);
+        var parentOffset = {top: 0, left: 0};
+
+        if (parent !== $document[0].documentElement) {
+          parentOffset = this.offset(parent);
+          parentOffset.top += parent.clientTop - parent.scrollTop;
+          parentOffset.left += parent.clientLeft - parent.scrollLeft;
+        }
+
+        return {
+          width: Math.round(angular.isNumber(elemOffset.width) ? elemOffset.width : elem.offsetWidth),
+          height: Math.round(angular.isNumber(elemOffset.height) ? elemOffset.height : elem.offsetHeight),
+          top: Math.round(elemOffset.top - parentOffset.top),
+          left: Math.round(elemOffset.left - parentOffset.left)
+        };
+      },
+
+      /**
+       * Provides read-only equivalent of jQuery's offset function:
+       * http://api.jquery.com/offset/ - distance to viewport.  Does
+       * not account for borders, margins, or padding on the body
+       * element.
+       *
+       * @param {element} elem - The element to calculate the offset on.
+       *
+       * @returns {object} An object with the following properties:
+       *   <ul>
+       *     <li>**width**: the width of the element</li>
+       *     <li>**height**: the height of the element</li>
+       *     <li>**top**: distance to top edge of viewport</li>
+       *     <li>**right**: distance to bottom edge of viewport</li>
+       *   </ul>
+       */
+      offset: function(elem) {
+        elem = this.getRawNode(elem);
+
+        var elemBCR = elem.getBoundingClientRect();
+        return {
+          width: Math.round(angular.isNumber(elemBCR.width) ? elemBCR.width : elem.offsetWidth),
+          height: Math.round(angular.isNumber(elemBCR.height) ? elemBCR.height : elem.offsetHeight),
+          top: Math.round(elemBCR.top + ($window.pageYOffset || $document[0].documentElement.scrollTop)),
+          left: Math.round(elemBCR.left + ($window.pageXOffset || $document[0].documentElement.scrollLeft))
+        };
+      },
+
+      /**
+       * Provides offset distance to the closest scrollable ancestor
+       * or viewport.  Accounts for border and scrollbar width.
+       *
+       * Right and bottom dimensions represent the distance to the
+       * respective edge of the viewport element.  If the element
+       * edge extends beyond the viewport, a negative value will be
+       * reported.
+       *
+       * @param {element} elem - The element to get the viewport offset for.
+       * @param {boolean=} [useDocument=false] - Should the viewport be the document element instead
+       * of the first scrollable element, default is false.
+       * @param {boolean=} [includePadding=true] - Should the padding on the offset parent element
+       * be accounted for, default is true.
+       *
+       * @returns {object} An object with the following properties:
+       *   <ul>
+       *     <li>**top**: distance to the top content edge of viewport element</li>
+       *     <li>**bottom**: distance to the bottom content edge of viewport element</li>
+       *     <li>**left**: distance to the left content edge of viewport element</li>
+       *     <li>**right**: distance to the right content edge of viewport element</li>
+       *   </ul>
+       */
+      viewportOffset: function(elem, useDocument, includePadding) {
+        elem = this.getRawNode(elem);
+        includePadding = includePadding !== false ? true : false;
+
+        var elemBCR = elem.getBoundingClientRect();
+        var offsetBCR = {top: 0, left: 0, bottom: 0, right: 0};
+
+        var offsetParent = useDocument ? $document[0].documentElement : this.scrollParent(elem);
+        var offsetParentBCR = offsetParent.getBoundingClientRect();
+
+        offsetBCR.top = offsetParentBCR.top + offsetParent.clientTop;
+        offsetBCR.left = offsetParentBCR.left + offsetParent.clientLeft;
+        if (offsetParent === $document[0].documentElement) {
+          offsetBCR.top += $window.pageYOffset;
+          offsetBCR.left += $window.pageXOffset;
+        }
+        offsetBCR.bottom = offsetBCR.top + offsetParent.clientHeight;
+        offsetBCR.right = offsetBCR.left + offsetParent.clientWidth;
+
+        if (includePadding) {
+          var offsetParentStyle = $window.getComputedStyle(offsetParent);
+          offsetBCR.top += this.parseStyle(offsetParentStyle.paddingTop);
+          offsetBCR.bottom -= this.parseStyle(offsetParentStyle.paddingBottom);
+          offsetBCR.left += this.parseStyle(offsetParentStyle.paddingLeft);
+          offsetBCR.right -= this.parseStyle(offsetParentStyle.paddingRight);
+        }
+
+        return {
+          top: Math.round(elemBCR.top - offsetBCR.top),
+          bottom: Math.round(offsetBCR.bottom - elemBCR.bottom),
+          left: Math.round(elemBCR.left - offsetBCR.left),
+          right: Math.round(offsetBCR.right - elemBCR.right)
+        };
+      },
+
+      /**
+       * Provides an array of placement values parsed from a placement string.
+       * Along with the 'auto' indicator, supported placement strings are:
+       *   <ul>
+       *     <li>top: element on top, horizontally centered on host element.</li>
+       *     <li>top-left: element on top, left edge aligned with host element left edge.</li>
+       *     <li>top-right: element on top, lerightft edge aligned with host element right edge.</li>
+       *     <li>bottom: element on bottom, horizontally centered on host element.</li>
+       *     <li>bottom-left: element on bottom, left edge aligned with host element left edge.</li>
+       *     <li>bottom-right: element on bottom, right edge aligned with host element right edge.</li>
+       *     <li>left: element on left, vertically centered on host element.</li>
+       *     <li>left-top: element on left, top edge aligned with host element top edge.</li>
+       *     <li>left-bottom: element on left, bottom edge aligned with host element bottom edge.</li>
+       *     <li>right: element on right, vertically centered on host element.</li>
+       *     <li>right-top: element on right, top edge aligned with host element top edge.</li>
+       *     <li>right-bottom: element on right, bottom edge aligned with host element bottom edge.</li>
+       *   </ul>
+       * A placement string with an 'auto' indicator is expected to be
+       * space separated from the placement, i.e: 'auto bottom-left'  If
+       * the primary and secondary placement values do not match 'top,
+       * bottom, left, right' then 'top' will be the primary placement and
+       * 'center' will be the secondary placement.  If 'auto' is passed, true
+       * will be returned as the 3rd value of the array.
+       *
+       * @param {string} placement - The placement string to parse.
+       *
+       * @returns {array} An array with the following values
+       * <ul>
+       *   <li>**[0]**: The primary placement.</li>
+       *   <li>**[1]**: The secondary placement.</li>
+       *   <li>**[2]**: If auto is passed: true, else undefined.</li>
+       * </ul>
+       */
+      parsePlacement: function(placement) {
+        var autoPlace = PLACEMENT_REGEX.auto.test(placement);
+        if (autoPlace) {
+          placement = placement.replace(PLACEMENT_REGEX.auto, '');
+        }
+
+        placement = placement.split('-');
+
+        placement[0] = placement[0] || 'top';
+        if (!PLACEMENT_REGEX.primary.test(placement[0])) {
+          placement[0] = 'top';
+        }
+
+        placement[1] = placement[1] || 'center';
+        if (!PLACEMENT_REGEX.secondary.test(placement[1])) {
+          placement[1] = 'center';
+        }
+
+        if (autoPlace) {
+          placement[2] = true;
+        } else {
+          placement[2] = false;
+        }
+
+        return placement;
+      },
+
+      /**
+       * Provides coordinates for an element to be positioned relative to
+       * another element.  Passing 'auto' as part of the placement parameter
+       * will enable smart placement - where the element fits. i.e:
+       * 'auto left-top' will check to see if there is enough space to the left
+       * of the hostElem to fit the targetElem, if not place right (same for secondary
+       * top placement).  Available space is calculated using the viewportOffset
+       * function.
+       *
+       * @param {element} hostElem - The element to position against.
+       * @param {element} targetElem - The element to position.
+       * @param {string=} [placement=top] - The placement for the targetElem,
+       *   default is 'top'. 'center' is assumed as secondary placement for
+       *   'top', 'left', 'right', and 'bottom' placements.  Available placements are:
+       *   <ul>
+       *     <li>top</li>
+       *     <li>top-right</li>
+       *     <li>top-left</li>
+       *     <li>bottom</li>
+       *     <li>bottom-left</li>
+       *     <li>bottom-right</li>
+       *     <li>left</li>
+       *     <li>left-top</li>
+       *     <li>left-bottom</li>
+       *     <li>right</li>
+       *     <li>right-top</li>
+       *     <li>right-bottom</li>
+       *   </ul>
+       * @param {boolean=} [appendToBody=false] - Should the top and left values returned
+       *   be calculated from the body element, default is false.
+       *
+       * @returns {object} An object with the following properties:
+       *   <ul>
+       *     <li>**top**: Value for targetElem top.</li>
+       *     <li>**left**: Value for targetElem left.</li>
+       *     <li>**placement**: The resolved placement.</li>
+       *   </ul>
+       */
+      positionElements: function(hostElem, targetElem, placement, appendToBody) {
+        hostElem = this.getRawNode(hostElem);
+        targetElem = this.getRawNode(targetElem);
+
+        // need to read from prop to support tests.
+        var targetWidth = angular.isDefined(targetElem.offsetWidth) ? targetElem.offsetWidth : targetElem.prop('offsetWidth');
+        var targetHeight = angular.isDefined(targetElem.offsetHeight) ? targetElem.offsetHeight : targetElem.prop('offsetHeight');
+
+        placement = this.parsePlacement(placement);
+
+        var hostElemPos = appendToBody ? this.offset(hostElem) : this.position(hostElem);
+        var targetElemPos = {top: 0, left: 0, placement: ''};
+
+        if (placement[2]) {
+          var viewportOffset = this.viewportOffset(hostElem, appendToBody);
+
+          var targetElemStyle = $window.getComputedStyle(targetElem);
+          var adjustedSize = {
+            width: targetWidth + Math.round(Math.abs(this.parseStyle(targetElemStyle.marginLeft) + this.parseStyle(targetElemStyle.marginRight))),
+            height: targetHeight + Math.round(Math.abs(this.parseStyle(targetElemStyle.marginTop) + this.parseStyle(targetElemStyle.marginBottom)))
+          };
+
+          placement[0] = placement[0] === 'top' && adjustedSize.height > viewportOffset.top && adjustedSize.height <= viewportOffset.bottom ? 'bottom' :
+                         placement[0] === 'bottom' && adjustedSize.height > viewportOffset.bottom && adjustedSize.height <= viewportOffset.top ? 'top' :
+                         placement[0] === 'left' && adjustedSize.width > viewportOffset.left && adjustedSize.width <= viewportOffset.right ? 'right' :
+                         placement[0] === 'right' && adjustedSize.width > viewportOffset.right && adjustedSize.width <= viewportOffset.left ? 'left' :
+                         placement[0];
+
+          placement[1] = placement[1] === 'top' && adjustedSize.height - hostElemPos.height > viewportOffset.bottom && adjustedSize.height - hostElemPos.height <= viewportOffset.top ? 'bottom' :
+                         placement[1] === 'bottom' && adjustedSize.height - hostElemPos.height > viewportOffset.top && adjustedSize.height - hostElemPos.height <= viewportOffset.bottom ? 'top' :
+                         placement[1] === 'left' && adjustedSize.width - hostElemPos.width > viewportOffset.right && adjustedSize.width - hostElemPos.width <= viewportOffset.left ? 'right' :
+                         placement[1] === 'right' && adjustedSize.width - hostElemPos.width > viewportOffset.left && adjustedSize.width - hostElemPos.width <= viewportOffset.right ? 'left' :
+                         placement[1];
+
+          if (placement[1] === 'center') {
+            if (PLACEMENT_REGEX.vertical.test(placement[0])) {
+              var xOverflow = hostElemPos.width / 2 - targetWidth / 2;
+              if (viewportOffset.left + xOverflow < 0 && adjustedSize.width - hostElemPos.width <= viewportOffset.right) {
+                placement[1] = 'left';
+              } else if (viewportOffset.right + xOverflow < 0 && adjustedSize.width - hostElemPos.width <= viewportOffset.left) {
+                placement[1] = 'right';
+              }
+            } else {
+              var yOverflow = hostElemPos.height / 2 - adjustedSize.height / 2;
+              if (viewportOffset.top + yOverflow < 0 && adjustedSize.height - hostElemPos.height <= viewportOffset.bottom) {
+                placement[1] = 'top';
+              } else if (viewportOffset.bottom + yOverflow < 0 && adjustedSize.height - hostElemPos.height <= viewportOffset.top) {
+                placement[1] = 'bottom';
+              }
+            }
+          }
+        }
+
+        switch (placement[0]) {
+          case 'top':
+            targetElemPos.top = hostElemPos.top - targetHeight;
+            break;
+          case 'bottom':
+            targetElemPos.top = hostElemPos.top + hostElemPos.height;
+            break;
+          case 'left':
+            targetElemPos.left = hostElemPos.left - targetWidth;
+            break;
+          case 'right':
+            targetElemPos.left = hostElemPos.left + hostElemPos.width;
+            break;
+        }
+
+        switch (placement[1]) {
+          case 'top':
+            targetElemPos.top = hostElemPos.top;
+            break;
+          case 'bottom':
+            targetElemPos.top = hostElemPos.top + hostElemPos.height - targetHeight;
+            break;
+          case 'left':
+            targetElemPos.left = hostElemPos.left;
+            break;
+          case 'right':
+            targetElemPos.left = hostElemPos.left + hostElemPos.width - targetWidth;
+            break;
+          case 'center':
+            if (PLACEMENT_REGEX.vertical.test(placement[0])) {
+              targetElemPos.left = hostElemPos.left + hostElemPos.width / 2 - targetWidth / 2;
+            } else {
+              targetElemPos.top = hostElemPos.top + hostElemPos.height / 2 - targetHeight / 2;
+            }
+            break;
+        }
+
+        targetElemPos.top = Math.round(targetElemPos.top);
+        targetElemPos.left = Math.round(targetElemPos.left);
+        targetElemPos.placement = placement[1] === 'center' ? placement[0] : placement[0] + '-' + placement[1];
+
+        return targetElemPos;
+      },
+
+      /**
+       * Provides a way to adjust the top positioning after first
+       * render to correctly align element to top after content
+       * rendering causes resized element height
+       *
+       * @param {array} placementClasses - The array of strings of classes
+       * element should have.
+       * @param {object} containerPosition - The object with container
+       * position information
+       * @param {number} initialHeight - The initial height for the elem.
+       * @param {number} currentHeight - The current height for the elem.
+       */
+      adjustTop: function(placementClasses, containerPosition, initialHeight, currentHeight) {
+        if (placementClasses.indexOf('top') !== -1 && initialHeight !== currentHeight) {
+          return {
+            top: containerPosition.top - currentHeight + 'px'
+          };
+        }
+      },
+
+      /**
+       * Provides a way for positioning tooltip & dropdown
+       * arrows when using placement options beyond the standard
+       * left, right, top, or bottom.
+       *
+       * @param {element} elem - The tooltip/dropdown element.
+       * @param {string} placement - The placement for the elem.
+       */
+      positionArrow: function(elem, placement) {
+        elem = this.getRawNode(elem);
+
+        var innerElem = elem.querySelector('.tooltip-inner, .popover-inner');
+        if (!innerElem) {
+          return;
+        }
+
+        var isTooltip = angular.element(innerElem).hasClass('tooltip-inner');
+
+        var arrowElem = isTooltip ? elem.querySelector('.tooltip-arrow') : elem.querySelector('.arrow');
+        if (!arrowElem) {
+          return;
+        }
+
+        var arrowCss = {
+          top: '',
+          bottom: '',
+          left: '',
+          right: ''
+        };
+
+        placement = this.parsePlacement(placement);
+        if (placement[1] === 'center') {
+          // no adjustment necessary - just reset styles
+          angular.element(arrowElem).css(arrowCss);
+          return;
+        }
+
+        var borderProp = 'border-' + placement[0] + '-width';
+        var borderWidth = $window.getComputedStyle(arrowElem)[borderProp];
+
+        var borderRadiusProp = 'border-';
+        if (PLACEMENT_REGEX.vertical.test(placement[0])) {
+          borderRadiusProp += placement[0] + '-' + placement[1];
+        } else {
+          borderRadiusProp += placement[1] + '-' + placement[0];
+        }
+        borderRadiusProp += '-radius';
+        var borderRadius = $window.getComputedStyle(isTooltip ? innerElem : elem)[borderRadiusProp];
+
+        switch (placement[0]) {
+          case 'top':
+            arrowCss.bottom = isTooltip ? '0' : '-' + borderWidth;
+            break;
+          case 'bottom':
+            arrowCss.top = isTooltip ? '0' : '-' + borderWidth;
+            break;
+          case 'left':
+            arrowCss.right = isTooltip ? '0' : '-' + borderWidth;
+            break;
+          case 'right':
+            arrowCss.left = isTooltip ? '0' : '-' + borderWidth;
+            break;
+        }
+
+        arrowCss[placement[1]] = borderRadius;
+
+        angular.element(arrowElem).css(arrowCss);
+      }
+    };
+  }]);
+
+angular.module('ui.bootstrap.datepickerPopup', ['ui.bootstrap.datepicker', 'ui.bootstrap.position'])
+
+.value('$datepickerPopupLiteralWarning', true)
+
+.constant('uibDatepickerPopupConfig', {
+  altInputFormats: [],
+  appendToBody: false,
+  clearText: 'Clear',
+  closeOnDateSelection: true,
+  closeText: 'Done',
+  currentText: 'Today',
+  datepickerPopup: 'yyyy-MM-dd',
+  datepickerPopupTemplateUrl: 'uib/template/datepickerPopup/popup.html',
+  datepickerTemplateUrl: 'uib/template/datepicker/datepicker.html',
+  html5Types: {
+    date: 'yyyy-MM-dd',
+    'datetime-local': 'yyyy-MM-ddTHH:mm:ss.sss',
+    'month': 'yyyy-MM'
+  },
+  onOpenFocus: true,
+  showButtonBar: true,
+  placement: 'auto bottom-left'
+})
+
+.controller('UibDatepickerPopupController', ['$scope', '$element', '$attrs', '$compile', '$log', '$parse', '$window', '$document', '$rootScope', '$uibPosition', 'dateFilter', 'uibDateParser', 'uibDatepickerPopupConfig', '$timeout', 'uibDatepickerConfig', '$datepickerPopupLiteralWarning',
+function($scope, $element, $attrs, $compile, $log, $parse, $window, $document, $rootScope, $position, dateFilter, dateParser, datepickerPopupConfig, $timeout, datepickerConfig, $datepickerPopupLiteralWarning) {
+  var cache = {},
+    isHtml5DateInput = false;
+  var dateFormat, closeOnDateSelection, appendToBody, onOpenFocus,
+    datepickerPopupTemplateUrl, datepickerTemplateUrl, popupEl, datepickerEl, scrollParentEl,
+    ngModel, ngModelOptions, $popup, altInputFormats, watchListeners = [];
+
+  this.init = function(_ngModel_) {
+    ngModel = _ngModel_;
+    ngModelOptions = extractOptions(ngModel);
+    closeOnDateSelection = angular.isDefined($attrs.closeOnDateSelection) ?
+      $scope.$parent.$eval($attrs.closeOnDateSelection) :
+      datepickerPopupConfig.closeOnDateSelection;
+    appendToBody = angular.isDefined($attrs.datepickerAppendToBody) ?
+      $scope.$parent.$eval($attrs.datepickerAppendToBody) :
+      datepickerPopupConfig.appendToBody;
+    onOpenFocus = angular.isDefined($attrs.onOpenFocus) ?
+      $scope.$parent.$eval($attrs.onOpenFocus) : datepickerPopupConfig.onOpenFocus;
+    datepickerPopupTemplateUrl = angular.isDefined($attrs.datepickerPopupTemplateUrl) ?
+      $attrs.datepickerPopupTemplateUrl :
+      datepickerPopupConfig.datepickerPopupTemplateUrl;
+    datepickerTemplateUrl = angular.isDefined($attrs.datepickerTemplateUrl) ?
+      $attrs.datepickerTemplateUrl : datepickerPopupConfig.datepickerTemplateUrl;
+    altInputFormats = angular.isDefined($attrs.altInputFormats) ?
+      $scope.$parent.$eval($attrs.altInputFormats) :
+      datepickerPopupConfig.altInputFormats;
+
+    $scope.showButtonBar = angular.isDefined($attrs.showButtonBar) ?
+      $scope.$parent.$eval($attrs.showButtonBar) :
+      datepickerPopupConfig.showButtonBar;
+
+    if (datepickerPopupConfig.html5Types[$attrs.type]) {
+      dateFormat = datepickerPopupConfig.html5Types[$attrs.type];
+      isHtml5DateInput = true;
+    } else {
+      dateFormat = $attrs.uibDatepickerPopup || datepickerPopupConfig.datepickerPopup;
+      $attrs.$observe('uibDatepickerPopup', function(value, oldValue) {
+        var newDateFormat = value || datepickerPopupConfig.datepickerPopup;
+        // Invalidate the $modelValue to ensure that formatters re-run
+        // FIXME: Refactor when PR is merged: https://github.com/angular/angular.js/pull/10764
+        if (newDateFormat !== dateFormat) {
+          dateFormat = newDateFormat;
+          ngModel.$modelValue = null;
+
+          if (!dateFormat) {
+            throw new Error('uibDatepickerPopup must have a date format specified.');
+          }
+        }
+      });
+    }
+
+    if (!dateFormat) {
+      throw new Error('uibDatepickerPopup must have a date format specified.');
+    }
+
+    if (isHtml5DateInput && $attrs.uibDatepickerPopup) {
+      throw new Error('HTML5 date input types do not support custom formats.');
+    }
+
+    // popup element used to display calendar
+    popupEl = angular.element('<div uib-datepicker-popup-wrap><div uib-datepicker></div></div>');
+
+    popupEl.attr({
+      'ng-model': 'date',
+      'ng-change': 'dateSelection(date)',
+      'template-url': datepickerPopupTemplateUrl
+    });
+
+    // datepicker element
+    datepickerEl = angular.element(popupEl.children()[0]);
+    datepickerEl.attr('template-url', datepickerTemplateUrl);
+
+    if (!$scope.datepickerOptions) {
+      $scope.datepickerOptions = {};
+    }
+
+    if (isHtml5DateInput) {
+      if ($attrs.type === 'month') {
+        $scope.datepickerOptions.datepickerMode = 'month';
+        $scope.datepickerOptions.minMode = 'month';
+      }
+    }
+
+    datepickerEl.attr('datepicker-options', 'datepickerOptions');
+
+    if (!isHtml5DateInput) {
+      // Internal API to maintain the correct ng-invalid-[key] class
+      ngModel.$$parserName = 'date';
+      ngModel.$validators.date = validator;
+      ngModel.$parsers.unshift(parseDate);
+      ngModel.$formatters.push(function(value) {
+        if (ngModel.$isEmpty(value)) {
+          $scope.date = value;
+          return value;
+        }
+
+        if (angular.isNumber(value)) {
+          value = new Date(value);
+        }
+
+        $scope.date = dateParser.fromTimezone(value, ngModelOptions.getOption('timezone'));
+
+        return dateParser.filter($scope.date, dateFormat);
+      });
+    } else {
+      ngModel.$formatters.push(function(value) {
+        $scope.date = dateParser.fromTimezone(value, ngModelOptions.getOption('timezone'));
+        return value;
+      });
+    }
+
+    // Detect changes in the view from the text box
+    ngModel.$viewChangeListeners.push(function() {
+      $scope.date = parseDateString(ngModel.$viewValue);
+    });
+
+    $element.on('keydown', inputKeydownBind);
+
+    $popup = $compile(popupEl)($scope);
+    // Prevent jQuery cache memory leak (template is now redundant after linking)
+    popupEl.remove();
+
+    if (appendToBody) {
+      $document.find('body').append($popup);
+    } else {
+      $element.after($popup);
+    }
+
+    $scope.$on('$destroy', function() {
+      if ($scope.isOpen === true) {
+        if (!$rootScope.$$phase) {
+          $scope.$apply(function() {
+            $scope.isOpen = false;
+          });
+        }
+      }
+
+      $popup.remove();
+      $element.off('keydown', inputKeydownBind);
+      $document.off('click', documentClickBind);
+      if (scrollParentEl) {
+        scrollParentEl.off('scroll', positionPopup);
+      }
+      angular.element($window).off('resize', positionPopup);
+
+      //Clear all watch listeners on destroy
+      while (watchListeners.length) {
+        watchListeners.shift()();
+      }
+    });
+  };
+
+  $scope.getText = function(key) {
+    return $scope[key + 'Text'] || datepickerPopupConfig[key + 'Text'];
+  };
+
+  $scope.isDisabled = function(date) {
+    if (date === 'today') {
+      date = dateParser.fromTimezone(new Date(), ngModelOptions.getOption('timezone'));
+    }
+
+    var dates = {};
+    angular.forEach(['minDate', 'maxDate'], function(key) {
+      if (!$scope.datepickerOptions[key]) {
+        dates[key] = null;
+      } else if (angular.isDate($scope.datepickerOptions[key])) {
+        dates[key] = new Date($scope.datepickerOptions[key]);
+      } else {
+        if ($datepickerPopupLiteralWarning) {
+          $log.warn('Literal date support has been deprecated, please switch to date object usage');
+        }
+
+        dates[key] = new Date(dateFilter($scope.datepickerOptions[key], 'medium'));
+      }
+    });
+
+    return $scope.datepickerOptions &&
+      dates.minDate && $scope.compare(date, dates.minDate) < 0 ||
+      dates.maxDate && $scope.compare(date, dates.maxDate) > 0;
+  };
+
+  $scope.compare = function(date1, date2) {
+    return new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()) - new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
+  };
+
+  // Inner change
+  $scope.dateSelection = function(dt) {
+    $scope.date = dt;
+    var date = $scope.date ? dateParser.filter($scope.date, dateFormat) : null; // Setting to NULL is necessary for form validators to function
+    $element.val(date);
+    ngModel.$setViewValue(date);
+
+    if (closeOnDateSelection) {
+      $scope.isOpen = false;
+      $element[0].focus();
+    }
+  };
+
+  $scope.keydown = function(evt) {
+    if (evt.which === 27) {
+      evt.stopPropagation();
+      $scope.isOpen = false;
+      $element[0].focus();
+    }
+  };
+
+  $scope.select = function(date, evt) {
+    evt.stopPropagation();
+
+    if (date === 'today') {
+      var today = new Date();
+      if (angular.isDate($scope.date)) {
+        date = new Date($scope.date);
+        date.setFullYear(today.getFullYear(), today.getMonth(), today.getDate());
+      } else {
+        date = dateParser.fromTimezone(today, ngModelOptions.getOption('timezone'));
+        date.setHours(0, 0, 0, 0);
+      }
+    }
+    $scope.dateSelection(date);
+  };
+
+  $scope.close = function(evt) {
+    evt.stopPropagation();
+
+    $scope.isOpen = false;
+    $element[0].focus();
+  };
+
+  $scope.disabled = angular.isDefined($attrs.disabled) || false;
+  if ($attrs.ngDisabled) {
+    watchListeners.push($scope.$parent.$watch($parse($attrs.ngDisabled), function(disabled) {
+      $scope.disabled = disabled;
+    }));
+  }
+
+  $scope.$watch('isOpen', function(value) {
+    if (value) {
+      if (!$scope.disabled) {
+        $timeout(function() {
+          positionPopup();
+
+          if (onOpenFocus) {
+            $scope.$broadcast('uib:datepicker.focus');
+          }
+
+          $document.on('click', documentClickBind);
+
+          var placement = $attrs.popupPlacement ? $attrs.popupPlacement : datepickerPopupConfig.placement;
+          if (appendToBody || $position.parsePlacement(placement)[2]) {
+            scrollParentEl = scrollParentEl || angular.element($position.scrollParent($element));
+            if (scrollParentEl) {
+              scrollParentEl.on('scroll', positionPopup);
+            }
+          } else {
+            scrollParentEl = null;
+          }
+
+          angular.element($window).on('resize', positionPopup);
+        }, 0, false);
+      } else {
+        $scope.isOpen = false;
+      }
+    } else {
+      $document.off('click', documentClickBind);
+      if (scrollParentEl) {
+        scrollParentEl.off('scroll', positionPopup);
+      }
+      angular.element($window).off('resize', positionPopup);
+    }
+  });
+
+  function cameltoDash(string) {
+    return string.replace(/([A-Z])/g, function($1) { return '-' + $1.toLowerCase(); });
+  }
+
+  function parseDateString(viewValue) {
+    var date = dateParser.parse(viewValue, dateFormat, $scope.date);
+    if (isNaN(date)) {
+      for (var i = 0; i < altInputFormats.length; i++) {
+        date = dateParser.parse(viewValue, altInputFormats[i], $scope.date);
+        if (!isNaN(date)) {
+          return date;
+        }
+      }
+    }
+    return date;
+  }
+
+  function parseDate(viewValue) {
+    if (angular.isNumber(viewValue)) {
+      // presumably timestamp to date object
+      viewValue = new Date(viewValue);
+    }
+
+    if (!viewValue) {
+      return null;
+    }
+
+    if (angular.isDate(viewValue) && !isNaN(viewValue)) {
+      return viewValue;
+    }
+
+    if (angular.isString(viewValue)) {
+      var date = parseDateString(viewValue);
+      if (!isNaN(date)) {
+        return dateParser.toTimezone(date, ngModelOptions.getOption('timezone'));
+      }
+    }
+
+    return ngModelOptions.getOption('allowInvalid') ? viewValue : undefined;
+  }
+
+  function validator(modelValue, viewValue) {
+    var value = modelValue || viewValue;
+
+    if (!$attrs.ngRequired && !value) {
+      return true;
+    }
+
+    if (angular.isNumber(value)) {
+      value = new Date(value);
+    }
+
+    if (!value) {
+      return true;
+    }
+
+    if (angular.isDate(value) && !isNaN(value)) {
+      return true;
+    }
+
+    if (angular.isString(value)) {
+      return !isNaN(parseDateString(value));
+    }
+
+    return false;
+  }
+
+  function documentClickBind(event) {
+    if (!$scope.isOpen && $scope.disabled) {
+      return;
+    }
+
+    var popup = $popup[0];
+    var dpContainsTarget = $element[0].contains(event.target);
+    // The popup node may not be an element node
+    // In some browsers (IE) only element nodes have the 'contains' function
+    var popupContainsTarget = popup.contains !== undefined && popup.contains(event.target);
+    if ($scope.isOpen && !(dpContainsTarget || popupContainsTarget)) {
+      $scope.$apply(function() {
+        $scope.isOpen = false;
+      });
+    }
+  }
+
+  function inputKeydownBind(evt) {
+    if (evt.which === 27 && $scope.isOpen) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      $scope.$apply(function() {
+        $scope.isOpen = false;
+      });
+      $element[0].focus();
+    } else if (evt.which === 40 && !$scope.isOpen) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      $scope.$apply(function() {
+        $scope.isOpen = true;
+      });
+    }
+  }
+
+  function positionPopup() {
+    if ($scope.isOpen) {
+      var dpElement = angular.element($popup[0].querySelector('.uib-datepicker-popup'));
+      var placement = $attrs.popupPlacement ? $attrs.popupPlacement : datepickerPopupConfig.placement;
+      var position = $position.positionElements($element, dpElement, placement, appendToBody);
+      dpElement.css({top: position.top + 'px', left: position.left + 'px'});
+      if (dpElement.hasClass('uib-position-measure')) {
+        dpElement.removeClass('uib-position-measure');
+      }
+    }
+  }
+
+  function extractOptions(ngModelCtrl) {
+    var ngModelOptions;
+
+    if (angular.version.minor < 6) { // in angular < 1.6 $options could be missing
+      // guarantee a value
+      ngModelOptions = angular.isObject(ngModelCtrl.$options) ?
+        ngModelCtrl.$options :
+        {
+          timezone: null
+        };
+
+      // mimic 1.6+ api
+      ngModelOptions.getOption = function (key) {
+        return ngModelOptions[key];
+      };
+    } else { // in angular >=1.6 $options is always present
+      ngModelOptions = ngModelCtrl.$options;
+    }
+
+    return ngModelOptions;
+  }
+
+  $scope.$on('uib:datepicker.mode', function() {
+    $timeout(positionPopup, 0, false);
+  });
+}])
+
+.directive('uibDatepickerPopup', function() {
+  return {
+    require: ['ngModel', 'uibDatepickerPopup'],
+    controller: 'UibDatepickerPopupController',
+    scope: {
+      datepickerOptions: '=?',
+      isOpen: '=?',
+      currentText: '@',
+      clearText: '@',
+      closeText: '@'
+    },
+    link: function(scope, element, attrs, ctrls) {
+      var ngModel = ctrls[0],
+        ctrl = ctrls[1];
+
+      ctrl.init(ngModel);
+    }
+  };
+})
+
+.directive('uibDatepickerPopupWrap', function() {
+  return {
+    restrict: 'A',
+    transclude: true,
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/datepickerPopup/popup.html';
+    }
+  };
+});
+
+angular.module('ui.bootstrap.debounce', [])
+/**
+ * A helper, internal service that debounces a function
+ */
+  .factory('$$debounce', ['$timeout', function($timeout) {
+    return function(callback, debounceTime) {
+      var timeoutPromise;
+
+      return function() {
+        var self = this;
+        var args = Array.prototype.slice.call(arguments);
+        if (timeoutPromise) {
+          $timeout.cancel(timeoutPromise);
+        }
+
+        timeoutPromise = $timeout(function() {
+          callback.apply(self, args);
+        }, debounceTime);
+      };
+    };
+  }]);
+
+angular.module('ui.bootstrap.multiMap', [])
+/**
+ * A helper, internal data structure that stores all references attached to key
+ */
+  .factory('$$multiMap', function() {
+    return {
+      createNew: function() {
+        var map = {};
+
+        return {
+          entries: function() {
+            return Object.keys(map).map(function(key) {
+              return {
+                key: key,
+                value: map[key]
+              };
+            });
+          },
+          get: function(key) {
+            return map[key];
+          },
+          hasKey: function(key) {
+            return !!map[key];
+          },
+          keys: function() {
+            return Object.keys(map);
+          },
+          put: function(key, value) {
+            if (!map[key]) {
+              map[key] = [];
+            }
+
+            map[key].push(value);
+          },
+          remove: function(key, value) {
+            var values = map[key];
+
+            if (!values) {
+              return;
+            }
+
+            var idx = values.indexOf(value);
+
+            if (idx !== -1) {
+              values.splice(idx, 1);
+            }
+
+            if (!values.length) {
+              delete map[key];
+            }
+          }
+        };
+      }
+    };
+  });
+
+angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
+
+.constant('uibDropdownConfig', {
+  appendToOpenClass: 'uib-dropdown-open',
+  openClass: 'open'
+})
+
+.service('uibDropdownService', ['$document', '$rootScope', '$$multiMap', function($document, $rootScope, $$multiMap) {
+  var openScope = null;
+  var openedContainers = $$multiMap.createNew();
+
+  this.isOnlyOpen = function(dropdownScope, appendTo) {
+    var openedDropdowns = openedContainers.get(appendTo);
+    if (openedDropdowns) {
+      var openDropdown = openedDropdowns.reduce(function(toClose, dropdown) {
+        if (dropdown.scope === dropdownScope) {
+          return dropdown;
+        }
+
+        return toClose;
+      }, {});
+      if (openDropdown) {
+        return openedDropdowns.length === 1;
+      }
+    }
+
+    return false;
+  };
+
+  this.open = function(dropdownScope, element, appendTo) {
+    if (!openScope) {
+      $document.on('click', closeDropdown);
+    }
+
+    if (openScope && openScope !== dropdownScope) {
+      openScope.isOpen = false;
+    }
+
+    openScope = dropdownScope;
+
+    if (!appendTo) {
+      return;
+    }
+
+    var openedDropdowns = openedContainers.get(appendTo);
+    if (openedDropdowns) {
+      var openedScopes = openedDropdowns.map(function(dropdown) {
+        return dropdown.scope;
+      });
+      if (openedScopes.indexOf(dropdownScope) === -1) {
+        openedContainers.put(appendTo, {
+          scope: dropdownScope
+        });
+      }
+    } else {
+      openedContainers.put(appendTo, {
+        scope: dropdownScope
+      });
+    }
+  };
+
+  this.close = function(dropdownScope, element, appendTo) {
+    if (openScope === dropdownScope) {
+      $document.off('click', closeDropdown);
+      $document.off('keydown', this.keybindFilter);
+      openScope = null;
+    }
+
+    if (!appendTo) {
+      return;
+    }
+
+    var openedDropdowns = openedContainers.get(appendTo);
+    if (openedDropdowns) {
+      var dropdownToClose = openedDropdowns.reduce(function(toClose, dropdown) {
+        if (dropdown.scope === dropdownScope) {
+          return dropdown;
+        }
+
+        return toClose;
+      }, {});
+      if (dropdownToClose) {
+        openedContainers.remove(appendTo, dropdownToClose);
+      }
+    }
+  };
+
+  var closeDropdown = function(evt) {
+    // This method may still be called during the same mouse event that
+    // unbound this event handler. So check openScope before proceeding.
+    if (!openScope || !openScope.isOpen) { return; }
+
+    if (evt && openScope.getAutoClose() === 'disabled') { return; }
+
+    if (evt && evt.which === 3) { return; }
+
+    var toggleElement = openScope.getToggleElement();
+    if (evt && toggleElement && toggleElement[0].contains(evt.target)) {
+      return;
+    }
+
+    var dropdownElement = openScope.getDropdownElement();
+    if (evt && openScope.getAutoClose() === 'outsideClick' &&
+      dropdownElement && dropdownElement[0].contains(evt.target)) {
+      return;
+    }
+
+    openScope.focusToggleElement();
+    openScope.isOpen = false;
+
+    if (!$rootScope.$$phase) {
+      openScope.$apply();
+    }
+  };
+
+  this.keybindFilter = function(evt) {
+    if (!openScope) {
+      // see this.close as ESC could have been pressed which kills the scope so we can not proceed
+      return;
+    }
+
+    var dropdownElement = openScope.getDropdownElement();
+    var toggleElement = openScope.getToggleElement();
+    var dropdownElementTargeted = dropdownElement && dropdownElement[0].contains(evt.target);
+    var toggleElementTargeted = toggleElement && toggleElement[0].contains(evt.target);
+    if (evt.which === 27) {
+      evt.stopPropagation();
+      openScope.focusToggleElement();
+      closeDropdown();
+    } else if (openScope.isKeynavEnabled() && [38, 40].indexOf(evt.which) !== -1 && openScope.isOpen && (dropdownElementTargeted || toggleElementTargeted)) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      openScope.focusDropdownEntry(evt.which);
+    }
+  };
+}])
+
+.controller('UibDropdownController', ['$scope', '$element', '$attrs', '$parse', 'uibDropdownConfig', 'uibDropdownService', '$animate', '$uibPosition', '$document', '$compile', '$templateRequest', function($scope, $element, $attrs, $parse, dropdownConfig, uibDropdownService, $animate, $position, $document, $compile, $templateRequest) {
+  var self = this,
+    scope = $scope.$new(), // create a child scope so we are not polluting original one
+    templateScope,
+    appendToOpenClass = dropdownConfig.appendToOpenClass,
+    openClass = dropdownConfig.openClass,
+    getIsOpen,
+    setIsOpen = angular.noop,
+    toggleInvoker = $attrs.onToggle ? $parse($attrs.onToggle) : angular.noop,
+    keynavEnabled = false,
+    selectedOption = null,
+    body = $document.find('body');
+
+  $element.addClass('dropdown');
+
+  this.init = function() {
+    if ($attrs.isOpen) {
+      getIsOpen = $parse($attrs.isOpen);
+      setIsOpen = getIsOpen.assign;
+
+      $scope.$watch(getIsOpen, function(value) {
+        scope.isOpen = !!value;
+      });
+    }
+
+    keynavEnabled = angular.isDefined($attrs.keyboardNav);
+  };
+
+  this.toggle = function(open) {
+    scope.isOpen = arguments.length ? !!open : !scope.isOpen;
+    if (angular.isFunction(setIsOpen)) {
+      setIsOpen(scope, scope.isOpen);
+    }
+
+    return scope.isOpen;
+  };
+
+  // Allow other directives to watch status
+  this.isOpen = function() {
+    return scope.isOpen;
+  };
+
+  scope.getToggleElement = function() {
+    return self.toggleElement;
+  };
+
+  scope.getAutoClose = function() {
+    return $attrs.autoClose || 'always'; //or 'outsideClick' or 'disabled'
+  };
+
+  scope.getElement = function() {
+    return $element;
+  };
+
+  scope.isKeynavEnabled = function() {
+    return keynavEnabled;
+  };
+
+  scope.focusDropdownEntry = function(keyCode) {
+    var elems = self.dropdownMenu ? //If append to body is used.
+      angular.element(self.dropdownMenu).find('a') :
+      $element.find('ul').eq(0).find('a');
+
+    switch (keyCode) {
+      case 40: {
+        if (!angular.isNumber(self.selectedOption)) {
+          self.selectedOption = 0;
+        } else {
+          self.selectedOption = self.selectedOption === elems.length - 1 ?
+            self.selectedOption :
+            self.selectedOption + 1;
+        }
+        break;
+      }
+      case 38: {
+        if (!angular.isNumber(self.selectedOption)) {
+          self.selectedOption = elems.length - 1;
+        } else {
+          self.selectedOption = self.selectedOption === 0 ?
+            0 : self.selectedOption - 1;
+        }
+        break;
+      }
+    }
+    elems[self.selectedOption].focus();
+  };
+
+  scope.getDropdownElement = function() {
+    return self.dropdownMenu;
+  };
+
+  scope.focusToggleElement = function() {
+    if (self.toggleElement) {
+      self.toggleElement[0].focus();
+    }
+  };
+
+  function removeDropdownMenu() {
+    $element.append(self.dropdownMenu);
+  }
+
+  scope.$watch('isOpen', function(isOpen, wasOpen) {
+    var appendTo = null,
+      appendToBody = false;
+
+    if (angular.isDefined($attrs.dropdownAppendTo)) {
+      var appendToEl = $parse($attrs.dropdownAppendTo)(scope);
+      if (appendToEl) {
+        appendTo = angular.element(appendToEl);
+      }
+    }
+
+    if (angular.isDefined($attrs.dropdownAppendToBody)) {
+      var appendToBodyValue = $parse($attrs.dropdownAppendToBody)(scope);
+      if (appendToBodyValue !== false) {
+        appendToBody = true;
+      }
+    }
+
+    if (appendToBody && !appendTo) {
+      appendTo = body;
+    }
+
+    if (appendTo && self.dropdownMenu) {
+      if (isOpen) {
+        appendTo.append(self.dropdownMenu);
+        $element.on('$destroy', removeDropdownMenu);
+      } else {
+        $element.off('$destroy', removeDropdownMenu);
+        removeDropdownMenu();
+      }
+    }
+
+    if (appendTo && self.dropdownMenu) {
+      var pos = $position.positionElements($element, self.dropdownMenu, 'bottom-left', true),
+        css,
+        rightalign,
+        scrollbarPadding,
+        scrollbarWidth = 0;
+
+      css = {
+        top: pos.top + 'px',
+        display: isOpen ? 'block' : 'none'
+      };
+
+      rightalign = self.dropdownMenu.hasClass('dropdown-menu-right');
+      if (!rightalign) {
+        css.left = pos.left + 'px';
+        css.right = 'auto';
+      } else {
+        css.left = 'auto';
+        scrollbarPadding = $position.scrollbarPadding(appendTo);
+
+        if (scrollbarPadding.heightOverflow && scrollbarPadding.scrollbarWidth) {
+          scrollbarWidth = scrollbarPadding.scrollbarWidth;
+        }
+
+        css.right = window.innerWidth - scrollbarWidth -
+          (pos.left + $element.prop('offsetWidth')) + 'px';
+      }
+
+      // Need to adjust our positioning to be relative to the appendTo container
+      // if it's not the body element
+      if (!appendToBody) {
+        var appendOffset = $position.offset(appendTo);
+
+        css.top = pos.top - appendOffset.top + 'px';
+
+        if (!rightalign) {
+          css.left = pos.left - appendOffset.left + 'px';
+        } else {
+          css.right = window.innerWidth -
+            (pos.left - appendOffset.left + $element.prop('offsetWidth')) + 'px';
+        }
+      }
+
+      self.dropdownMenu.css(css);
+    }
+
+    var openContainer = appendTo ? appendTo : $element;
+    var dropdownOpenClass = appendTo ? appendToOpenClass : openClass;
+    var hasOpenClass = openContainer.hasClass(dropdownOpenClass);
+    var isOnlyOpen = uibDropdownService.isOnlyOpen($scope, appendTo);
+
+    if (hasOpenClass === !isOpen) {
+      var toggleClass;
+      if (appendTo) {
+        toggleClass = !isOnlyOpen ? 'addClass' : 'removeClass';
+      } else {
+        toggleClass = isOpen ? 'addClass' : 'removeClass';
+      }
+      $animate[toggleClass](openContainer, dropdownOpenClass).then(function() {
+        if (angular.isDefined(isOpen) && isOpen !== wasOpen) {
+          toggleInvoker($scope, { open: !!isOpen });
+        }
+      });
+    }
+
+    if (isOpen) {
+      if (self.dropdownMenuTemplateUrl) {
+        $templateRequest(self.dropdownMenuTemplateUrl).then(function(tplContent) {
+          templateScope = scope.$new();
+          $compile(tplContent.trim())(templateScope, function(dropdownElement) {
+            var newEl = dropdownElement;
+            self.dropdownMenu.replaceWith(newEl);
+            self.dropdownMenu = newEl;
+            $document.on('keydown', uibDropdownService.keybindFilter);
+          });
+        });
+      } else {
+        $document.on('keydown', uibDropdownService.keybindFilter);
+      }
+
+      scope.focusToggleElement();
+      uibDropdownService.open(scope, $element, appendTo);
+    } else {
+      uibDropdownService.close(scope, $element, appendTo);
+      if (self.dropdownMenuTemplateUrl) {
+        if (templateScope) {
+          templateScope.$destroy();
+        }
+        var newEl = angular.element('<ul class="dropdown-menu"></ul>');
+        self.dropdownMenu.replaceWith(newEl);
+        self.dropdownMenu = newEl;
+      }
+
+      self.selectedOption = null;
+    }
+
+    if (angular.isFunction(setIsOpen)) {
+      setIsOpen($scope, isOpen);
+    }
+  });
+}])
+
+.directive('uibDropdown', function() {
+  return {
+    controller: 'UibDropdownController',
+    link: function(scope, element, attrs, dropdownCtrl) {
+      dropdownCtrl.init();
+    }
+  };
+})
+
+.directive('uibDropdownMenu', function() {
+  return {
+    restrict: 'A',
+    require: '?^uibDropdown',
+    link: function(scope, element, attrs, dropdownCtrl) {
+      if (!dropdownCtrl || angular.isDefined(attrs.dropdownNested)) {
+        return;
+      }
+
+      element.addClass('dropdown-menu');
+
+      var tplUrl = attrs.templateUrl;
+      if (tplUrl) {
+        dropdownCtrl.dropdownMenuTemplateUrl = tplUrl;
+      }
+
+      if (!dropdownCtrl.dropdownMenu) {
+        dropdownCtrl.dropdownMenu = element;
+      }
+    }
+  };
+})
+
+.directive('uibDropdownToggle', function() {
+  return {
+    require: '?^uibDropdown',
+    link: function(scope, element, attrs, dropdownCtrl) {
+      if (!dropdownCtrl) {
+        return;
+      }
+
+      element.addClass('dropdown-toggle');
+
+      dropdownCtrl.toggleElement = element;
+
+      var toggleDropdown = function(event) {
+        event.preventDefault();
+
+        if (!element.hasClass('disabled') && !attrs.disabled) {
+          scope.$apply(function() {
+            dropdownCtrl.toggle();
+          });
+        }
+      };
+
+      element.on('click', toggleDropdown);
+
+      // WAI-ARIA
+      element.attr({ 'aria-haspopup': true, 'aria-expanded': false });
+      scope.$watch(dropdownCtrl.isOpen, function(isOpen) {
+        element.attr('aria-expanded', !!isOpen);
+      });
+
+      scope.$on('$destroy', function() {
+        element.off('click', toggleDropdown);
+      });
+    }
+  };
+});
+
+angular.module('ui.bootstrap.stackedMap', [])
+/**
+ * A helper, internal data structure that acts as a map but also allows getting / removing
+ * elements in the LIFO order
+ */
+  .factory('$$stackedMap', function() {
+    return {
+      createNew: function() {
+        var stack = [];
+
+        return {
+          add: function(key, value) {
+            stack.push({
+              key: key,
+              value: value
+            });
+          },
+          get: function(key) {
+            for (var i = 0; i < stack.length; i++) {
+              if (key === stack[i].key) {
+                return stack[i];
+              }
+            }
+          },
+          keys: function() {
+            var keys = [];
+            for (var i = 0; i < stack.length; i++) {
+              keys.push(stack[i].key);
+            }
+            return keys;
+          },
+          top: function() {
+            return stack[stack.length - 1];
+          },
+          remove: function(key) {
+            var idx = -1;
+            for (var i = 0; i < stack.length; i++) {
+              if (key === stack[i].key) {
+                idx = i;
+                break;
+              }
+            }
+            return stack.splice(idx, 1)[0];
+          },
+          removeTop: function() {
+            return stack.pop();
+          },
+          length: function() {
+            return stack.length;
+          }
+        };
+      }
+    };
+  });
+angular.module('ui.bootstrap.modal', ['ui.bootstrap.multiMap', 'ui.bootstrap.stackedMap', 'ui.bootstrap.position'])
+/**
+ * Pluggable resolve mechanism for the modal resolve resolution
+ * Supports UI Router's $resolve service
+ */
+  .provider('$uibResolve', function() {
+    var resolve = this;
+    this.resolver = null;
+
+    this.setResolver = function(resolver) {
+      this.resolver = resolver;
+    };
+
+    this.$get = ['$injector', '$q', function($injector, $q) {
+      var resolver = resolve.resolver ? $injector.get(resolve.resolver) : null;
+      return {
+        resolve: function(invocables, locals, parent, self) {
+          if (resolver) {
+            return resolver.resolve(invocables, locals, parent, self);
+          }
+
+          var promises = [];
+
+          angular.forEach(invocables, function(value) {
+            if (angular.isFunction(value) || angular.isArray(value)) {
+              promises.push($q.resolve($injector.invoke(value)));
+            } else if (angular.isString(value)) {
+              promises.push($q.resolve($injector.get(value)));
+            } else {
+              promises.push($q.resolve(value));
+            }
+          });
+
+          return $q.all(promises).then(function(resolves) {
+            var resolveObj = {};
+            var resolveIter = 0;
+            angular.forEach(invocables, function(value, key) {
+              resolveObj[key] = resolves[resolveIter++];
+            });
+
+            return resolveObj;
+          });
+        }
+      };
+    }];
+  })
+
+/**
+ * A helper directive for the $modal service. It creates a backdrop element.
+ */
+  .directive('uibModalBackdrop', ['$animate', '$injector', '$uibModalStack',
+  function($animate, $injector, $modalStack) {
+    return {
+      restrict: 'A',
+      compile: function(tElement, tAttrs) {
+        tElement.addClass(tAttrs.backdropClass);
+        return linkFn;
+      }
+    };
+
+    function linkFn(scope, element, attrs) {
+      if (attrs.modalInClass) {
+        $animate.addClass(element, attrs.modalInClass);
+
+        scope.$on($modalStack.NOW_CLOSING_EVENT, function(e, setIsAsync) {
+          var done = setIsAsync();
+          if (scope.modalOptions.animation) {
+            $animate.removeClass(element, attrs.modalInClass).then(done);
+          } else {
+            done();
+          }
+        });
+      }
+    }
+  }])
+
+  .directive('uibModalWindow', ['$uibModalStack', '$q', '$animateCss', '$document',
+  function($modalStack, $q, $animateCss, $document) {
+    return {
+      scope: {
+        index: '@'
+      },
+      restrict: 'A',
+      transclude: true,
+      templateUrl: function(tElement, tAttrs) {
+        return tAttrs.templateUrl || 'uib/template/modal/window.html';
+      },
+      link: function(scope, element, attrs) {
+        element.addClass(attrs.windowTopClass || '');
+        scope.size = attrs.size;
+
+        scope.close = function(evt) {
+          var modal = $modalStack.getTop();
+          if (modal && modal.value.backdrop &&
+            modal.value.backdrop !== 'static' &&
+            evt.target === evt.currentTarget) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            $modalStack.dismiss(modal.key, 'backdrop click');
+          }
+        };
+
+        // moved from template to fix issue #2280
+        element.on('click', scope.close);
+
+        // This property is only added to the scope for the purpose of detecting when this directive is rendered.
+        // We can detect that by using this property in the template associated with this directive and then use
+        // {@link Attribute#$observe} on it. For more details please see {@link TableColumnResize}.
+        scope.$isRendered = true;
+
+        // Deferred object that will be resolved when this modal is rendered.
+        var modalRenderDeferObj = $q.defer();
+        // Resolve render promise post-digest
+        scope.$$postDigest(function() {
+          modalRenderDeferObj.resolve();
+        });
+
+        modalRenderDeferObj.promise.then(function() {
+          var animationPromise = null;
+
+          if (attrs.modalInClass) {
+            animationPromise = $animateCss(element, {
+              addClass: attrs.modalInClass
+            }).start();
+
+            scope.$on($modalStack.NOW_CLOSING_EVENT, function(e, setIsAsync) {
+              var done = setIsAsync();
+              $animateCss(element, {
+                removeClass: attrs.modalInClass
+              }).start().then(done);
+            });
+          }
+
+
+          $q.when(animationPromise).then(function() {
+            // Notify {@link $modalStack} that modal is rendered.
+            var modal = $modalStack.getTop();
+            if (modal) {
+              $modalStack.modalRendered(modal.key);
+            }
+
+            /**
+             * If something within the freshly-opened modal already has focus (perhaps via a
+             * directive that causes focus) then there's no need to try to focus anything.
+             */
+            if (!($document[0].activeElement && element[0].contains($document[0].activeElement))) {
+              var inputWithAutofocus = element[0].querySelector('[autofocus]');
+              /**
+               * Auto-focusing of a freshly-opened modal element causes any child elements
+               * with the autofocus attribute to lose focus. This is an issue on touch
+               * based devices which will show and then hide the onscreen keyboard.
+               * Attempts to refocus the autofocus element via JavaScript will not reopen
+               * the onscreen keyboard. Fixed by updated the focusing logic to only autofocus
+               * the modal element if the modal does not contain an autofocus element.
+               */
+              if (inputWithAutofocus) {
+                inputWithAutofocus.focus();
+              } else {
+                element[0].focus();
+              }
+            }
+          });
+        });
+      }
+    };
+  }])
+
+  .directive('uibModalAnimationClass', function() {
+    return {
+      compile: function(tElement, tAttrs) {
+        if (tAttrs.modalAnimation) {
+          tElement.addClass(tAttrs.uibModalAnimationClass);
+        }
+      }
+    };
+  })
+
+  .directive('uibModalTransclude', ['$animate', function($animate) {
+    return {
+      link: function(scope, element, attrs, controller, transclude) {
+        transclude(scope.$parent, function(clone) {
+          element.empty();
+          $animate.enter(clone, element);
+        });
+      }
+    };
+  }])
+
+  .factory('$uibModalStack', ['$animate', '$animateCss', '$document',
+    '$compile', '$rootScope', '$q', '$$multiMap', '$$stackedMap', '$uibPosition',
+    function($animate, $animateCss, $document, $compile, $rootScope, $q, $$multiMap, $$stackedMap, $uibPosition) {
+      var OPENED_MODAL_CLASS = 'modal-open';
+
+      var backdropDomEl, backdropScope;
+      var openedWindows = $$stackedMap.createNew();
+      var openedClasses = $$multiMap.createNew();
+      var $modalStack = {
+        NOW_CLOSING_EVENT: 'modal.stack.now-closing'
+      };
+      var topModalIndex = 0;
+      var previousTopOpenedModal = null;
+      var ARIA_HIDDEN_ATTRIBUTE_NAME = 'data-bootstrap-modal-aria-hidden-count';
+
+      //Modal focus behavior
+      var tabbableSelector = 'a[href], area[href], input:not([disabled]):not([tabindex=\'-1\']), ' +
+        'button:not([disabled]):not([tabindex=\'-1\']),select:not([disabled]):not([tabindex=\'-1\']), textarea:not([disabled]):not([tabindex=\'-1\']), ' +
+        'iframe, object, embed, *[tabindex]:not([tabindex=\'-1\']), *[contenteditable=true]';
+      var scrollbarPadding;
+      var SNAKE_CASE_REGEXP = /[A-Z]/g;
+
+      // TODO: extract into common dependency with tooltip
+      function snake_case(name) {
+        var separator = '-';
+        return name.replace(SNAKE_CASE_REGEXP, function(letter, pos) {
+          return (pos ? separator : '') + letter.toLowerCase();
+        });
+      }
+
+      function isVisible(element) {
+        return !!(element.offsetWidth ||
+          element.offsetHeight ||
+          element.getClientRects().length);
+      }
+
+      function backdropIndex() {
+        var topBackdropIndex = -1;
+        var opened = openedWindows.keys();
+        for (var i = 0; i < opened.length; i++) {
+          if (openedWindows.get(opened[i]).value.backdrop) {
+            topBackdropIndex = i;
+          }
+        }
+
+        // If any backdrop exist, ensure that it's index is always
+        // right below the top modal
+        if (topBackdropIndex > -1 && topBackdropIndex < topModalIndex) {
+          topBackdropIndex = topModalIndex;
+        }
+        return topBackdropIndex;
+      }
+
+      $rootScope.$watch(backdropIndex, function(newBackdropIndex) {
+        if (backdropScope) {
+          backdropScope.index = newBackdropIndex;
+        }
+      });
+
+      function removeModalWindow(modalInstance, elementToReceiveFocus) {
+        var modalWindow = openedWindows.get(modalInstance).value;
+        var appendToElement = modalWindow.appendTo;
+
+        //clean up the stack
+        openedWindows.remove(modalInstance);
+        previousTopOpenedModal = openedWindows.top();
+        if (previousTopOpenedModal) {
+          topModalIndex = parseInt(previousTopOpenedModal.value.modalDomEl.attr('index'), 10);
+        }
+
+        removeAfterAnimate(modalWindow.modalDomEl, modalWindow.modalScope, function() {
+          var modalBodyClass = modalWindow.openedClass || OPENED_MODAL_CLASS;
+          openedClasses.remove(modalBodyClass, modalInstance);
+          var areAnyOpen = openedClasses.hasKey(modalBodyClass);
+          appendToElement.toggleClass(modalBodyClass, areAnyOpen);
+          if (!areAnyOpen && scrollbarPadding && scrollbarPadding.heightOverflow && scrollbarPadding.scrollbarWidth) {
+            if (scrollbarPadding.originalRight) {
+              appendToElement.css({paddingRight: scrollbarPadding.originalRight + 'px'});
+            } else {
+              appendToElement.css({paddingRight: ''});
+            }
+            scrollbarPadding = null;
+          }
+          toggleTopWindowClass(true);
+        }, modalWindow.closedDeferred);
+        checkRemoveBackdrop();
+
+        //move focus to specified element if available, or else to body
+        if (elementToReceiveFocus && elementToReceiveFocus.focus) {
+          elementToReceiveFocus.focus();
+        } else if (appendToElement.focus) {
+          appendToElement.focus();
+        }
+      }
+
+      // Add or remove "windowTopClass" from the top window in the stack
+      function toggleTopWindowClass(toggleSwitch) {
+        var modalWindow;
+
+        if (openedWindows.length() > 0) {
+          modalWindow = openedWindows.top().value;
+          modalWindow.modalDomEl.toggleClass(modalWindow.windowTopClass || '', toggleSwitch);
+        }
+      }
+
+      function checkRemoveBackdrop() {
+        //remove backdrop if no longer needed
+        if (backdropDomEl && backdropIndex() === -1) {
+          var backdropScopeRef = backdropScope;
+          removeAfterAnimate(backdropDomEl, backdropScope, function() {
+            backdropScopeRef = null;
+          });
+          backdropDomEl = undefined;
+          backdropScope = undefined;
+        }
+      }
+
+      function removeAfterAnimate(domEl, scope, done, closedDeferred) {
+        var asyncDeferred;
+        var asyncPromise = null;
+        var setIsAsync = function() {
+          if (!asyncDeferred) {
+            asyncDeferred = $q.defer();
+            asyncPromise = asyncDeferred.promise;
+          }
+
+          return function asyncDone() {
+            asyncDeferred.resolve();
+          };
+        };
+        scope.$broadcast($modalStack.NOW_CLOSING_EVENT, setIsAsync);
+
+        // Note that it's intentional that asyncPromise might be null.
+        // That's when setIsAsync has not been called during the
+        // NOW_CLOSING_EVENT broadcast.
+        return $q.when(asyncPromise).then(afterAnimating);
+
+        function afterAnimating() {
+          if (afterAnimating.done) {
+            return;
+          }
+          afterAnimating.done = true;
+
+          $animate.leave(domEl).then(function() {
+            if (done) {
+              done();
+            }
+
+            domEl.remove();
+            if (closedDeferred) {
+              closedDeferred.resolve();
+            }
+          });
+
+          scope.$destroy();
+        }
+      }
+
+      $document.on('keydown', keydownListener);
+
+      $rootScope.$on('$destroy', function() {
+        $document.off('keydown', keydownListener);
+      });
+
+      function keydownListener(evt) {
+        if (evt.isDefaultPrevented()) {
+          return evt;
+        }
+
+        var modal = openedWindows.top();
+        if (modal) {
+          switch (evt.which) {
+            case 27: {
+              if (modal.value.keyboard) {
+                evt.preventDefault();
+                $rootScope.$apply(function() {
+                  $modalStack.dismiss(modal.key, 'escape key press');
+                });
+              }
+              break;
+            }
+            case 9: {
+              var list = $modalStack.loadFocusElementList(modal);
+              var focusChanged = false;
+              if (evt.shiftKey) {
+                if ($modalStack.isFocusInFirstItem(evt, list) || $modalStack.isModalFocused(evt, modal)) {
+                  focusChanged = $modalStack.focusLastFocusableElement(list);
+                }
+              } else {
+                if ($modalStack.isFocusInLastItem(evt, list)) {
+                  focusChanged = $modalStack.focusFirstFocusableElement(list);
+                }
+              }
+
+              if (focusChanged) {
+                evt.preventDefault();
+                evt.stopPropagation();
+              }
+
+              break;
+            }
+          }
+        }
+      }
+
+      $modalStack.open = function(modalInstance, modal) {
+        var modalOpener = $document[0].activeElement,
+          modalBodyClass = modal.openedClass || OPENED_MODAL_CLASS;
+
+        toggleTopWindowClass(false);
+
+        // Store the current top first, to determine what index we ought to use
+        // for the current top modal
+        previousTopOpenedModal = openedWindows.top();
+
+        openedWindows.add(modalInstance, {
+          deferred: modal.deferred,
+          renderDeferred: modal.renderDeferred,
+          closedDeferred: modal.closedDeferred,
+          modalScope: modal.scope,
+          backdrop: modal.backdrop,
+          keyboard: modal.keyboard,
+          openedClass: modal.openedClass,
+          windowTopClass: modal.windowTopClass,
+          animation: modal.animation,
+          appendTo: modal.appendTo
+        });
+
+        openedClasses.put(modalBodyClass, modalInstance);
+
+        var appendToElement = modal.appendTo,
+            currBackdropIndex = backdropIndex();
+
+        if (currBackdropIndex >= 0 && !backdropDomEl) {
+          backdropScope = $rootScope.$new(true);
+          backdropScope.modalOptions = modal;
+          backdropScope.index = currBackdropIndex;
+          backdropDomEl = angular.element('<div uib-modal-backdrop="modal-backdrop"></div>');
+          backdropDomEl.attr({
+            'class': 'modal-backdrop',
+            'ng-style': '{\'z-index\': 1040 + (index && 1 || 0) + index*10}',
+            'uib-modal-animation-class': 'fade',
+            'modal-in-class': 'in'
+          });
+          if (modal.backdropClass) {
+            backdropDomEl.addClass(modal.backdropClass);
+          }
+
+          if (modal.animation) {
+            backdropDomEl.attr('modal-animation', 'true');
+          }
+          $compile(backdropDomEl)(backdropScope);
+          $animate.enter(backdropDomEl, appendToElement);
+          if ($uibPosition.isScrollable(appendToElement)) {
+            scrollbarPadding = $uibPosition.scrollbarPadding(appendToElement);
+            if (scrollbarPadding.heightOverflow && scrollbarPadding.scrollbarWidth) {
+              appendToElement.css({paddingRight: scrollbarPadding.right + 'px'});
+            }
+          }
+        }
+
+        var content;
+        if (modal.component) {
+          content = document.createElement(snake_case(modal.component.name));
+          content = angular.element(content);
+          content.attr({
+            resolve: '$resolve',
+            'modal-instance': '$uibModalInstance',
+            close: '$close($value)',
+            dismiss: '$dismiss($value)'
+          });
+        } else {
+          content = modal.content;
+        }
+
+        // Set the top modal index based on the index of the previous top modal
+        topModalIndex = previousTopOpenedModal ? parseInt(previousTopOpenedModal.value.modalDomEl.attr('index'), 10) + 1 : 0;
+        var angularDomEl = angular.element('<div uib-modal-window="modal-window"></div>');
+        angularDomEl.attr({
+          'class': 'modal',
+          'template-url': modal.windowTemplateUrl,
+          'window-top-class': modal.windowTopClass,
+          'role': 'dialog',
+          'aria-labelledby': modal.ariaLabelledBy,
+          'aria-describedby': modal.ariaDescribedBy,
+          'size': modal.size,
+          'index': topModalIndex,
+          'animate': 'animate',
+          'ng-style': '{\'z-index\': 1050 + $$topModalIndex*10, display: \'block\'}',
+          'tabindex': -1,
+          'uib-modal-animation-class': 'fade',
+          'modal-in-class': 'in'
+        }).append(content);
+        if (modal.windowClass) {
+          angularDomEl.addClass(modal.windowClass);
+        }
+
+        if (modal.animation) {
+          angularDomEl.attr('modal-animation', 'true');
+        }
+
+        appendToElement.addClass(modalBodyClass);
+        if (modal.scope) {
+          // we need to explicitly add the modal index to the modal scope
+          // because it is needed by ngStyle to compute the zIndex property.
+          modal.scope.$$topModalIndex = topModalIndex;
+        }
+        $animate.enter($compile(angularDomEl)(modal.scope), appendToElement);
+
+        openedWindows.top().value.modalDomEl = angularDomEl;
+        openedWindows.top().value.modalOpener = modalOpener;
+
+        applyAriaHidden(angularDomEl);
+
+        function applyAriaHidden(el) {
+          if (!el || el[0].tagName === 'BODY') {
+            return;
+          }
+
+          getSiblings(el).forEach(function(sibling) {
+            var elemIsAlreadyHidden = sibling.getAttribute('aria-hidden') === 'true',
+              ariaHiddenCount = parseInt(sibling.getAttribute(ARIA_HIDDEN_ATTRIBUTE_NAME), 10);
+
+            if (!ariaHiddenCount) {
+              ariaHiddenCount = elemIsAlreadyHidden ? 1 : 0;
+            }
+
+            sibling.setAttribute(ARIA_HIDDEN_ATTRIBUTE_NAME, ariaHiddenCount + 1);
+            sibling.setAttribute('aria-hidden', 'true');
+          });
+
+          return applyAriaHidden(el.parent());
+
+          function getSiblings(el) {
+            var children = el.parent() ? el.parent().children() : [];
+
+            return Array.prototype.filter.call(children, function(child) {
+              return child !== el[0];
+            });
+          }
+        }
+      };
+
+      function broadcastClosing(modalWindow, resultOrReason, closing) {
+        return !modalWindow.value.modalScope.$broadcast('modal.closing', resultOrReason, closing).defaultPrevented;
+      }
+
+      function unhideBackgroundElements() {
+        Array.prototype.forEach.call(
+          document.querySelectorAll('[' + ARIA_HIDDEN_ATTRIBUTE_NAME + ']'),
+          function(hiddenEl) {
+            var ariaHiddenCount = parseInt(hiddenEl.getAttribute(ARIA_HIDDEN_ATTRIBUTE_NAME), 10),
+              newHiddenCount = ariaHiddenCount - 1;
+            hiddenEl.setAttribute(ARIA_HIDDEN_ATTRIBUTE_NAME, newHiddenCount);
+
+            if (!newHiddenCount) {
+              hiddenEl.removeAttribute(ARIA_HIDDEN_ATTRIBUTE_NAME);
+              hiddenEl.removeAttribute('aria-hidden');
+            }
+          }
+        );
+      }
+
+      $modalStack.close = function(modalInstance, result) {
+        var modalWindow = openedWindows.get(modalInstance);
+        unhideBackgroundElements();
+        if (modalWindow && broadcastClosing(modalWindow, result, true)) {
+          modalWindow.value.modalScope.$$uibDestructionScheduled = true;
+          modalWindow.value.deferred.resolve(result);
+          removeModalWindow(modalInstance, modalWindow.value.modalOpener);
+          return true;
+        }
+
+        return !modalWindow;
+      };
+
+      $modalStack.dismiss = function(modalInstance, reason) {
+        var modalWindow = openedWindows.get(modalInstance);
+        unhideBackgroundElements();
+        if (modalWindow && broadcastClosing(modalWindow, reason, false)) {
+          modalWindow.value.modalScope.$$uibDestructionScheduled = true;
+          modalWindow.value.deferred.reject(reason);
+          removeModalWindow(modalInstance, modalWindow.value.modalOpener);
+          return true;
+        }
+        return !modalWindow;
+      };
+
+      $modalStack.dismissAll = function(reason) {
+        var topModal = this.getTop();
+        while (topModal && this.dismiss(topModal.key, reason)) {
+          topModal = this.getTop();
+        }
+      };
+
+      $modalStack.getTop = function() {
+        return openedWindows.top();
+      };
+
+      $modalStack.modalRendered = function(modalInstance) {
+        var modalWindow = openedWindows.get(modalInstance);
+        if (modalWindow) {
+          modalWindow.value.renderDeferred.resolve();
+        }
+      };
+
+      $modalStack.focusFirstFocusableElement = function(list) {
+        if (list.length > 0) {
+          list[0].focus();
+          return true;
+        }
+        return false;
+      };
+
+      $modalStack.focusLastFocusableElement = function(list) {
+        if (list.length > 0) {
+          list[list.length - 1].focus();
+          return true;
+        }
+        return false;
+      };
+
+      $modalStack.isModalFocused = function(evt, modalWindow) {
+        if (evt && modalWindow) {
+          var modalDomEl = modalWindow.value.modalDomEl;
+          if (modalDomEl && modalDomEl.length) {
+            return (evt.target || evt.srcElement) === modalDomEl[0];
+          }
+        }
+        return false;
+      };
+
+      $modalStack.isFocusInFirstItem = function(evt, list) {
+        if (list.length > 0) {
+          return (evt.target || evt.srcElement) === list[0];
+        }
+        return false;
+      };
+
+      $modalStack.isFocusInLastItem = function(evt, list) {
+        if (list.length > 0) {
+          return (evt.target || evt.srcElement) === list[list.length - 1];
+        }
+        return false;
+      };
+
+      $modalStack.loadFocusElementList = function(modalWindow) {
+        if (modalWindow) {
+          var modalDomE1 = modalWindow.value.modalDomEl;
+          if (modalDomE1 && modalDomE1.length) {
+            var elements = modalDomE1[0].querySelectorAll(tabbableSelector);
+            return elements ?
+              Array.prototype.filter.call(elements, function(element) {
+                return isVisible(element);
+              }) : elements;
+          }
+        }
+      };
+
+      return $modalStack;
+    }])
+
+  .provider('$uibModal', function() {
+    var $modalProvider = {
+      options: {
+        animation: true,
+        backdrop: true, //can also be false or 'static'
+        keyboard: true
+      },
+      $get: ['$rootScope', '$q', '$document', '$templateRequest', '$controller', '$uibResolve', '$uibModalStack',
+        function ($rootScope, $q, $document, $templateRequest, $controller, $uibResolve, $modalStack) {
+          var $modal = {};
+
+          function getTemplatePromise(options) {
+            return options.template ? $q.when(options.template) :
+              $templateRequest(angular.isFunction(options.templateUrl) ?
+                options.templateUrl() : options.templateUrl);
+          }
+
+          var promiseChain = null;
+          $modal.getPromiseChain = function() {
+            return promiseChain;
+          };
+
+          $modal.open = function(modalOptions) {
+            var modalResultDeferred = $q.defer();
+            var modalOpenedDeferred = $q.defer();
+            var modalClosedDeferred = $q.defer();
+            var modalRenderDeferred = $q.defer();
+
+            //prepare an instance of a modal to be injected into controllers and returned to a caller
+            var modalInstance = {
+              result: modalResultDeferred.promise,
+              opened: modalOpenedDeferred.promise,
+              closed: modalClosedDeferred.promise,
+              rendered: modalRenderDeferred.promise,
+              close: function (result) {
+                return $modalStack.close(modalInstance, result);
+              },
+              dismiss: function (reason) {
+                return $modalStack.dismiss(modalInstance, reason);
+              }
+            };
+
+            //merge and clean up options
+            modalOptions = angular.extend({}, $modalProvider.options, modalOptions);
+            modalOptions.resolve = modalOptions.resolve || {};
+            modalOptions.appendTo = modalOptions.appendTo || $document.find('body').eq(0);
+
+            if (!modalOptions.appendTo.length) {
+              throw new Error('appendTo element not found. Make sure that the element passed is in DOM.');
+            }
+
+            //verify options
+            if (!modalOptions.component && !modalOptions.template && !modalOptions.templateUrl) {
+              throw new Error('One of component or template or templateUrl options is required.');
+            }
+
+            var templateAndResolvePromise;
+            if (modalOptions.component) {
+              templateAndResolvePromise = $q.when($uibResolve.resolve(modalOptions.resolve, {}, null, null));
+            } else {
+              templateAndResolvePromise =
+                $q.all([getTemplatePromise(modalOptions), $uibResolve.resolve(modalOptions.resolve, {}, null, null)]);
+            }
+
+            function resolveWithTemplate() {
+              return templateAndResolvePromise;
+            }
+
+            // Wait for the resolution of the existing promise chain.
+            // Then switch to our own combined promise dependency (regardless of how the previous modal fared).
+            // Then add to $modalStack and resolve opened.
+            // Finally clean up the chain variable if no subsequent modal has overwritten it.
+            var samePromise;
+            samePromise = promiseChain = $q.all([promiseChain])
+              .then(resolveWithTemplate, resolveWithTemplate)
+              .then(function resolveSuccess(tplAndVars) {
+                var providedScope = modalOptions.scope || $rootScope;
+
+                var modalScope = providedScope.$new();
+                modalScope.$close = modalInstance.close;
+                modalScope.$dismiss = modalInstance.dismiss;
+
+                modalScope.$on('$destroy', function() {
+                  if (!modalScope.$$uibDestructionScheduled) {
+                    modalScope.$dismiss('$uibUnscheduledDestruction');
+                  }
+                });
+
+                var modal = {
+                  scope: modalScope,
+                  deferred: modalResultDeferred,
+                  renderDeferred: modalRenderDeferred,
+                  closedDeferred: modalClosedDeferred,
+                  animation: modalOptions.animation,
+                  backdrop: modalOptions.backdrop,
+                  keyboard: modalOptions.keyboard,
+                  backdropClass: modalOptions.backdropClass,
+                  windowTopClass: modalOptions.windowTopClass,
+                  windowClass: modalOptions.windowClass,
+                  windowTemplateUrl: modalOptions.windowTemplateUrl,
+                  ariaLabelledBy: modalOptions.ariaLabelledBy,
+                  ariaDescribedBy: modalOptions.ariaDescribedBy,
+                  size: modalOptions.size,
+                  openedClass: modalOptions.openedClass,
+                  appendTo: modalOptions.appendTo
+                };
+
+                var component = {};
+                var ctrlInstance, ctrlInstantiate, ctrlLocals = {};
+
+                if (modalOptions.component) {
+                  constructLocals(component, false, true, false);
+                  component.name = modalOptions.component;
+                  modal.component = component;
+                } else if (modalOptions.controller) {
+                  constructLocals(ctrlLocals, true, false, true);
+
+                  // the third param will make the controller instantiate later,private api
+                  // @see https://github.com/angular/angular.js/blob/master/src/ng/controller.js#L126
+                  ctrlInstantiate = $controller(modalOptions.controller, ctrlLocals, true, modalOptions.controllerAs);
+                  if (modalOptions.controllerAs && modalOptions.bindToController) {
+                    ctrlInstance = ctrlInstantiate.instance;
+                    ctrlInstance.$close = modalScope.$close;
+                    ctrlInstance.$dismiss = modalScope.$dismiss;
+                    angular.extend(ctrlInstance, {
+                      $resolve: ctrlLocals.$scope.$resolve
+                    }, providedScope);
+                  }
+
+                  ctrlInstance = ctrlInstantiate();
+
+                  if (angular.isFunction(ctrlInstance.$onInit)) {
+                    ctrlInstance.$onInit();
+                  }
+                }
+
+                if (!modalOptions.component) {
+                  modal.content = tplAndVars[0];
+                }
+
+                $modalStack.open(modalInstance, modal);
+                modalOpenedDeferred.resolve(true);
+
+                function constructLocals(obj, template, instanceOnScope, injectable) {
+                  obj.$scope = modalScope;
+                  obj.$scope.$resolve = {};
+                  if (instanceOnScope) {
+                    obj.$scope.$uibModalInstance = modalInstance;
+                  } else {
+                    obj.$uibModalInstance = modalInstance;
+                  }
+
+                  var resolves = template ? tplAndVars[1] : tplAndVars;
+                  angular.forEach(resolves, function(value, key) {
+                    if (injectable) {
+                      obj[key] = value;
+                    }
+
+                    obj.$scope.$resolve[key] = value;
+                  });
+                }
+            }, function resolveError(reason) {
+              modalOpenedDeferred.reject(reason);
+              modalResultDeferred.reject(reason);
+            })['finally'](function() {
+              if (promiseChain === samePromise) {
+                promiseChain = null;
+              }
+            });
+
+            return modalInstance;
+          };
+
+          return $modal;
+        }
+      ]
+    };
+
+    return $modalProvider;
+  });
+
+angular.module('ui.bootstrap.paging', [])
+/**
+ * Helper internal service for generating common controller code between the
+ * pager and pagination components
+ */
+.factory('uibPaging', ['$parse', function($parse) {
+  return {
+    create: function(ctrl, $scope, $attrs) {
+      ctrl.setNumPages = $attrs.numPages ? $parse($attrs.numPages).assign : angular.noop;
+      ctrl.ngModelCtrl = { $setViewValue: angular.noop }; // nullModelCtrl
+      ctrl._watchers = [];
+
+      ctrl.init = function(ngModelCtrl, config) {
+        ctrl.ngModelCtrl = ngModelCtrl;
+        ctrl.config = config;
+
+        ngModelCtrl.$render = function() {
+          ctrl.render();
+        };
+
+        if ($attrs.itemsPerPage) {
+          ctrl._watchers.push($scope.$parent.$watch($attrs.itemsPerPage, function(value) {
+            ctrl.itemsPerPage = parseInt(value, 10);
+            $scope.totalPages = ctrl.calculateTotalPages();
+            ctrl.updatePage();
+          }));
+        } else {
+          ctrl.itemsPerPage = config.itemsPerPage;
+        }
+
+        $scope.$watch('totalItems', function(newTotal, oldTotal) {
+          if (angular.isDefined(newTotal) || newTotal !== oldTotal) {
+            $scope.totalPages = ctrl.calculateTotalPages();
+            ctrl.updatePage();
+          }
+        });
+      };
+
+      ctrl.calculateTotalPages = function() {
+        var totalPages = ctrl.itemsPerPage < 1 ? 1 : Math.ceil($scope.totalItems / ctrl.itemsPerPage);
+        return Math.max(totalPages || 0, 1);
+      };
+
+      ctrl.render = function() {
+        $scope.page = parseInt(ctrl.ngModelCtrl.$viewValue, 10) || 1;
+      };
+
+      $scope.selectPage = function(page, evt) {
+        if (evt) {
+          evt.preventDefault();
+        }
+
+        var clickAllowed = !$scope.ngDisabled || !evt;
+        if (clickAllowed && $scope.page !== page && page > 0 && page <= $scope.totalPages) {
+          if (evt && evt.target) {
+            evt.target.blur();
+          }
+          ctrl.ngModelCtrl.$setViewValue(page);
+          ctrl.ngModelCtrl.$render();
+        }
+      };
+
+      $scope.getText = function(key) {
+        return $scope[key + 'Text'] || ctrl.config[key + 'Text'];
+      };
+
+      $scope.noPrevious = function() {
+        return $scope.page === 1;
+      };
+
+      $scope.noNext = function() {
+        return $scope.page === $scope.totalPages;
+      };
+
+      ctrl.updatePage = function() {
+        ctrl.setNumPages($scope.$parent, $scope.totalPages); // Readonly variable
+
+        if ($scope.page > $scope.totalPages) {
+          $scope.selectPage($scope.totalPages);
+        } else {
+          ctrl.ngModelCtrl.$render();
+        }
+      };
+
+      $scope.$on('$destroy', function() {
+        while (ctrl._watchers.length) {
+          ctrl._watchers.shift()();
+        }
+      });
+    }
+  };
+}]);
+
+angular.module('ui.bootstrap.pager', ['ui.bootstrap.paging', 'ui.bootstrap.tabindex'])
+
+.controller('UibPagerController', ['$scope', '$attrs', 'uibPaging', 'uibPagerConfig', function($scope, $attrs, uibPaging, uibPagerConfig) {
+  $scope.align = angular.isDefined($attrs.align) ? $scope.$parent.$eval($attrs.align) : uibPagerConfig.align;
+
+  uibPaging.create(this, $scope, $attrs);
+}])
+
+.constant('uibPagerConfig', {
+  itemsPerPage: 10,
+  previousText: '« Previous',
+  nextText: 'Next »',
+  align: true
+})
+
+.directive('uibPager', ['uibPagerConfig', function(uibPagerConfig) {
+  return {
+    scope: {
+      totalItems: '=',
+      previousText: '@',
+      nextText: '@',
+      ngDisabled: '='
+    },
+    require: ['uibPager', '?ngModel'],
+    restrict: 'A',
+    controller: 'UibPagerController',
+    controllerAs: 'pager',
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/pager/pager.html';
+    },
+    link: function(scope, element, attrs, ctrls) {
+      element.addClass('pager');
+      var paginationCtrl = ctrls[0], ngModelCtrl = ctrls[1];
+
+      if (!ngModelCtrl) {
+        return; // do nothing if no ng-model
+      }
+
+      paginationCtrl.init(ngModelCtrl, uibPagerConfig);
+    }
+  };
+}]);
+
+angular.module('ui.bootstrap.pagination', ['ui.bootstrap.paging', 'ui.bootstrap.tabindex'])
+.controller('UibPaginationController', ['$scope', '$attrs', '$parse', 'uibPaging', 'uibPaginationConfig', function($scope, $attrs, $parse, uibPaging, uibPaginationConfig) {
+  var ctrl = this;
+  // Setup configuration parameters
+  var maxSize = angular.isDefined($attrs.maxSize) ? $scope.$parent.$eval($attrs.maxSize) : uibPaginationConfig.maxSize,
+    rotate = angular.isDefined($attrs.rotate) ? $scope.$parent.$eval($attrs.rotate) : uibPaginationConfig.rotate,
+    forceEllipses = angular.isDefined($attrs.forceEllipses) ? $scope.$parent.$eval($attrs.forceEllipses) : uibPaginationConfig.forceEllipses,
+    boundaryLinkNumbers = angular.isDefined($attrs.boundaryLinkNumbers) ? $scope.$parent.$eval($attrs.boundaryLinkNumbers) : uibPaginationConfig.boundaryLinkNumbers,
+    pageLabel = angular.isDefined($attrs.pageLabel) ? function(idx) { return $scope.$parent.$eval($attrs.pageLabel, {$page: idx}); } : angular.identity;
+  $scope.boundaryLinks = angular.isDefined($attrs.boundaryLinks) ? $scope.$parent.$eval($attrs.boundaryLinks) : uibPaginationConfig.boundaryLinks;
+  $scope.directionLinks = angular.isDefined($attrs.directionLinks) ? $scope.$parent.$eval($attrs.directionLinks) : uibPaginationConfig.directionLinks;
+  $attrs.$set('role', 'menu');
+
+  uibPaging.create(this, $scope, $attrs);
+
+  if ($attrs.maxSize) {
+    ctrl._watchers.push($scope.$parent.$watch($parse($attrs.maxSize), function(value) {
+      maxSize = parseInt(value, 10);
+      ctrl.render();
+    }));
+  }
+
+  // Create page object used in template
+  function makePage(number, text, isActive) {
+    return {
+      number: number,
+      text: text,
+      active: isActive
+    };
+  }
+
+  function getPages(currentPage, totalPages) {
+    var pages = [];
+
+    // Default page limits
+    var startPage = 1, endPage = totalPages;
+    var isMaxSized = angular.isDefined(maxSize) && maxSize < totalPages;
+
+    // recompute if maxSize
+    if (isMaxSized) {
+      if (rotate) {
+        // Current page is displayed in the middle of the visible ones
+        startPage = Math.max(currentPage - Math.floor(maxSize / 2), 1);
+        endPage = startPage + maxSize - 1;
+
+        // Adjust if limit is exceeded
+        if (endPage > totalPages) {
+          endPage = totalPages;
+          startPage = endPage - maxSize + 1;
+        }
+      } else {
+        // Visible pages are paginated with maxSize
+        startPage = (Math.ceil(currentPage / maxSize) - 1) * maxSize + 1;
+
+        // Adjust last page if limit is exceeded
+        endPage = Math.min(startPage + maxSize - 1, totalPages);
+      }
+    }
+
+    // Add page number links
+    for (var number = startPage; number <= endPage; number++) {
+      var page = makePage(number, pageLabel(number), number === currentPage);
+      pages.push(page);
+    }
+
+    // Add links to move between page sets
+    if (isMaxSized && maxSize > 0 && (!rotate || forceEllipses || boundaryLinkNumbers)) {
+      if (startPage > 1) {
+        if (!boundaryLinkNumbers || startPage > 3) { //need ellipsis for all options unless range is too close to beginning
+        var previousPageSet = makePage(startPage - 1, '...', false);
+        pages.unshift(previousPageSet);
+      }
+        if (boundaryLinkNumbers) {
+          if (startPage === 3) { //need to replace ellipsis when the buttons would be sequential
+            var secondPageLink = makePage(2, '2', false);
+            pages.unshift(secondPageLink);
+          }
+          //add the first page
+          var firstPageLink = makePage(1, '1', false);
+          pages.unshift(firstPageLink);
+        }
+      }
+
+      if (endPage < totalPages) {
+        if (!boundaryLinkNumbers || endPage < totalPages - 2) { //need ellipsis for all options unless range is too close to end
+        var nextPageSet = makePage(endPage + 1, '...', false);
+        pages.push(nextPageSet);
+      }
+        if (boundaryLinkNumbers) {
+          if (endPage === totalPages - 2) { //need to replace ellipsis when the buttons would be sequential
+            var secondToLastPageLink = makePage(totalPages - 1, totalPages - 1, false);
+            pages.push(secondToLastPageLink);
+          }
+          //add the last page
+          var lastPageLink = makePage(totalPages, totalPages, false);
+          pages.push(lastPageLink);
+        }
+      }
+    }
+    return pages;
+  }
+
+  var originalRender = this.render;
+  this.render = function() {
+    originalRender();
+    if ($scope.page > 0 && $scope.page <= $scope.totalPages) {
+      $scope.pages = getPages($scope.page, $scope.totalPages);
+    }
+  };
+}])
+
+.constant('uibPaginationConfig', {
+  itemsPerPage: 10,
+  boundaryLinks: false,
+  boundaryLinkNumbers: false,
+  directionLinks: true,
+  firstText: 'First',
+  previousText: 'Previous',
+  nextText: 'Next',
+  lastText: 'Last',
+  rotate: true,
+  forceEllipses: false
+})
+
+.directive('uibPagination', ['$parse', 'uibPaginationConfig', function($parse, uibPaginationConfig) {
+  return {
+    scope: {
+      totalItems: '=',
+      firstText: '@',
+      previousText: '@',
+      nextText: '@',
+      lastText: '@',
+      ngDisabled:'='
+    },
+    require: ['uibPagination', '?ngModel'],
+    restrict: 'A',
+    controller: 'UibPaginationController',
+    controllerAs: 'pagination',
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/pagination/pagination.html';
+    },
+    link: function(scope, element, attrs, ctrls) {
+      element.addClass('pagination');
+      var paginationCtrl = ctrls[0], ngModelCtrl = ctrls[1];
+
+      if (!ngModelCtrl) {
+         return; // do nothing if no ng-model
+      }
+
+      paginationCtrl.init(ngModelCtrl, uibPaginationConfig);
+    }
+  };
+}]);
+
+/**
+ * The following features are still outstanding: animation as a
+ * function, placement as a function, inside, support for more triggers than
+ * just mouse enter/leave, html tooltips, and selector delegation.
+ */
+angular.module('ui.bootstrap.tooltip', ['ui.bootstrap.position', 'ui.bootstrap.stackedMap'])
+
+/**
+ * The $tooltip service creates tooltip- and popover-like directives as well as
+ * houses global options for them.
+ */
+.provider('$uibTooltip', function() {
+  // The default options tooltip and popover.
+  var defaultOptions = {
+    placement: 'top',
+    placementClassPrefix: '',
+    animation: true,
+    popupDelay: 0,
+    popupCloseDelay: 0,
+    useContentExp: false
+  };
+
+  // Default hide triggers for each show trigger
+  var triggerMap = {
+    'mouseenter': 'mouseleave',
+    'click': 'click',
+    'outsideClick': 'outsideClick',
+    'focus': 'blur',
+    'none': ''
+  };
+
+  // The options specified to the provider globally.
+  var globalOptions = {};
+
+  /**
+   * `options({})` allows global configuration of all tooltips in the
+   * application.
+   *
+   *   var app = angular.module( 'App', ['ui.bootstrap.tooltip'], function( $tooltipProvider ) {
+   *     // place tooltips left instead of top by default
+   *     $tooltipProvider.options( { placement: 'left' } );
+   *   });
+   */
+	this.options = function(value) {
+		angular.extend(globalOptions, value);
+	};
+
+  /**
+   * This allows you to extend the set of trigger mappings available. E.g.:
+   *
+   *   $tooltipProvider.setTriggers( { 'openTrigger': 'closeTrigger' } );
+   */
+  this.setTriggers = function setTriggers(triggers) {
+    angular.extend(triggerMap, triggers);
+  };
+
+  /**
+   * This is a helper function for translating camel-case to snake_case.
+   */
+  function snake_case(name) {
+    var regexp = /[A-Z]/g;
+    var separator = '-';
+    return name.replace(regexp, function(letter, pos) {
+      return (pos ? separator : '') + letter.toLowerCase();
+    });
+  }
+
+  /**
+   * Returns the actual instance of the $tooltip service.
+   * TODO support multiple triggers
+   */
+  this.$get = ['$window', '$compile', '$timeout', '$document', '$uibPosition', '$interpolate', '$rootScope', '$parse', '$$stackedMap', function($window, $compile, $timeout, $document, $position, $interpolate, $rootScope, $parse, $$stackedMap) {
+    var openedTooltips = $$stackedMap.createNew();
+    $document.on('keyup', keypressListener);
+
+    $rootScope.$on('$destroy', function() {
+      $document.off('keyup', keypressListener);
+    });
+
+    function keypressListener(e) {
+      if (e.which === 27) {
+        var last = openedTooltips.top();
+        if (last) {
+          last.value.close();
+          last = null;
+        }
+      }
+    }
+
+    return function $tooltip(ttType, prefix, defaultTriggerShow, options) {
+      options = angular.extend({}, defaultOptions, globalOptions, options);
+
+      /**
+       * Returns an object of show and hide triggers.
+       *
+       * If a trigger is supplied,
+       * it is used to show the tooltip; otherwise, it will use the `trigger`
+       * option passed to the `$tooltipProvider.options` method; else it will
+       * default to the trigger supplied to this directive factory.
+       *
+       * The hide trigger is based on the show trigger. If the `trigger` option
+       * was passed to the `$tooltipProvider.options` method, it will use the
+       * mapped trigger from `triggerMap` or the passed trigger if the map is
+       * undefined; otherwise, it uses the `triggerMap` value of the show
+       * trigger; else it will just use the show trigger.
+       */
+      function getTriggers(trigger) {
+        var show = (trigger || options.trigger || defaultTriggerShow).split(' ');
+        var hide = show.map(function(trigger) {
+          return triggerMap[trigger] || trigger;
+        });
+        return {
+          show: show,
+          hide: hide
+        };
+      }
+
+      var directiveName = snake_case(ttType);
+
+      var startSym = $interpolate.startSymbol();
+      var endSym = $interpolate.endSymbol();
+      var template =
+        '<div '+ directiveName + '-popup ' +
+          'uib-title="' + startSym + 'title' + endSym + '" ' +
+          (options.useContentExp ?
+            'content-exp="contentExp()" ' :
+            'content="' + startSym + 'content' + endSym + '" ') +
+          'origin-scope="origScope" ' +
+          'class="uib-position-measure ' + prefix + '" ' +
+          'tooltip-animation-class="fade"' +
+          'uib-tooltip-classes ' +
+          'ng-class="{ in: isOpen }" ' +
+          '>' +
+        '</div>';
+
+      return {
+        compile: function(tElem, tAttrs) {
+          var tooltipLinker = $compile(template);
+
+          return function link(scope, element, attrs, tooltipCtrl) {
+            var tooltip;
+            var tooltipLinkedScope;
+            var transitionTimeout;
+            var showTimeout;
+            var hideTimeout;
+            var positionTimeout;
+            var adjustmentTimeout;
+            var appendToBody = angular.isDefined(options.appendToBody) ? options.appendToBody : false;
+            var triggers = getTriggers(undefined);
+            var hasEnableExp = angular.isDefined(attrs[prefix + 'Enable']);
+            var ttScope = scope.$new(true);
+            var repositionScheduled = false;
+            var isOpenParse = angular.isDefined(attrs[prefix + 'IsOpen']) ? $parse(attrs[prefix + 'IsOpen']) : false;
+            var contentParse = options.useContentExp ? $parse(attrs[ttType]) : false;
+            var observers = [];
+            var lastPlacement;
+
+            var positionTooltip = function() {
+              // check if tooltip exists and is not empty
+              if (!tooltip || !tooltip.html()) { return; }
+
+              if (!positionTimeout) {
+                positionTimeout = $timeout(function() {
+                  var ttPosition = $position.positionElements(element, tooltip, ttScope.placement, appendToBody);
+                  var initialHeight = angular.isDefined(tooltip.offsetHeight) ? tooltip.offsetHeight : tooltip.prop('offsetHeight');
+                  var elementPos = appendToBody ? $position.offset(element) : $position.position(element);
+                  tooltip.css({ top: ttPosition.top + 'px', left: ttPosition.left + 'px' });
+                  var placementClasses = ttPosition.placement.split('-');
+
+                  if (!tooltip.hasClass(placementClasses[0])) {
+                    tooltip.removeClass(lastPlacement.split('-')[0]);
+                    tooltip.addClass(placementClasses[0]);
+                  }
+
+                  if (!tooltip.hasClass(options.placementClassPrefix + ttPosition.placement)) {
+                    tooltip.removeClass(options.placementClassPrefix + lastPlacement);
+                    tooltip.addClass(options.placementClassPrefix + ttPosition.placement);
+                  }
+
+                  adjustmentTimeout = $timeout(function() {
+                    var currentHeight = angular.isDefined(tooltip.offsetHeight) ? tooltip.offsetHeight : tooltip.prop('offsetHeight');
+                    var adjustment = $position.adjustTop(placementClasses, elementPos, initialHeight, currentHeight);
+                    if (adjustment) {
+                      tooltip.css(adjustment);
+                    }
+                    adjustmentTimeout = null;
+                  }, 0, false);
+
+                  // first time through tt element will have the
+                  // uib-position-measure class or if the placement
+                  // has changed we need to position the arrow.
+                  if (tooltip.hasClass('uib-position-measure')) {
+                    $position.positionArrow(tooltip, ttPosition.placement);
+                    tooltip.removeClass('uib-position-measure');
+                  } else if (lastPlacement !== ttPosition.placement) {
+                    $position.positionArrow(tooltip, ttPosition.placement);
+                  }
+                  lastPlacement = ttPosition.placement;
+
+                  positionTimeout = null;
+                }, 0, false);
+              }
+            };
+
+            // Set up the correct scope to allow transclusion later
+            ttScope.origScope = scope;
+
+            // By default, the tooltip is not open.
+            // TODO add ability to start tooltip opened
+            ttScope.isOpen = false;
+
+            function toggleTooltipBind() {
+              if (!ttScope.isOpen) {
+                showTooltipBind();
+              } else {
+                hideTooltipBind();
+              }
+            }
+
+            // Show the tooltip with delay if specified, otherwise show it immediately
+            function showTooltipBind() {
+              if (hasEnableExp && !scope.$eval(attrs[prefix + 'Enable'])) {
+                return;
+              }
+
+              cancelHide();
+              prepareTooltip();
+
+              if (ttScope.popupDelay) {
+                // Do nothing if the tooltip was already scheduled to pop-up.
+                // This happens if show is triggered multiple times before any hide is triggered.
+                if (!showTimeout) {
+                  showTimeout = $timeout(show, ttScope.popupDelay, false);
+                }
+              } else {
+                show();
+              }
+            }
+
+            function hideTooltipBind() {
+              cancelShow();
+
+              if (ttScope.popupCloseDelay) {
+                if (!hideTimeout) {
+                  hideTimeout = $timeout(hide, ttScope.popupCloseDelay, false);
+                }
+              } else {
+                hide();
+              }
+            }
+
+            // Show the tooltip popup element.
+            function show() {
+              cancelShow();
+              cancelHide();
+
+              // Don't show empty tooltips.
+              if (!ttScope.content) {
+                return angular.noop;
+              }
+
+              createTooltip();
+
+              // And show the tooltip.
+              ttScope.$evalAsync(function() {
+                ttScope.isOpen = true;
+                assignIsOpen(true);
+                positionTooltip();
+              });
+            }
+
+            function cancelShow() {
+              if (showTimeout) {
+                $timeout.cancel(showTimeout);
+                showTimeout = null;
+              }
+
+              if (positionTimeout) {
+                $timeout.cancel(positionTimeout);
+                positionTimeout = null;
+              }
+            }
+
+            // Hide the tooltip popup element.
+            function hide() {
+              if (!ttScope) {
+                return;
+              }
+
+              // First things first: we don't show it anymore.
+              ttScope.$evalAsync(function() {
+                if (ttScope) {
+                  ttScope.isOpen = false;
+                  assignIsOpen(false);
+                  // And now we remove it from the DOM. However, if we have animation, we
+                  // need to wait for it to expire beforehand.
+                  // FIXME: this is a placeholder for a port of the transitions library.
+                  // The fade transition in TWBS is 150ms.
+                  if (ttScope.animation) {
+                    if (!transitionTimeout) {
+                      transitionTimeout = $timeout(removeTooltip, 150, false);
+                    }
+                  } else {
+                    removeTooltip();
+                  }
+                }
+              });
+            }
+
+            function cancelHide() {
+              if (hideTimeout) {
+                $timeout.cancel(hideTimeout);
+                hideTimeout = null;
+              }
+
+              if (transitionTimeout) {
+                $timeout.cancel(transitionTimeout);
+                transitionTimeout = null;
+              }
+            }
+
+            function createTooltip() {
+              // There can only be one tooltip element per directive shown at once.
+              if (tooltip) {
+                return;
+              }
+
+              tooltipLinkedScope = ttScope.$new();
+              tooltip = tooltipLinker(tooltipLinkedScope, function(tooltip) {
+                if (appendToBody) {
+                  $document.find('body').append(tooltip);
+                } else {
+                  element.after(tooltip);
+                }
+              });
+
+              openedTooltips.add(ttScope, {
+                close: hide
+              });
+
+              prepObservers();
+            }
+
+            function removeTooltip() {
+              cancelShow();
+              cancelHide();
+              unregisterObservers();
+
+              if (tooltip) {
+                tooltip.remove();
+                
+                tooltip = null;
+                if (adjustmentTimeout) {
+                  $timeout.cancel(adjustmentTimeout);
+                }
+              }
+
+              openedTooltips.remove(ttScope);
+              
+              if (tooltipLinkedScope) {
+                tooltipLinkedScope.$destroy();
+                tooltipLinkedScope = null;
+              }
+            }
+
+            /**
+             * Set the initial scope values. Once
+             * the tooltip is created, the observers
+             * will be added to keep things in sync.
+             */
+            function prepareTooltip() {
+              ttScope.title = attrs[prefix + 'Title'];
+              if (contentParse) {
+                ttScope.content = contentParse(scope);
+              } else {
+                ttScope.content = attrs[ttType];
+              }
+
+              ttScope.popupClass = attrs[prefix + 'Class'];
+              ttScope.placement = angular.isDefined(attrs[prefix + 'Placement']) ? attrs[prefix + 'Placement'] : options.placement;
+              var placement = $position.parsePlacement(ttScope.placement);
+              lastPlacement = placement[1] ? placement[0] + '-' + placement[1] : placement[0];
+
+              var delay = parseInt(attrs[prefix + 'PopupDelay'], 10);
+              var closeDelay = parseInt(attrs[prefix + 'PopupCloseDelay'], 10);
+              ttScope.popupDelay = !isNaN(delay) ? delay : options.popupDelay;
+              ttScope.popupCloseDelay = !isNaN(closeDelay) ? closeDelay : options.popupCloseDelay;
+            }
+
+            function assignIsOpen(isOpen) {
+              if (isOpenParse && angular.isFunction(isOpenParse.assign)) {
+                isOpenParse.assign(scope, isOpen);
+              }
+            }
+
+            ttScope.contentExp = function() {
+              return ttScope.content;
+            };
+
+            /**
+             * Observe the relevant attributes.
+             */
+            attrs.$observe('disabled', function(val) {
+              if (val) {
+                cancelShow();
+              }
+
+              if (val && ttScope.isOpen) {
+                hide();
+              }
+            });
+
+            if (isOpenParse) {
+              scope.$watch(isOpenParse, function(val) {
+                if (ttScope && !val === ttScope.isOpen) {
+                  toggleTooltipBind();
+                }
+              });
+            }
+
+            function prepObservers() {
+              observers.length = 0;
+
+              if (contentParse) {
+                observers.push(
+                  scope.$watch(contentParse, function(val) {
+                    ttScope.content = val;
+                    if (!val && ttScope.isOpen) {
+                      hide();
+                    }
+                  })
+                );
+
+                observers.push(
+                  tooltipLinkedScope.$watch(function() {
+                    if (!repositionScheduled) {
+                      repositionScheduled = true;
+                      tooltipLinkedScope.$$postDigest(function() {
+                        repositionScheduled = false;
+                        if (ttScope && ttScope.isOpen) {
+                          positionTooltip();
+                        }
+                      });
+                    }
+                  })
+                );
+              } else {
+                observers.push(
+                  attrs.$observe(ttType, function(val) {
+                    ttScope.content = val;
+                    if (!val && ttScope.isOpen) {
+                      hide();
+                    } else {
+                      positionTooltip();
+                    }
+                  })
+                );
+              }
+
+              observers.push(
+                attrs.$observe(prefix + 'Title', function(val) {
+                  ttScope.title = val;
+                  if (ttScope.isOpen) {
+                    positionTooltip();
+                  }
+                })
+              );
+
+              observers.push(
+                attrs.$observe(prefix + 'Placement', function(val) {
+                  ttScope.placement = val ? val : options.placement;
+                  if (ttScope.isOpen) {
+                    positionTooltip();
+                  }
+                })
+              );
+            }
+
+            function unregisterObservers() {
+              if (observers.length) {
+                angular.forEach(observers, function(observer) {
+                  observer();
+                });
+                observers.length = 0;
+              }
+            }
+
+            // hide tooltips/popovers for outsideClick trigger
+            function bodyHideTooltipBind(e) {
+              if (!ttScope || !ttScope.isOpen || !tooltip) {
+                return;
+              }
+              // make sure the tooltip/popover link or tool tooltip/popover itself were not clicked
+              if (!element[0].contains(e.target) && !tooltip[0].contains(e.target)) {
+                hideTooltipBind();
+              }
+            }
+
+            // KeyboardEvent handler to hide the tooltip on Escape key press
+            function hideOnEscapeKey(e) {
+              if (e.which === 27) {
+                hideTooltipBind();
+              }
+            }
+
+            var unregisterTriggers = function() {
+              triggers.show.forEach(function(trigger) {
+                if (trigger === 'outsideClick') {
+                  element.off('click', toggleTooltipBind);
+                } else {
+                  element.off(trigger, showTooltipBind);
+                  element.off(trigger, toggleTooltipBind);
+                }
+                element.off('keypress', hideOnEscapeKey);
+              });
+              triggers.hide.forEach(function(trigger) {
+                if (trigger === 'outsideClick') {
+                  $document.off('click', bodyHideTooltipBind);
+                } else {
+                  element.off(trigger, hideTooltipBind);
+                }
+              });
+            };
+
+            function prepTriggers() {
+              var showTriggers = [], hideTriggers = [];
+              var val = scope.$eval(attrs[prefix + 'Trigger']);
+              unregisterTriggers();
+
+              if (angular.isObject(val)) {
+                Object.keys(val).forEach(function(key) {
+                  showTriggers.push(key);
+                  hideTriggers.push(val[key]);
+                });
+                triggers = {
+                  show: showTriggers,
+                  hide: hideTriggers
+                };
+              } else {
+                triggers = getTriggers(val);
+              }
+
+              if (triggers.show !== 'none') {
+                triggers.show.forEach(function(trigger, idx) {
+                  if (trigger === 'outsideClick') {
+                    element.on('click', toggleTooltipBind);
+                    $document.on('click', bodyHideTooltipBind);
+                  } else if (trigger === triggers.hide[idx]) {
+                    element.on(trigger, toggleTooltipBind);
+                  } else if (trigger) {
+                    element.on(trigger, showTooltipBind);
+                    element.on(triggers.hide[idx], hideTooltipBind);
+                  }
+                  element.on('keypress', hideOnEscapeKey);
+                });
+              }
+            }
+
+            prepTriggers();
+
+            var animation = scope.$eval(attrs[prefix + 'Animation']);
+            ttScope.animation = angular.isDefined(animation) ? !!animation : options.animation;
+
+            var appendToBodyVal;
+            var appendKey = prefix + 'AppendToBody';
+            if (appendKey in attrs && attrs[appendKey] === undefined) {
+              appendToBodyVal = true;
+            } else {
+              appendToBodyVal = scope.$eval(attrs[appendKey]);
+            }
+
+            appendToBody = angular.isDefined(appendToBodyVal) ? appendToBodyVal : appendToBody;
+
+            // Make sure tooltip is destroyed and removed.
+            scope.$on('$destroy', function onDestroyTooltip() {
+              unregisterTriggers();
+              removeTooltip();
+              ttScope = null;
+            });
+          };
+        }
+      };
+    };
+  }];
+})
+
+// This is mostly ngInclude code but with a custom scope
+.directive('uibTooltipTemplateTransclude', [
+         '$animate', '$sce', '$compile', '$templateRequest',
+function ($animate, $sce, $compile, $templateRequest) {
+  return {
+    link: function(scope, elem, attrs) {
+      var origScope = scope.$eval(attrs.tooltipTemplateTranscludeScope);
+
+      var changeCounter = 0,
+        currentScope,
+        previousElement,
+        currentElement;
+
+      var cleanupLastIncludeContent = function() {
+        if (previousElement) {
+          previousElement.remove();
+          previousElement = null;
+        }
+
+        if (currentScope) {
+          currentScope.$destroy();
+          currentScope = null;
+        }
+
+        if (currentElement) {
+          $animate.leave(currentElement).then(function() {
+            previousElement = null;
+          });
+          previousElement = currentElement;
+          currentElement = null;
+        }
+      };
+
+      scope.$watch($sce.parseAsResourceUrl(attrs.uibTooltipTemplateTransclude), function(src) {
+        var thisChangeId = ++changeCounter;
+
+        if (src) {
+          //set the 2nd param to true to ignore the template request error so that the inner
+          //contents and scope can be cleaned up.
+          $templateRequest(src, true).then(function(response) {
+            if (thisChangeId !== changeCounter) { return; }
+            var newScope = origScope.$new();
+            var template = response;
+
+            var clone = $compile(template)(newScope, function(clone) {
+              cleanupLastIncludeContent();
+              $animate.enter(clone, elem);
+            });
+
+            currentScope = newScope;
+            currentElement = clone;
+
+            currentScope.$emit('$includeContentLoaded', src);
+          }, function() {
+            if (thisChangeId === changeCounter) {
+              cleanupLastIncludeContent();
+              scope.$emit('$includeContentError', src);
+            }
+          });
+          scope.$emit('$includeContentRequested', src);
+        } else {
+          cleanupLastIncludeContent();
+        }
+      });
+
+      scope.$on('$destroy', cleanupLastIncludeContent);
+    }
+  };
+}])
+
+/**
+ * Note that it's intentional that these classes are *not* applied through $animate.
+ * They must not be animated as they're expected to be present on the tooltip on
+ * initialization.
+ */
+.directive('uibTooltipClasses', ['$uibPosition', function($uibPosition) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      // need to set the primary position so the
+      // arrow has space during position measure.
+      // tooltip.positionTooltip()
+      if (scope.placement) {
+        // // There are no top-left etc... classes
+        // // in TWBS, so we need the primary position.
+        var position = $uibPosition.parsePlacement(scope.placement);
+        element.addClass(position[0]);
+      }
+
+      if (scope.popupClass) {
+        element.addClass(scope.popupClass);
+      }
+
+      if (scope.animation) {
+        element.addClass(attrs.tooltipAnimationClass);
+      }
+    }
+  };
+}])
+
+.directive('uibTooltipPopup', function() {
+  return {
+    restrict: 'A',
+    scope: { content: '@' },
+    templateUrl: 'uib/template/tooltip/tooltip-popup.html'
+  };
+})
+
+.directive('uibTooltip', [ '$uibTooltip', function($uibTooltip) {
+  return $uibTooltip('uibTooltip', 'tooltip', 'mouseenter');
+}])
+
+.directive('uibTooltipTemplatePopup', function() {
+  return {
+    restrict: 'A',
+    scope: { contentExp: '&', originScope: '&' },
+    templateUrl: 'uib/template/tooltip/tooltip-template-popup.html'
+  };
+})
+
+.directive('uibTooltipTemplate', ['$uibTooltip', function($uibTooltip) {
+  return $uibTooltip('uibTooltipTemplate', 'tooltip', 'mouseenter', {
+    useContentExp: true
+  });
+}])
+
+.directive('uibTooltipHtmlPopup', function() {
+  return {
+    restrict: 'A',
+    scope: { contentExp: '&' },
+    templateUrl: 'uib/template/tooltip/tooltip-html-popup.html'
+  };
+})
+
+.directive('uibTooltipHtml', ['$uibTooltip', function($uibTooltip) {
+  return $uibTooltip('uibTooltipHtml', 'tooltip', 'mouseenter', {
+    useContentExp: true
+  });
+}]);
+
+/**
+ * The following features are still outstanding: popup delay, animation as a
+ * function, placement as a function, inside, support for more triggers than
+ * just mouse enter/leave, and selector delegatation.
+ */
+angular.module('ui.bootstrap.popover', ['ui.bootstrap.tooltip'])
+
+.directive('uibPopoverTemplatePopup', function() {
+  return {
+    restrict: 'A',
+    scope: { uibTitle: '@', contentExp: '&', originScope: '&' },
+    templateUrl: 'uib/template/popover/popover-template.html'
+  };
+})
+
+.directive('uibPopoverTemplate', ['$uibTooltip', function($uibTooltip) {
+  return $uibTooltip('uibPopoverTemplate', 'popover', 'click', {
+    useContentExp: true
+  });
+}])
+
+.directive('uibPopoverHtmlPopup', function() {
+  return {
+    restrict: 'A',
+    scope: { contentExp: '&', uibTitle: '@' },
+    templateUrl: 'uib/template/popover/popover-html.html'
+  };
+})
+
+.directive('uibPopoverHtml', ['$uibTooltip', function($uibTooltip) {
+  return $uibTooltip('uibPopoverHtml', 'popover', 'click', {
+    useContentExp: true
+  });
+}])
+
+.directive('uibPopoverPopup', function() {
+  return {
+    restrict: 'A',
+    scope: { uibTitle: '@', content: '@' },
+    templateUrl: 'uib/template/popover/popover.html'
+  };
+})
+
+.directive('uibPopover', ['$uibTooltip', function($uibTooltip) {
+  return $uibTooltip('uibPopover', 'popover', 'click');
+}]);
+
+angular.module('ui.bootstrap.progressbar', [])
+
+.constant('uibProgressConfig', {
+  animate: true,
+  max: 100
+})
+
+.controller('UibProgressController', ['$scope', '$attrs', 'uibProgressConfig', function($scope, $attrs, progressConfig) {
+  var self = this,
+      animate = angular.isDefined($attrs.animate) ? $scope.$parent.$eval($attrs.animate) : progressConfig.animate;
+
+  this.bars = [];
+  $scope.max = getMaxOrDefault();
+
+  this.addBar = function(bar, element, attrs) {
+    if (!animate) {
+      element.css({'transition': 'none'});
+    }
+
+    this.bars.push(bar);
+
+    bar.max = getMaxOrDefault();
+    bar.title = attrs && angular.isDefined(attrs.title) ? attrs.title : 'progressbar';
+
+    bar.$watch('value', function(value) {
+      bar.recalculatePercentage();
+    });
+
+    bar.recalculatePercentage = function() {
+      var totalPercentage = self.bars.reduce(function(total, bar) {
+        bar.percent = +(100 * bar.value / bar.max).toFixed(2);
+        return total + bar.percent;
+      }, 0);
+
+      if (totalPercentage > 100) {
+        bar.percent -= totalPercentage - 100;
+      }
+    };
+
+    bar.$on('$destroy', function() {
+      element = null;
+      self.removeBar(bar);
+    });
+  };
+
+  this.removeBar = function(bar) {
+    this.bars.splice(this.bars.indexOf(bar), 1);
+    this.bars.forEach(function (bar) {
+      bar.recalculatePercentage();
+    });
+  };
+
+  //$attrs.$observe('maxParam', function(maxParam) {
+  $scope.$watch('maxParam', function(maxParam) {
+    self.bars.forEach(function(bar) {
+      bar.max = getMaxOrDefault();
+      bar.recalculatePercentage();
+    });
+  });
+
+  function getMaxOrDefault () {
+    return angular.isDefined($scope.maxParam) ? $scope.maxParam : progressConfig.max;
+  }
+}])
+
+.directive('uibProgress', function() {
+  return {
+    replace: true,
+    transclude: true,
+    controller: 'UibProgressController',
+    require: 'uibProgress',
+    scope: {
+      maxParam: '=?max'
+    },
+    templateUrl: 'uib/template/progressbar/progress.html'
+  };
+})
+
+.directive('uibBar', function() {
+  return {
+    replace: true,
+    transclude: true,
+    require: '^uibProgress',
+    scope: {
+      value: '=',
+      type: '@'
+    },
+    templateUrl: 'uib/template/progressbar/bar.html',
+    link: function(scope, element, attrs, progressCtrl) {
+      progressCtrl.addBar(scope, element, attrs);
+    }
+  };
+})
+
+.directive('uibProgressbar', function() {
+  return {
+    replace: true,
+    transclude: true,
+    controller: 'UibProgressController',
+    scope: {
+      value: '=',
+      maxParam: '=?max',
+      type: '@'
+    },
+    templateUrl: 'uib/template/progressbar/progressbar.html',
+    link: function(scope, element, attrs, progressCtrl) {
+      progressCtrl.addBar(scope, angular.element(element.children()[0]), {title: attrs.title});
+    }
+  };
+});
+
+angular.module('ui.bootstrap.rating', [])
+
+.constant('uibRatingConfig', {
+  max: 5,
+  stateOn: null,
+  stateOff: null,
+  enableReset: true,
+  titles: ['one', 'two', 'three', 'four', 'five']
+})
+
+.controller('UibRatingController', ['$scope', '$attrs', 'uibRatingConfig', function($scope, $attrs, ratingConfig) {
+  var ngModelCtrl = { $setViewValue: angular.noop },
+    self = this;
+
+  this.init = function(ngModelCtrl_) {
+    ngModelCtrl = ngModelCtrl_;
+    ngModelCtrl.$render = this.render;
+
+    ngModelCtrl.$formatters.push(function(value) {
+      if (angular.isNumber(value) && value << 0 !== value) {
+        value = Math.round(value);
+      }
+
+      return value;
+    });
+
+    this.stateOn = angular.isDefined($attrs.stateOn) ? $scope.$parent.$eval($attrs.stateOn) : ratingConfig.stateOn;
+    this.stateOff = angular.isDefined($attrs.stateOff) ? $scope.$parent.$eval($attrs.stateOff) : ratingConfig.stateOff;
+    this.enableReset = angular.isDefined($attrs.enableReset) ?
+      $scope.$parent.$eval($attrs.enableReset) : ratingConfig.enableReset;
+    var tmpTitles = angular.isDefined($attrs.titles) ? $scope.$parent.$eval($attrs.titles) : ratingConfig.titles;
+    this.titles = angular.isArray(tmpTitles) && tmpTitles.length > 0 ?
+      tmpTitles : ratingConfig.titles;
+
+    var ratingStates = angular.isDefined($attrs.ratingStates) ?
+      $scope.$parent.$eval($attrs.ratingStates) :
+      new Array(angular.isDefined($attrs.max) ? $scope.$parent.$eval($attrs.max) : ratingConfig.max);
+    $scope.range = this.buildTemplateObjects(ratingStates);
+  };
+
+  this.buildTemplateObjects = function(states) {
+    for (var i = 0, n = states.length; i < n; i++) {
+      states[i] = angular.extend({ index: i }, { stateOn: this.stateOn, stateOff: this.stateOff, title: this.getTitle(i) }, states[i]);
+    }
+    return states;
+  };
+
+  this.getTitle = function(index) {
+    if (index >= this.titles.length) {
+      return index + 1;
+    }
+
+    return this.titles[index];
+  };
+
+  $scope.rate = function(value) {
+    if (!$scope.readonly && value >= 0 && value <= $scope.range.length) {
+      var newViewValue = self.enableReset && ngModelCtrl.$viewValue === value ? 0 : value;
+      ngModelCtrl.$setViewValue(newViewValue);
+      ngModelCtrl.$render();
+    }
+  };
+
+  $scope.enter = function(value) {
+    if (!$scope.readonly) {
+      $scope.value = value;
+    }
+    $scope.onHover({value: value});
+  };
+
+  $scope.reset = function() {
+    $scope.value = ngModelCtrl.$viewValue;
+    $scope.onLeave();
+  };
+
+  $scope.onKeydown = function(evt) {
+    if (/(37|38|39|40)/.test(evt.which)) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      $scope.rate($scope.value + (evt.which === 38 || evt.which === 39 ? 1 : -1));
+    }
+  };
+
+  this.render = function() {
+    $scope.value = ngModelCtrl.$viewValue;
+    $scope.title = self.getTitle($scope.value - 1);
+  };
+}])
+
+.directive('uibRating', function() {
+  return {
+    require: ['uibRating', 'ngModel'],
+    restrict: 'A',
+    scope: {
+      readonly: '=?readOnly',
+      onHover: '&',
+      onLeave: '&'
+    },
+    controller: 'UibRatingController',
+    templateUrl: 'uib/template/rating/rating.html',
+    link: function(scope, element, attrs, ctrls) {
+      var ratingCtrl = ctrls[0], ngModelCtrl = ctrls[1];
+      ratingCtrl.init(ngModelCtrl);
+    }
+  };
+});
+
+angular.module('ui.bootstrap.tabs', [])
+
+.controller('UibTabsetController', ['$scope', function ($scope) {
+  var ctrl = this,
+    oldIndex;
+  ctrl.tabs = [];
+
+  ctrl.select = function(index, evt) {
+    if (!destroyed) {
+      var previousIndex = findTabIndex(oldIndex);
+      var previousSelected = ctrl.tabs[previousIndex];
+      if (previousSelected) {
+        previousSelected.tab.onDeselect({
+          $event: evt,
+          $selectedIndex: index
+        });
+        if (evt && evt.isDefaultPrevented()) {
+          return;
+        }
+        previousSelected.tab.active = false;
+      }
+
+      var selected = ctrl.tabs[index];
+      if (selected) {
+        selected.tab.onSelect({
+          $event: evt
+        });
+        selected.tab.active = true;
+        ctrl.active = selected.index;
+        oldIndex = selected.index;
+      } else if (!selected && angular.isDefined(oldIndex)) {
+        ctrl.active = null;
+        oldIndex = null;
+      }
+    }
+  };
+
+  ctrl.addTab = function addTab(tab) {
+    ctrl.tabs.push({
+      tab: tab,
+      index: tab.index
+    });
+    ctrl.tabs.sort(function(t1, t2) {
+      if (t1.index > t2.index) {
+        return 1;
+      }
+
+      if (t1.index < t2.index) {
+        return -1;
+      }
+
+      return 0;
+    });
+
+    if (tab.index === ctrl.active || !angular.isDefined(ctrl.active) && ctrl.tabs.length === 1) {
+      var newActiveIndex = findTabIndex(tab.index);
+      ctrl.select(newActiveIndex);
+    }
+  };
+
+  ctrl.removeTab = function removeTab(tab) {
+    var index;
+    for (var i = 0; i < ctrl.tabs.length; i++) {
+      if (ctrl.tabs[i].tab === tab) {
+        index = i;
+        break;
+      }
+    }
+
+    if (ctrl.tabs[index].index === ctrl.active) {
+      var newActiveTabIndex = index === ctrl.tabs.length - 1 ?
+        index - 1 : index + 1 % ctrl.tabs.length;
+      ctrl.select(newActiveTabIndex);
+    }
+
+    ctrl.tabs.splice(index, 1);
+  };
+
+  $scope.$watch('tabset.active', function(val) {
+    if (angular.isDefined(val) && val !== oldIndex) {
+      ctrl.select(findTabIndex(val));
+    }
+  });
+
+  var destroyed;
+  $scope.$on('$destroy', function() {
+    destroyed = true;
+  });
+
+  function findTabIndex(index) {
+    for (var i = 0; i < ctrl.tabs.length; i++) {
+      if (ctrl.tabs[i].index === index) {
+        return i;
+      }
+    }
+  }
+}])
+
+.directive('uibTabset', function() {
+  return {
+    transclude: true,
+    replace: true,
+    scope: {},
+    bindToController: {
+      active: '=?',
+      type: '@'
+    },
+    controller: 'UibTabsetController',
+    controllerAs: 'tabset',
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/tabs/tabset.html';
+    },
+    link: function(scope, element, attrs) {
+      scope.vertical = angular.isDefined(attrs.vertical) ?
+        scope.$parent.$eval(attrs.vertical) : false;
+      scope.justified = angular.isDefined(attrs.justified) ?
+        scope.$parent.$eval(attrs.justified) : false;
+    }
+  };
+})
+
+.directive('uibTab', ['$parse', function($parse) {
+  return {
+    require: '^uibTabset',
+    replace: true,
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || 'uib/template/tabs/tab.html';
+    },
+    transclude: true,
+    scope: {
+      heading: '@',
+      index: '=?',
+      classes: '@?',
+      onSelect: '&select', //This callback is called in contentHeadingTransclude
+                          //once it inserts the tab's content into the dom
+      onDeselect: '&deselect'
+    },
+    controller: function() {
+      //Empty controller so other directives can require being 'under' a tab
+    },
+    controllerAs: 'tab',
+    link: function(scope, elm, attrs, tabsetCtrl, transclude) {
+      scope.disabled = false;
+      if (attrs.disable) {
+        scope.$parent.$watch($parse(attrs.disable), function(value) {
+          scope.disabled = !! value;
+        });
+      }
+
+      if (angular.isUndefined(attrs.index)) {
+        if (tabsetCtrl.tabs && tabsetCtrl.tabs.length) {
+          scope.index = Math.max.apply(null, tabsetCtrl.tabs.map(function(t) { return t.index; })) + 1;
+        } else {
+          scope.index = 0;
+        }
+      }
+
+      if (angular.isUndefined(attrs.classes)) {
+        scope.classes = '';
+      }
+
+      scope.select = function(evt) {
+        if (!scope.disabled) {
+          var index;
+          for (var i = 0; i < tabsetCtrl.tabs.length; i++) {
+            if (tabsetCtrl.tabs[i].tab === scope) {
+              index = i;
+              break;
+            }
+          }
+
+          tabsetCtrl.select(index, evt);
+        }
+      };
+
+      tabsetCtrl.addTab(scope);
+      scope.$on('$destroy', function() {
+        tabsetCtrl.removeTab(scope);
+      });
+
+      //We need to transclude later, once the content container is ready.
+      //when this link happens, we're inside a tab heading.
+      scope.$transcludeFn = transclude;
+    }
+  };
+}])
+
+.directive('uibTabHeadingTransclude', function() {
+  return {
+    restrict: 'A',
+    require: '^uibTab',
+    link: function(scope, elm) {
+      scope.$watch('headingElement', function updateHeadingElement(heading) {
+        if (heading) {
+          elm.html('');
+          elm.append(heading);
+        }
+      });
+    }
+  };
+})
+
+.directive('uibTabContentTransclude', function() {
+  return {
+    restrict: 'A',
+    require: '^uibTabset',
+    link: function(scope, elm, attrs) {
+      var tab = scope.$eval(attrs.uibTabContentTransclude).tab;
+
+      //Now our tab is ready to be transcluded: both the tab heading area
+      //and the tab content area are loaded.  Transclude 'em both.
+      tab.$transcludeFn(tab.$parent, function(contents) {
+        angular.forEach(contents, function(node) {
+          if (isTabHeading(node)) {
+            //Let tabHeadingTransclude know.
+            tab.headingElement = node;
+          } else {
+            elm.append(node);
+          }
+        });
+      });
+    }
+  };
+
+  function isTabHeading(node) {
+    return node.tagName && (
+      node.hasAttribute('uib-tab-heading') ||
+      node.hasAttribute('data-uib-tab-heading') ||
+      node.hasAttribute('x-uib-tab-heading') ||
+      node.tagName.toLowerCase() === 'uib-tab-heading' ||
+      node.tagName.toLowerCase() === 'data-uib-tab-heading' ||
+      node.tagName.toLowerCase() === 'x-uib-tab-heading' ||
+      node.tagName.toLowerCase() === 'uib:tab-heading'
+    );
+  }
+});
+
+angular.module('ui.bootstrap.timepicker', [])
+
+.constant('uibTimepickerConfig', {
+  hourStep: 1,
+  minuteStep: 1,
+  secondStep: 1,
+  showMeridian: true,
+  showSeconds: false,
+  meridians: null,
+  readonlyInput: false,
+  mousewheel: true,
+  arrowkeys: true,
+  showSpinners: true,
+  templateUrl: 'uib/template/timepicker/timepicker.html'
+})
+
+.controller('UibTimepickerController', ['$scope', '$element', '$attrs', '$parse', '$log', '$locale', 'uibTimepickerConfig', function($scope, $element, $attrs, $parse, $log, $locale, timepickerConfig) {
+  var hoursModelCtrl, minutesModelCtrl, secondsModelCtrl;
+  var selected = new Date(),
+    watchers = [],
+    ngModelCtrl = { $setViewValue: angular.noop }, // nullModelCtrl
+    meridians = angular.isDefined($attrs.meridians) ? $scope.$parent.$eval($attrs.meridians) : timepickerConfig.meridians || $locale.DATETIME_FORMATS.AMPMS,
+    padHours = angular.isDefined($attrs.padHours) ? $scope.$parent.$eval($attrs.padHours) : true;
+
+  $scope.tabindex = angular.isDefined($attrs.tabindex) ? $attrs.tabindex : 0;
+  $element.removeAttr('tabindex');
+
+  this.init = function(ngModelCtrl_, inputs) {
+    ngModelCtrl = ngModelCtrl_;
+    ngModelCtrl.$render = this.render;
+
+    ngModelCtrl.$formatters.unshift(function(modelValue) {
+      return modelValue ? new Date(modelValue) : null;
+    });
+
+    var hoursInputEl = inputs.eq(0),
+        minutesInputEl = inputs.eq(1),
+        secondsInputEl = inputs.eq(2);
+
+    hoursModelCtrl = hoursInputEl.controller('ngModel');
+    minutesModelCtrl = minutesInputEl.controller('ngModel');
+    secondsModelCtrl = secondsInputEl.controller('ngModel');
+
+    var mousewheel = angular.isDefined($attrs.mousewheel) ? $scope.$parent.$eval($attrs.mousewheel) : timepickerConfig.mousewheel;
+
+    if (mousewheel) {
+      this.setupMousewheelEvents(hoursInputEl, minutesInputEl, secondsInputEl);
+    }
+
+    var arrowkeys = angular.isDefined($attrs.arrowkeys) ? $scope.$parent.$eval($attrs.arrowkeys) : timepickerConfig.arrowkeys;
+    if (arrowkeys) {
+      this.setupArrowkeyEvents(hoursInputEl, minutesInputEl, secondsInputEl);
+    }
+
+    $scope.readonlyInput = angular.isDefined($attrs.readonlyInput) ? $scope.$parent.$eval($attrs.readonlyInput) : timepickerConfig.readonlyInput;
+    this.setupInputEvents(hoursInputEl, minutesInputEl, secondsInputEl);
+  };
+
+  var hourStep = timepickerConfig.hourStep;
+  if ($attrs.hourStep) {
+    watchers.push($scope.$parent.$watch($parse($attrs.hourStep), function(value) {
+      hourStep = +value;
+    }));
+  }
+
+  var minuteStep = timepickerConfig.minuteStep;
+  if ($attrs.minuteStep) {
+    watchers.push($scope.$parent.$watch($parse($attrs.minuteStep), function(value) {
+      minuteStep = +value;
+    }));
+  }
+
+  var min;
+  watchers.push($scope.$parent.$watch($parse($attrs.min), function(value) {
+    var dt = new Date(value);
+    min = isNaN(dt) ? undefined : dt;
+  }));
+
+  var max;
+  watchers.push($scope.$parent.$watch($parse($attrs.max), function(value) {
+    var dt = new Date(value);
+    max = isNaN(dt) ? undefined : dt;
+  }));
+
+  var disabled = false;
+  if ($attrs.ngDisabled) {
+    watchers.push($scope.$parent.$watch($parse($attrs.ngDisabled), function(value) {
+      disabled = value;
+    }));
+  }
+
+  $scope.noIncrementHours = function() {
+    var incrementedSelected = addMinutes(selected, hourStep * 60);
+    return disabled || incrementedSelected > max ||
+      incrementedSelected < selected && incrementedSelected < min;
+  };
+
+  $scope.noDecrementHours = function() {
+    var decrementedSelected = addMinutes(selected, -hourStep * 60);
+    return disabled || decrementedSelected < min ||
+      decrementedSelected > selected && decrementedSelected > max;
+  };
+
+  $scope.noIncrementMinutes = function() {
+    var incrementedSelected = addMinutes(selected, minuteStep);
+    return disabled || incrementedSelected > max ||
+      incrementedSelected < selected && incrementedSelected < min;
+  };
+
+  $scope.noDecrementMinutes = function() {
+    var decrementedSelected = addMinutes(selected, -minuteStep);
+    return disabled || decrementedSelected < min ||
+      decrementedSelected > selected && decrementedSelected > max;
+  };
+
+  $scope.noIncrementSeconds = function() {
+    var incrementedSelected = addSeconds(selected, secondStep);
+    return disabled || incrementedSelected > max ||
+      incrementedSelected < selected && incrementedSelected < min;
+  };
+
+  $scope.noDecrementSeconds = function() {
+    var decrementedSelected = addSeconds(selected, -secondStep);
+    return disabled || decrementedSelected < min ||
+      decrementedSelected > selected && decrementedSelected > max;
+  };
+
+  $scope.noToggleMeridian = function() {
+    if (selected.getHours() < 12) {
+      return disabled || addMinutes(selected, 12 * 60) > max;
+    }
+
+    return disabled || addMinutes(selected, -12 * 60) < min;
+  };
+
+  var secondStep = timepickerConfig.secondStep;
+  if ($attrs.secondStep) {
+    watchers.push($scope.$parent.$watch($parse($attrs.secondStep), function(value) {
+      secondStep = +value;
+    }));
+  }
+
+  $scope.showSeconds = timepickerConfig.showSeconds;
+  if ($attrs.showSeconds) {
+    watchers.push($scope.$parent.$watch($parse($attrs.showSeconds), function(value) {
+      $scope.showSeconds = !!value;
+    }));
+  }
+
+  // 12H / 24H mode
+  $scope.showMeridian = timepickerConfig.showMeridian;
+  if ($attrs.showMeridian) {
+    watchers.push($scope.$parent.$watch($parse($attrs.showMeridian), function(value) {
+      $scope.showMeridian = !!value;
+
+      if (ngModelCtrl.$error.time) {
+        // Evaluate from template
+        var hours = getHoursFromTemplate(), minutes = getMinutesFromTemplate();
+        if (angular.isDefined(hours) && angular.isDefined(minutes)) {
+          selected.setHours(hours);
+          refresh();
+        }
+      } else {
+        updateTemplate();
+      }
+    }));
+  }
+
+  // Get $scope.hours in 24H mode if valid
+  function getHoursFromTemplate() {
+    var hours = +$scope.hours;
+    var valid = $scope.showMeridian ? hours > 0 && hours < 13 :
+      hours >= 0 && hours < 24;
+    if (!valid || $scope.hours === '') {
+      return undefined;
+    }
+
+    if ($scope.showMeridian) {
+      if (hours === 12) {
+        hours = 0;
+      }
+      if ($scope.meridian === meridians[1]) {
+        hours = hours + 12;
+      }
+    }
+    return hours;
+  }
+
+  function getMinutesFromTemplate() {
+    var minutes = +$scope.minutes;
+    var valid = minutes >= 0 && minutes < 60;
+    if (!valid || $scope.minutes === '') {
+      return undefined;
+    }
+    return minutes;
+  }
+
+  function getSecondsFromTemplate() {
+    var seconds = +$scope.seconds;
+    return seconds >= 0 && seconds < 60 ? seconds : undefined;
+  }
+
+  function pad(value, noPad) {
+    if (value === null) {
+      return '';
+    }
+
+    return angular.isDefined(value) && value.toString().length < 2 && !noPad ?
+      '0' + value : value.toString();
+  }
+
+  // Respond on mousewheel spin
+  this.setupMousewheelEvents = function(hoursInputEl, minutesInputEl, secondsInputEl) {
+    var isScrollingUp = function(e) {
+      if (e.originalEvent) {
+        e = e.originalEvent;
+      }
+      //pick correct delta variable depending on event
+      var delta = e.wheelDelta ? e.wheelDelta : -e.deltaY;
+      return e.detail || delta > 0;
+    };
+
+    hoursInputEl.on('mousewheel wheel', function(e) {
+      if (!disabled) {
+        $scope.$apply(isScrollingUp(e) ? $scope.incrementHours() : $scope.decrementHours());
+      }
+      e.preventDefault();
+    });
+
+    minutesInputEl.on('mousewheel wheel', function(e) {
+      if (!disabled) {
+        $scope.$apply(isScrollingUp(e) ? $scope.incrementMinutes() : $scope.decrementMinutes());
+      }
+      e.preventDefault();
+    });
+
+     secondsInputEl.on('mousewheel wheel', function(e) {
+      if (!disabled) {
+        $scope.$apply(isScrollingUp(e) ? $scope.incrementSeconds() : $scope.decrementSeconds());
+      }
+      e.preventDefault();
+    });
+  };
+
+  // Respond on up/down arrowkeys
+  this.setupArrowkeyEvents = function(hoursInputEl, minutesInputEl, secondsInputEl) {
+    hoursInputEl.on('keydown', function(e) {
+      if (!disabled) {
+        if (e.which === 38) { // up
+          e.preventDefault();
+          $scope.incrementHours();
+          $scope.$apply();
+        } else if (e.which === 40) { // down
+          e.preventDefault();
+          $scope.decrementHours();
+          $scope.$apply();
+        }
+      }
+    });
+
+    minutesInputEl.on('keydown', function(e) {
+      if (!disabled) {
+        if (e.which === 38) { // up
+          e.preventDefault();
+          $scope.incrementMinutes();
+          $scope.$apply();
+        } else if (e.which === 40) { // down
+          e.preventDefault();
+          $scope.decrementMinutes();
+          $scope.$apply();
+        }
+      }
+    });
+
+    secondsInputEl.on('keydown', function(e) {
+      if (!disabled) {
+        if (e.which === 38) { // up
+          e.preventDefault();
+          $scope.incrementSeconds();
+          $scope.$apply();
+        } else if (e.which === 40) { // down
+          e.preventDefault();
+          $scope.decrementSeconds();
+          $scope.$apply();
+        }
+      }
+    });
+  };
+
+  this.setupInputEvents = function(hoursInputEl, minutesInputEl, secondsInputEl) {
+    if ($scope.readonlyInput) {
+      $scope.updateHours = angular.noop;
+      $scope.updateMinutes = angular.noop;
+      $scope.updateSeconds = angular.noop;
+      return;
+    }
+
+    var invalidate = function(invalidHours, invalidMinutes, invalidSeconds) {
+      ngModelCtrl.$setViewValue(null);
+      ngModelCtrl.$setValidity('time', false);
+      if (angular.isDefined(invalidHours)) {
+        $scope.invalidHours = invalidHours;
+        if (hoursModelCtrl) {
+          hoursModelCtrl.$setValidity('hours', false);
+        }
+      }
+
+      if (angular.isDefined(invalidMinutes)) {
+        $scope.invalidMinutes = invalidMinutes;
+        if (minutesModelCtrl) {
+          minutesModelCtrl.$setValidity('minutes', false);
+        }
+      }
+
+      if (angular.isDefined(invalidSeconds)) {
+        $scope.invalidSeconds = invalidSeconds;
+        if (secondsModelCtrl) {
+          secondsModelCtrl.$setValidity('seconds', false);
+        }
+      }
+    };
+
+    $scope.updateHours = function() {
+      var hours = getHoursFromTemplate(),
+        minutes = getMinutesFromTemplate();
+
+      ngModelCtrl.$setDirty();
+
+      if (angular.isDefined(hours) && angular.isDefined(minutes)) {
+        selected.setHours(hours);
+        selected.setMinutes(minutes);
+        if (selected < min || selected > max) {
+          invalidate(true);
+        } else {
+          refresh('h');
+        }
+      } else {
+        invalidate(true);
+      }
+    };
+
+    hoursInputEl.on('blur', function(e) {
+      ngModelCtrl.$setTouched();
+      if (modelIsEmpty()) {
+        makeValid();
+      } else if ($scope.hours === null || $scope.hours === '') {
+        invalidate(true);
+      } else if (!$scope.invalidHours && $scope.hours < 10) {
+        $scope.$apply(function() {
+          $scope.hours = pad($scope.hours, !padHours);
+        });
+      }
+    });
+
+    $scope.updateMinutes = function() {
+      var minutes = getMinutesFromTemplate(),
+        hours = getHoursFromTemplate();
+
+      ngModelCtrl.$setDirty();
+
+      if (angular.isDefined(minutes) && angular.isDefined(hours)) {
+        selected.setHours(hours);
+        selected.setMinutes(minutes);
+        if (selected < min || selected > max) {
+          invalidate(undefined, true);
+        } else {
+          refresh('m');
+        }
+      } else {
+        invalidate(undefined, true);
+      }
+    };
+
+    minutesInputEl.on('blur', function(e) {
+      ngModelCtrl.$setTouched();
+      if (modelIsEmpty()) {
+        makeValid();
+      } else if ($scope.minutes === null) {
+        invalidate(undefined, true);
+      } else if (!$scope.invalidMinutes && $scope.minutes < 10) {
+        $scope.$apply(function() {
+          $scope.minutes = pad($scope.minutes);
+        });
+      }
+    });
+
+    $scope.updateSeconds = function() {
+      var seconds = getSecondsFromTemplate();
+
+      ngModelCtrl.$setDirty();
+
+      if (angular.isDefined(seconds)) {
+        selected.setSeconds(seconds);
+        refresh('s');
+      } else {
+        invalidate(undefined, undefined, true);
+      }
+    };
+
+    secondsInputEl.on('blur', function(e) {
+      if (modelIsEmpty()) {
+        makeValid();
+      } else if (!$scope.invalidSeconds && $scope.seconds < 10) {
+        $scope.$apply( function() {
+          $scope.seconds = pad($scope.seconds);
+        });
+      }
+    });
+
+  };
+
+  this.render = function() {
+    var date = ngModelCtrl.$viewValue;
+
+    if (isNaN(date)) {
+      ngModelCtrl.$setValidity('time', false);
+      $log.error('Timepicker directive: "ng-model" value must be a Date object, a number of milliseconds since 01.01.1970 or a string representing an RFC2822 or ISO 8601 date.');
+    } else {
+      if (date) {
+        selected = date;
+      }
+
+      if (selected < min || selected > max) {
+        ngModelCtrl.$setValidity('time', false);
+        $scope.invalidHours = true;
+        $scope.invalidMinutes = true;
+      } else {
+        makeValid();
+      }
+      updateTemplate();
+    }
+  };
+
+  // Call internally when we know that model is valid.
+  function refresh(keyboardChange) {
+    makeValid();
+    ngModelCtrl.$setViewValue(new Date(selected));
+    updateTemplate(keyboardChange);
+  }
+
+  function makeValid() {
+    if (hoursModelCtrl) {
+      hoursModelCtrl.$setValidity('hours', true);
+    }
+
+    if (minutesModelCtrl) {
+      minutesModelCtrl.$setValidity('minutes', true);
+    }
+
+    if (secondsModelCtrl) {
+      secondsModelCtrl.$setValidity('seconds', true);
+    }
+
+    ngModelCtrl.$setValidity('time', true);
+    $scope.invalidHours = false;
+    $scope.invalidMinutes = false;
+    $scope.invalidSeconds = false;
+  }
+
+  function updateTemplate(keyboardChange) {
+    if (!ngModelCtrl.$modelValue) {
+      $scope.hours = null;
+      $scope.minutes = null;
+      $scope.seconds = null;
+      $scope.meridian = meridians[0];
+    } else {
+      var hours = selected.getHours(),
+        minutes = selected.getMinutes(),
+        seconds = selected.getSeconds();
+
+      if ($scope.showMeridian) {
+        hours = hours === 0 || hours === 12 ? 12 : hours % 12; // Convert 24 to 12 hour system
+      }
+
+      $scope.hours = keyboardChange === 'h' ? hours : pad(hours, !padHours);
+      if (keyboardChange !== 'm') {
+        $scope.minutes = pad(minutes);
+      }
+      $scope.meridian = selected.getHours() < 12 ? meridians[0] : meridians[1];
+
+      if (keyboardChange !== 's') {
+        $scope.seconds = pad(seconds);
+      }
+      $scope.meridian = selected.getHours() < 12 ? meridians[0] : meridians[1];
+    }
+  }
+
+  function addSecondsToSelected(seconds) {
+    selected = addSeconds(selected, seconds);
+    refresh();
+  }
+
+  function addMinutes(selected, minutes) {
+    return addSeconds(selected, minutes*60);
+  }
+
+  function addSeconds(date, seconds) {
+    var dt = new Date(date.getTime() + seconds * 1000);
+    var newDate = new Date(date);
+    newDate.setHours(dt.getHours(), dt.getMinutes(), dt.getSeconds());
+    return newDate;
+  }
+
+  function modelIsEmpty() {
+    return ($scope.hours === null || $scope.hours === '') &&
+      ($scope.minutes === null || $scope.minutes === '') &&
+      (!$scope.showSeconds || $scope.showSeconds && ($scope.seconds === null || $scope.seconds === ''));
+  }
+
+  $scope.showSpinners = angular.isDefined($attrs.showSpinners) ?
+    $scope.$parent.$eval($attrs.showSpinners) : timepickerConfig.showSpinners;
+
+  $scope.incrementHours = function() {
+    if (!$scope.noIncrementHours()) {
+      addSecondsToSelected(hourStep * 60 * 60);
+    }
+  };
+
+  $scope.decrementHours = function() {
+    if (!$scope.noDecrementHours()) {
+      addSecondsToSelected(-hourStep * 60 * 60);
+    }
+  };
+
+  $scope.incrementMinutes = function() {
+    if (!$scope.noIncrementMinutes()) {
+      addSecondsToSelected(minuteStep * 60);
+    }
+  };
+
+  $scope.decrementMinutes = function() {
+    if (!$scope.noDecrementMinutes()) {
+      addSecondsToSelected(-minuteStep * 60);
+    }
+  };
+
+  $scope.incrementSeconds = function() {
+    if (!$scope.noIncrementSeconds()) {
+      addSecondsToSelected(secondStep);
+    }
+  };
+
+  $scope.decrementSeconds = function() {
+    if (!$scope.noDecrementSeconds()) {
+      addSecondsToSelected(-secondStep);
+    }
+  };
+
+  $scope.toggleMeridian = function() {
+    var minutes = getMinutesFromTemplate(),
+        hours = getHoursFromTemplate();
+
+    if (!$scope.noToggleMeridian()) {
+      if (angular.isDefined(minutes) && angular.isDefined(hours)) {
+        addSecondsToSelected(12 * 60 * (selected.getHours() < 12 ? 60 : -60));
+      } else {
+        $scope.meridian = $scope.meridian === meridians[0] ? meridians[1] : meridians[0];
+      }
+    }
+  };
+
+  $scope.blur = function() {
+    ngModelCtrl.$setTouched();
+  };
+
+  $scope.$on('$destroy', function() {
+    while (watchers.length) {
+      watchers.shift()();
+    }
+  });
+}])
+
+.directive('uibTimepicker', ['uibTimepickerConfig', function(uibTimepickerConfig) {
+  return {
+    require: ['uibTimepicker', '?^ngModel'],
+    restrict: 'A',
+    controller: 'UibTimepickerController',
+    controllerAs: 'timepicker',
+    scope: {},
+    templateUrl: function(element, attrs) {
+      return attrs.templateUrl || uibTimepickerConfig.templateUrl;
+    },
+    link: function(scope, element, attrs, ctrls) {
+      var timepickerCtrl = ctrls[0], ngModelCtrl = ctrls[1];
+
+      if (ngModelCtrl) {
+        timepickerCtrl.init(ngModelCtrl, element.find('input'));
+      }
+    }
+  };
+}]);
+
+angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.debounce', 'ui.bootstrap.position'])
+
+/**
+ * A helper service that can parse typeahead's syntax (string provided by users)
+ * Extracted to a separate service for ease of unit testing
+ */
+  .factory('uibTypeaheadParser', ['$parse', function($parse) {
+    //                      000001111111100000000000002222222200000000000000003333333333333330000000000044444444000
+    var TYPEAHEAD_REGEXP = /^\s*([\s\S]+?)(?:\s+as\s+([\s\S]+?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+([\s\S]+?)$/;
+    return {
+      parse: function(input) {
+        var match = input.match(TYPEAHEAD_REGEXP);
+        if (!match) {
+          throw new Error(
+            'Expected typeahead specification in form of "_modelValue_ (as _label_)? for _item_ in _collection_"' +
+              ' but got "' + input + '".');
+        }
+
+        return {
+          itemName: match[3],
+          source: $parse(match[4]),
+          viewMapper: $parse(match[2] || match[1]),
+          modelMapper: $parse(match[1])
+        };
+      }
+    };
+  }])
+
+  .controller('UibTypeaheadController', ['$scope', '$element', '$attrs', '$compile', '$parse', '$q', '$timeout', '$document', '$window', '$rootScope', '$$debounce', '$uibPosition', 'uibTypeaheadParser',
+    function(originalScope, element, attrs, $compile, $parse, $q, $timeout, $document, $window, $rootScope, $$debounce, $position, typeaheadParser) {
+    var HOT_KEYS = [9, 13, 27, 38, 40];
+    var eventDebounceTime = 200;
+    var modelCtrl, ngModelOptions;
+    //SUPPORTED ATTRIBUTES (OPTIONS)
+
+    //minimal no of characters that needs to be entered before typeahead kicks-in
+    var minLength = originalScope.$eval(attrs.typeaheadMinLength);
+    if (!minLength && minLength !== 0) {
+      minLength = 1;
+    }
+
+    originalScope.$watch(attrs.typeaheadMinLength, function (newVal) {
+        minLength = !newVal && newVal !== 0 ? 1 : newVal;
+    });
+
+    //minimal wait time after last character typed before typeahead kicks-in
+    var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
+
+    //should it restrict model values to the ones selected from the popup only?
+    var isEditable = originalScope.$eval(attrs.typeaheadEditable) !== false;
+    originalScope.$watch(attrs.typeaheadEditable, function (newVal) {
+      isEditable = newVal !== false;
+    });
+
+    //binding to a variable that indicates if matches are being retrieved asynchronously
+    var isLoadingSetter = $parse(attrs.typeaheadLoading).assign || angular.noop;
+
+    //a function to determine if an event should cause selection
+    var isSelectEvent = attrs.typeaheadShouldSelect ? $parse(attrs.typeaheadShouldSelect) : function(scope, vals) {
+      var evt = vals.$event;
+      return evt.which === 13 || evt.which === 9;
+    };
+
+    //a callback executed when a match is selected
+    var onSelectCallback = $parse(attrs.typeaheadOnSelect);
+
+    //should it select highlighted popup value when losing focus?
+    var isSelectOnBlur = angular.isDefined(attrs.typeaheadSelectOnBlur) ? originalScope.$eval(attrs.typeaheadSelectOnBlur) : false;
+
+    //binding to a variable that indicates if there were no results after the query is completed
+    var isNoResultsSetter = $parse(attrs.typeaheadNoResults).assign || angular.noop;
+
+    var inputFormatter = attrs.typeaheadInputFormatter ? $parse(attrs.typeaheadInputFormatter) : undefined;
+
+    var appendToBody = attrs.typeaheadAppendToBody ? originalScope.$eval(attrs.typeaheadAppendToBody) : false;
+
+    var appendTo = attrs.typeaheadAppendTo ?
+      originalScope.$eval(attrs.typeaheadAppendTo) : null;
+
+    var focusFirst = originalScope.$eval(attrs.typeaheadFocusFirst) !== false;
+
+    //If input matches an item of the list exactly, select it automatically
+    var selectOnExact = attrs.typeaheadSelectOnExact ? originalScope.$eval(attrs.typeaheadSelectOnExact) : false;
+
+    //binding to a variable that indicates if dropdown is open
+    var isOpenSetter = $parse(attrs.typeaheadIsOpen).assign || angular.noop;
+
+    var showHint = originalScope.$eval(attrs.typeaheadShowHint) || false;
+
+    //INTERNAL VARIABLES
+
+    //model setter executed upon match selection
+    var parsedModel = $parse(attrs.ngModel);
+    var invokeModelSetter = $parse(attrs.ngModel + '($$$p)');
+    var $setModelValue = function(scope, newValue) {
+      if (angular.isFunction(parsedModel(originalScope)) &&
+        ngModelOptions.getOption('getterSetter')) {
+        return invokeModelSetter(scope, {$$$p: newValue});
+      }
+
+      return parsedModel.assign(scope, newValue);
+    };
+
+    //expressions used by typeahead
+    var parserResult = typeaheadParser.parse(attrs.uibTypeahead);
+
+    var hasFocus;
+
+    //Used to avoid bug in iOS webview where iOS keyboard does not fire
+    //mousedown & mouseup events
+    //Issue #3699
+    var selected;
+
+    //create a child scope for the typeahead directive so we are not polluting original scope
+    //with typeahead-specific data (matches, query etc.)
+    var scope = originalScope.$new();
+    var offDestroy = originalScope.$on('$destroy', function() {
+      scope.$destroy();
+    });
+    scope.$on('$destroy', offDestroy);
+
+    // WAI-ARIA
+    var popupId = 'typeahead-' + scope.$id + '-' + Math.floor(Math.random() * 10000);
+    element.attr({
+      'aria-autocomplete': 'list',
+      'aria-expanded': false,
+      'aria-owns': popupId
+    });
+
+    var inputsContainer, hintInputElem;
+    //add read-only input to show hint
+    if (showHint) {
+      inputsContainer = angular.element('<div></div>');
+      inputsContainer.css('position', 'relative');
+      element.after(inputsContainer);
+      hintInputElem = element.clone();
+      hintInputElem.attr('placeholder', '');
+      hintInputElem.attr('tabindex', '-1');
+      hintInputElem.val('');
+      hintInputElem.css({
+        'position': 'absolute',
+        'top': '0px',
+        'left': '0px',
+        'border-color': 'transparent',
+        'box-shadow': 'none',
+        'opacity': 1,
+        'background': 'none 0% 0% / auto repeat scroll padding-box border-box rgb(255, 255, 255)',
+        'color': '#999'
+      });
+      element.css({
+        'position': 'relative',
+        'vertical-align': 'top',
+        'background-color': 'transparent'
+      });
+
+      if (hintInputElem.attr('id')) {
+        hintInputElem.removeAttr('id'); // remove duplicate id if present.
+      }
+      inputsContainer.append(hintInputElem);
+      hintInputElem.after(element);
+    }
+
+    //pop-up element used to display matches
+    var popUpEl = angular.element('<div uib-typeahead-popup></div>');
+    popUpEl.attr({
+      id: popupId,
+      matches: 'matches',
+      active: 'activeIdx',
+      select: 'select(activeIdx, evt)',
+      'move-in-progress': 'moveInProgress',
+      query: 'query',
+      position: 'position',
+      'assign-is-open': 'assignIsOpen(isOpen)',
+      debounce: 'debounceUpdate'
+    });
+    //custom item template
+    if (angular.isDefined(attrs.typeaheadTemplateUrl)) {
+      popUpEl.attr('template-url', attrs.typeaheadTemplateUrl);
+    }
+
+    if (angular.isDefined(attrs.typeaheadPopupTemplateUrl)) {
+      popUpEl.attr('popup-template-url', attrs.typeaheadPopupTemplateUrl);
+    }
+
+    var resetHint = function() {
+      if (showHint) {
+        hintInputElem.val('');
+      }
+    };
+
+    var resetMatches = function() {
+      scope.matches = [];
+      scope.activeIdx = -1;
+      element.attr('aria-expanded', false);
+      resetHint();
+    };
+
+    var getMatchId = function(index) {
+      return popupId + '-option-' + index;
+    };
+
+    // Indicate that the specified match is the active (pre-selected) item in the list owned by this typeahead.
+    // This attribute is added or removed automatically when the `activeIdx` changes.
+    scope.$watch('activeIdx', function(index) {
+      if (index < 0) {
+        element.removeAttr('aria-activedescendant');
+      } else {
+        element.attr('aria-activedescendant', getMatchId(index));
+      }
+    });
+
+    var inputIsExactMatch = function(inputValue, index) {
+      if (scope.matches.length > index && inputValue) {
+        return inputValue.toUpperCase() === scope.matches[index].label.toUpperCase();
+      }
+
+      return false;
+    };
+
+    var getMatchesAsync = function(inputValue, evt) {
+      var locals = {$viewValue: inputValue};
+      isLoadingSetter(originalScope, true);
+      isNoResultsSetter(originalScope, false);
+      $q.when(parserResult.source(originalScope, locals)).then(function(matches) {
+        //it might happen that several async queries were in progress if a user were typing fast
+        //but we are interested only in responses that correspond to the current view value
+        var onCurrentRequest = inputValue === modelCtrl.$viewValue;
+        if (onCurrentRequest && hasFocus) {
+          if (matches && matches.length > 0) {
+            scope.activeIdx = focusFirst ? 0 : -1;
+            isNoResultsSetter(originalScope, false);
+            scope.matches.length = 0;
+
+            //transform labels
+            for (var i = 0; i < matches.length; i++) {
+              locals[parserResult.itemName] = matches[i];
+              scope.matches.push({
+                id: getMatchId(i),
+                label: parserResult.viewMapper(scope, locals),
+                model: matches[i]
+              });
+            }
+
+            scope.query = inputValue;
+            //position pop-up with matches - we need to re-calculate its position each time we are opening a window
+            //with matches as a pop-up might be absolute-positioned and position of an input might have changed on a page
+            //due to other elements being rendered
+            recalculatePosition();
+
+            element.attr('aria-expanded', true);
+
+            //Select the single remaining option if user input matches
+            if (selectOnExact && scope.matches.length === 1 && inputIsExactMatch(inputValue, 0)) {
+              if (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate)) {
+                $$debounce(function() {
+                  scope.select(0, evt);
+                }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
+              } else {
+                scope.select(0, evt);
+              }
+            }
+
+            if (showHint) {
+              var firstLabel = scope.matches[0].label;
+              if (angular.isString(inputValue) &&
+                inputValue.length > 0 &&
+                firstLabel.slice(0, inputValue.length).toUpperCase() === inputValue.toUpperCase()) {
+                hintInputElem.val(inputValue + firstLabel.slice(inputValue.length));
+              } else {
+                hintInputElem.val('');
+              }
+            }
+          } else {
+            resetMatches();
+            isNoResultsSetter(originalScope, true);
+          }
+        }
+        if (onCurrentRequest) {
+          isLoadingSetter(originalScope, false);
+        }
+      }, function() {
+        resetMatches();
+        isLoadingSetter(originalScope, false);
+        isNoResultsSetter(originalScope, true);
+      });
+    };
+
+    // bind events only if appendToBody params exist - performance feature
+    if (appendToBody) {
+      angular.element($window).on('resize', fireRecalculating);
+      $document.find('body').on('scroll', fireRecalculating);
+    }
+
+    // Declare the debounced function outside recalculating for
+    // proper debouncing
+    var debouncedRecalculate = $$debounce(function() {
+      // if popup is visible
+      if (scope.matches.length) {
+        recalculatePosition();
+      }
+
+      scope.moveInProgress = false;
+    }, eventDebounceTime);
+
+    // Default progress type
+    scope.moveInProgress = false;
+
+    function fireRecalculating() {
+      if (!scope.moveInProgress) {
+        scope.moveInProgress = true;
+        scope.$digest();
+      }
+
+      debouncedRecalculate();
+    }
+
+    // recalculate actual position and set new values to scope
+    // after digest loop is popup in right position
+    function recalculatePosition() {
+      scope.position = appendToBody ? $position.offset(element) : $position.position(element);
+      scope.position.top += element.prop('offsetHeight');
+    }
+
+    //we need to propagate user's query so we can higlight matches
+    scope.query = undefined;
+
+    //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
+    var timeoutPromise;
+
+    var scheduleSearchWithTimeout = function(inputValue) {
+      timeoutPromise = $timeout(function() {
+        getMatchesAsync(inputValue);
+      }, waitTime);
+    };
+
+    var cancelPreviousTimeout = function() {
+      if (timeoutPromise) {
+        $timeout.cancel(timeoutPromise);
+      }
+    };
+
+    resetMatches();
+
+    scope.assignIsOpen = function (isOpen) {
+      isOpenSetter(originalScope, isOpen);
+    };
+
+    scope.select = function(activeIdx, evt) {
+      //called from within the $digest() cycle
+      var locals = {};
+      var model, item;
+
+      selected = true;
+      locals[parserResult.itemName] = item = scope.matches[activeIdx].model;
+      model = parserResult.modelMapper(originalScope, locals);
+      $setModelValue(originalScope, model);
+      modelCtrl.$setValidity('editable', true);
+      modelCtrl.$setValidity('parse', true);
+
+      onSelectCallback(originalScope, {
+        $item: item,
+        $model: model,
+        $label: parserResult.viewMapper(originalScope, locals),
+        $event: evt
+      });
+
+      resetMatches();
+
+      //return focus to the input element if a match was selected via a mouse click event
+      // use timeout to avoid $rootScope:inprog error
+      if (scope.$eval(attrs.typeaheadFocusOnSelect) !== false) {
+        $timeout(function() { element[0].focus(); }, 0, false);
+      }
+    };
+
+    //bind keyboard events: arrows up(38) / down(40), enter(13) and tab(9), esc(27)
+    element.on('keydown', function(evt) {
+      //typeahead is open and an "interesting" key was pressed
+      if (scope.matches.length === 0 || HOT_KEYS.indexOf(evt.which) === -1) {
+        return;
+      }
+
+      var shouldSelect = isSelectEvent(originalScope, {$event: evt});
+
+      /**
+       * if there's nothing selected (i.e. focusFirst) and enter or tab is hit
+       * or
+       * shift + tab is pressed to bring focus to the previous element
+       * then clear the results
+       */
+      if (scope.activeIdx === -1 && shouldSelect || evt.which === 9 && !!evt.shiftKey) {
+        resetMatches();
+        scope.$digest();
+        return;
+      }
+
+      evt.preventDefault();
+      var target;
+      switch (evt.which) {
+        case 27: // escape
+          evt.stopPropagation();
+
+          resetMatches();
+          originalScope.$digest();
+          break;
+        case 38: // up arrow
+          scope.activeIdx = (scope.activeIdx > 0 ? scope.activeIdx : scope.matches.length) - 1;
+          scope.$digest();
+          target = popUpEl[0].querySelectorAll('.uib-typeahead-match')[scope.activeIdx];
+          target.parentNode.scrollTop = target.offsetTop;
+          break;
+        case 40: // down arrow
+          scope.activeIdx = (scope.activeIdx + 1) % scope.matches.length;
+          scope.$digest();
+          target = popUpEl[0].querySelectorAll('.uib-typeahead-match')[scope.activeIdx];
+          target.parentNode.scrollTop = target.offsetTop;
+          break;
+        default:
+          if (shouldSelect) {
+            scope.$apply(function() {
+              if (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate)) {
+                $$debounce(function() {
+                  scope.select(scope.activeIdx, evt);
+                }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
+              } else {
+                scope.select(scope.activeIdx, evt);
+              }
+            });
+          }
+      }
+    });
+
+    element.on('focus', function (evt) {
+      hasFocus = true;
+      if (minLength === 0 && !modelCtrl.$viewValue) {
+        $timeout(function() {
+          getMatchesAsync(modelCtrl.$viewValue, evt);
+        }, 0);
+      }
+    });
+
+    element.on('blur', function(evt) {
+      if (isSelectOnBlur && scope.matches.length && scope.activeIdx !== -1 && !selected) {
+        selected = true;
+        scope.$apply(function() {
+          if (angular.isObject(scope.debounceUpdate) && angular.isNumber(scope.debounceUpdate.blur)) {
+            $$debounce(function() {
+              scope.select(scope.activeIdx, evt);
+            }, scope.debounceUpdate.blur);
+          } else {
+            scope.select(scope.activeIdx, evt);
+          }
+        });
+      }
+      if (!isEditable && modelCtrl.$error.editable) {
+        modelCtrl.$setViewValue();
+        scope.$apply(function() {
+          // Reset validity as we are clearing
+          modelCtrl.$setValidity('editable', true);
+          modelCtrl.$setValidity('parse', true);
+        });
+        element.val('');
+      }
+      hasFocus = false;
+      selected = false;
+    });
+
+    // Keep reference to click handler to unbind it.
+    var dismissClickHandler = function(evt) {
+      // Issue #3973
+      // Firefox treats right click as a click on document
+      if (element[0] !== evt.target && evt.which !== 3 && scope.matches.length !== 0) {
+        resetMatches();
+        if (!$rootScope.$$phase) {
+          originalScope.$digest();
+        }
+      }
+    };
+
+    $document.on('click', dismissClickHandler);
+
+    originalScope.$on('$destroy', function() {
+      $document.off('click', dismissClickHandler);
+      if (appendToBody || appendTo) {
+        $popup.remove();
+      }
+
+      if (appendToBody) {
+        angular.element($window).off('resize', fireRecalculating);
+        $document.find('body').off('scroll', fireRecalculating);
+      }
+      // Prevent jQuery cache memory leak
+      popUpEl.remove();
+
+      if (showHint) {
+          inputsContainer.remove();
+      }
+    });
+
+    var $popup = $compile(popUpEl)(scope);
+
+    if (appendToBody) {
+      $document.find('body').append($popup);
+    } else if (appendTo) {
+      angular.element(appendTo).eq(0).append($popup);
+    } else {
+      element.after($popup);
+    }
+
+    this.init = function(_modelCtrl) {
+      modelCtrl = _modelCtrl;
+      ngModelOptions = extractOptions(modelCtrl);
+
+      scope.debounceUpdate = $parse(ngModelOptions.getOption('debounce'))(originalScope);
+
+      //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
+      //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
+      modelCtrl.$parsers.unshift(function(inputValue) {
+        hasFocus = true;
+
+        if (minLength === 0 || inputValue && inputValue.length >= minLength) {
+          if (waitTime > 0) {
+            cancelPreviousTimeout();
+            scheduleSearchWithTimeout(inputValue);
+          } else {
+            getMatchesAsync(inputValue);
+          }
+        } else {
+          isLoadingSetter(originalScope, false);
+          cancelPreviousTimeout();
+          resetMatches();
+        }
+
+        if (isEditable) {
+          return inputValue;
+        }
+
+        if (!inputValue) {
+          // Reset in case user had typed something previously.
+          modelCtrl.$setValidity('editable', true);
+          return null;
+        }
+
+        modelCtrl.$setValidity('editable', false);
+        return undefined;
+      });
+
+      modelCtrl.$formatters.push(function(modelValue) {
+        var candidateViewValue, emptyViewValue;
+        var locals = {};
+
+        // The validity may be set to false via $parsers (see above) if
+        // the model is restricted to selected values. If the model
+        // is set manually it is considered to be valid.
+        if (!isEditable) {
+          modelCtrl.$setValidity('editable', true);
+        }
+
+        if (inputFormatter) {
+          locals.$model = modelValue;
+          return inputFormatter(originalScope, locals);
+        }
+
+        //it might happen that we don't have enough info to properly render input value
+        //we need to check for this situation and simply return model value if we can't apply custom formatting
+        locals[parserResult.itemName] = modelValue;
+        candidateViewValue = parserResult.viewMapper(originalScope, locals);
+        locals[parserResult.itemName] = undefined;
+        emptyViewValue = parserResult.viewMapper(originalScope, locals);
+
+        return candidateViewValue !== emptyViewValue ? candidateViewValue : modelValue;
+      });
+    };
+
+    function extractOptions(ngModelCtrl) {
+      var ngModelOptions;
+
+      if (angular.version.minor < 6) { // in angular < 1.6 $options could be missing
+        // guarantee a value
+        ngModelOptions = ngModelCtrl.$options || {};
+
+        // mimic 1.6+ api
+        ngModelOptions.getOption = function (key) {
+          return ngModelOptions[key];
+        };
+      } else { // in angular >=1.6 $options is always present
+        ngModelOptions = ngModelCtrl.$options;
+      }
+
+      return ngModelOptions;
+    }
+  }])
+
+  .directive('uibTypeahead', function() {
+    return {
+      controller: 'UibTypeaheadController',
+      require: ['ngModel', 'uibTypeahead'],
+      link: function(originalScope, element, attrs, ctrls) {
+        ctrls[1].init(ctrls[0]);
+      }
+    };
+  })
+
+  .directive('uibTypeaheadPopup', ['$$debounce', function($$debounce) {
+    return {
+      scope: {
+        matches: '=',
+        query: '=',
+        active: '=',
+        position: '&',
+        moveInProgress: '=',
+        select: '&',
+        assignIsOpen: '&',
+        debounce: '&'
+      },
+      replace: true,
+      templateUrl: function(element, attrs) {
+        return attrs.popupTemplateUrl || 'uib/template/typeahead/typeahead-popup.html';
+      },
+      link: function(scope, element, attrs) {
+        scope.templateUrl = attrs.templateUrl;
+
+        scope.isOpen = function() {
+          var isDropdownOpen = scope.matches.length > 0;
+          scope.assignIsOpen({ isOpen: isDropdownOpen });
+          return isDropdownOpen;
+        };
+
+        scope.isActive = function(matchIdx) {
+          return scope.active === matchIdx;
+        };
+
+        scope.selectActive = function(matchIdx) {
+          scope.active = matchIdx;
+        };
+
+        scope.selectMatch = function(activeIdx, evt) {
+          var debounce = scope.debounce();
+          if (angular.isNumber(debounce) || angular.isObject(debounce)) {
+            $$debounce(function() {
+              scope.select({activeIdx: activeIdx, evt: evt});
+            }, angular.isNumber(debounce) ? debounce : debounce['default']);
+          } else {
+            scope.select({activeIdx: activeIdx, evt: evt});
+          }
+        };
+      }
+    };
+  }])
+
+  .directive('uibTypeaheadMatch', ['$templateRequest', '$compile', '$parse', function($templateRequest, $compile, $parse) {
+    return {
+      scope: {
+        index: '=',
+        match: '=',
+        query: '='
+      },
+      link: function(scope, element, attrs) {
+        var tplUrl = $parse(attrs.templateUrl)(scope.$parent) || 'uib/template/typeahead/typeahead-match.html';
+        $templateRequest(tplUrl).then(function(tplContent) {
+          var tplEl = angular.element(tplContent.trim());
+          element.replaceWith(tplEl);
+          $compile(tplEl)(scope);
+        });
+      }
+    };
+  }])
+
+  .filter('uibTypeaheadHighlight', ['$sce', '$injector', '$log', function($sce, $injector, $log) {
+    var isSanitizePresent;
+    isSanitizePresent = $injector.has('$sanitize');
+
+    function escapeRegexp(queryToEscape) {
+      // Regex: capture the whole query string and replace it with the string that will be used to match
+      // the results, for example if the capture is "a" the result will be \a
+      return queryToEscape.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
+    }
+
+    function containsHtml(matchItem) {
+      return /<.*>/g.test(matchItem);
+    }
+
+    return function(matchItem, query) {
+      if (!isSanitizePresent && containsHtml(matchItem)) {
+        $log.warn('Unsafe use of typeahead please use ngSanitize'); // Warn the user about the danger
+      }
+      matchItem = query ? ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>') : matchItem; // Replaces the capture string with a the same string inside of a "strong" tag
+      if (!isSanitizePresent) {
+        matchItem = $sce.trustAsHtml(matchItem); // If $sanitize is not present we pack the string in a $sce object for the ng-bind-html directive
+      }
+      return matchItem;
+    };
+  }]);
+
+angular.module("uib/template/accordion/accordion-group.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/accordion/accordion-group.html",
+    "<div role=\"tab\" id=\"{{::headingId}}\" aria-selected=\"{{isOpen}}\" class=\"panel-heading\" ng-keypress=\"toggleOpen($event)\">\n" +
+    "  <h4 class=\"panel-title\">\n" +
+    "    <a role=\"button\" data-toggle=\"collapse\" href aria-expanded=\"{{isOpen}}\" aria-controls=\"{{::panelId}}\" tabindex=\"0\" class=\"accordion-toggle\" ng-click=\"toggleOpen()\" uib-accordion-transclude=\"heading\" ng-disabled=\"isDisabled\" uib-tabindex-toggle><span uib-accordion-header ng-class=\"{'text-muted': isDisabled}\">{{heading}}</span></a>\n" +
+    "  </h4>\n" +
+    "</div>\n" +
+    "<div id=\"{{::panelId}}\" aria-labelledby=\"{{::headingId}}\" aria-hidden=\"{{!isOpen}}\" role=\"tabpanel\" class=\"panel-collapse collapse\" uib-collapse=\"!isOpen\">\n" +
+    "  <div class=\"panel-body\" ng-transclude></div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/accordion/accordion.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/accordion/accordion.html",
+    "<div role=\"tablist\" class=\"panel-group\" ng-transclude></div>");
+}]);
+
+angular.module("uib/template/alert/alert.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/alert/alert.html",
+    "<button ng-show=\"closeable\" type=\"button\" class=\"close\" ng-click=\"close({$event: $event})\">\n" +
+    "  <span aria-hidden=\"true\">&times;</span>\n" +
+    "  <span class=\"sr-only\">Close</span>\n" +
+    "</button>\n" +
+    "<div ng-transclude></div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/carousel/carousel.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/carousel/carousel.html",
+    "<div class=\"carousel-inner\" ng-transclude></div>\n" +
+    "<a role=\"button\" href class=\"left carousel-control\" ng-click=\"prev()\" ng-class=\"{ disabled: isPrevDisabled() }\" ng-show=\"slides.length > 1\">\n" +
+    "  <span aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-left\"></span>\n" +
+    "  <span class=\"sr-only\">previous</span>\n" +
+    "</a>\n" +
+    "<a role=\"button\" href class=\"right carousel-control\" ng-click=\"next()\" ng-class=\"{ disabled: isNextDisabled() }\" ng-show=\"slides.length > 1\">\n" +
+    "  <span aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-right\"></span>\n" +
+    "  <span class=\"sr-only\">next</span>\n" +
+    "</a>\n" +
+    "<ol class=\"carousel-indicators\" ng-show=\"slides.length > 1\">\n" +
+    "  <li ng-repeat=\"slide in slides | orderBy:indexOfSlide track by $index\" ng-class=\"{ active: isActive(slide) }\" ng-click=\"select(slide)\">\n" +
+    "    <span class=\"sr-only\">slide {{ $index + 1 }} of {{ slides.length }}<span ng-if=\"isActive(slide)\">, currently active</span></span>\n" +
+    "  </li>\n" +
+    "</ol>\n" +
+    "");
+}]);
+
+angular.module("uib/template/carousel/slide.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/carousel/slide.html",
+    "<div class=\"text-center\" ng-transclude></div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/datepicker/datepicker.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/datepicker/datepicker.html",
+    "<div ng-switch=\"datepickerMode\">\n" +
+    "  <div uib-daypicker ng-switch-when=\"day\" tabindex=\"0\" class=\"uib-daypicker\"></div>\n" +
+    "  <div uib-monthpicker ng-switch-when=\"month\" tabindex=\"0\" class=\"uib-monthpicker\"></div>\n" +
+    "  <div uib-yearpicker ng-switch-when=\"year\" tabindex=\"0\" class=\"uib-yearpicker\"></div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/datepicker/day.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/datepicker/day.html",
+    "<table role=\"grid\" aria-labelledby=\"{{::uniqueId}}-title\" aria-activedescendant=\"{{activeDateId}}\">\n" +
+    "  <thead>\n" +
+    "    <tr>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-left uib-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-left\"></i><span class=\"sr-only\">previous</span></button></th>\n" +
+    "      <th colspan=\"{{::5 + showWeeks}}\"><button id=\"{{::uniqueId}}-title\" role=\"heading\" aria-live=\"assertive\" aria-atomic=\"true\" type=\"button\" class=\"btn btn-default btn-sm uib-title\" ng-click=\"toggleMode()\" ng-disabled=\"datepickerMode === maxMode\" tabindex=\"-1\"><strong>{{title}}</strong></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right uib-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-right\"></i><span class=\"sr-only\">next</span></button></th>\n" +
+    "    </tr>\n" +
+    "    <tr>\n" +
+    "      <th ng-if=\"showWeeks\" class=\"text-center\"></th>\n" +
+    "      <th ng-repeat=\"label in ::labels track by $index\" class=\"text-center\"><small aria-label=\"{{::label.full}}\">{{::label.abbr}}</small></th>\n" +
+    "    </tr>\n" +
+    "  </thead>\n" +
+    "  <tbody>\n" +
+    "    <tr class=\"uib-weeks\" ng-repeat=\"row in rows track by $index\" role=\"row\">\n" +
+    "      <td ng-if=\"showWeeks\" class=\"text-center h6\"><em>{{ weekNumbers[$index] }}</em></td>\n" +
+    "      <td ng-repeat=\"dt in row\" class=\"uib-day text-center\" role=\"gridcell\"\n" +
+    "        id=\"{{::dt.uid}}\"\n" +
+    "        ng-class=\"::dt.customClass\">\n" +
+    "        <button type=\"button\" class=\"btn btn-default btn-sm\"\n" +
+    "          uib-is-class=\"\n" +
+    "            'btn-info' for selectedDt,\n" +
+    "            'active' for activeDt\n" +
+    "            on dt\"\n" +
+    "          ng-click=\"select(dt.date)\"\n" +
+    "          ng-disabled=\"::dt.disabled\"\n" +
+    "          tabindex=\"-1\"><span ng-class=\"::{'text-muted': dt.secondary, 'text-info': dt.current}\">{{::dt.label}}</span></button>\n" +
+    "      </td>\n" +
+    "    </tr>\n" +
+    "  </tbody>\n" +
+    "</table>\n" +
+    "");
+}]);
+
+angular.module("uib/template/datepicker/month.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/datepicker/month.html",
+    "<table role=\"grid\" aria-labelledby=\"{{::uniqueId}}-title\" aria-activedescendant=\"{{activeDateId}}\">\n" +
+    "  <thead>\n" +
+    "    <tr>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-left uib-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-left\"></i><span class=\"sr-only\">previous</span></button></th>\n" +
+    "      <th colspan=\"{{::yearHeaderColspan}}\"><button id=\"{{::uniqueId}}-title\" role=\"heading\" aria-live=\"assertive\" aria-atomic=\"true\" type=\"button\" class=\"btn btn-default btn-sm uib-title\" ng-click=\"toggleMode()\" ng-disabled=\"datepickerMode === maxMode\" tabindex=\"-1\"><strong>{{title}}</strong></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right uib-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-right\"></i><span class=\"sr-only\">next</span></i></button></th>\n" +
+    "    </tr>\n" +
+    "  </thead>\n" +
+    "  <tbody>\n" +
+    "    <tr class=\"uib-months\" ng-repeat=\"row in rows track by $index\" role=\"row\">\n" +
+    "      <td ng-repeat=\"dt in row\" class=\"uib-month text-center\" role=\"gridcell\"\n" +
+    "        id=\"{{::dt.uid}}\"\n" +
+    "        ng-class=\"::dt.customClass\">\n" +
+    "        <button type=\"button\" class=\"btn btn-default\"\n" +
+    "          uib-is-class=\"\n" +
+    "            'btn-info' for selectedDt,\n" +
+    "            'active' for activeDt\n" +
+    "            on dt\"\n" +
+    "          ng-click=\"select(dt.date)\"\n" +
+    "          ng-disabled=\"::dt.disabled\"\n" +
+    "          tabindex=\"-1\"><span ng-class=\"::{'text-info': dt.current}\">{{::dt.label}}</span></button>\n" +
+    "      </td>\n" +
+    "    </tr>\n" +
+    "  </tbody>\n" +
+    "</table>\n" +
+    "");
+}]);
+
+angular.module("uib/template/datepicker/year.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/datepicker/year.html",
+    "<table role=\"grid\" aria-labelledby=\"{{::uniqueId}}-title\" aria-activedescendant=\"{{activeDateId}}\">\n" +
+    "  <thead>\n" +
+    "    <tr>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-left uib-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-left\"></i><span class=\"sr-only\">previous</span></button></th>\n" +
+    "      <th colspan=\"{{::columns - 2}}\"><button id=\"{{::uniqueId}}-title\" role=\"heading\" aria-live=\"assertive\" aria-atomic=\"true\" type=\"button\" class=\"btn btn-default btn-sm uib-title\" ng-click=\"toggleMode()\" ng-disabled=\"datepickerMode === maxMode\" tabindex=\"-1\"><strong>{{title}}</strong></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right uib-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i aria-hidden=\"true\" class=\"glyphicon glyphicon-chevron-right\"></i><span class=\"sr-only\">next</span></button></th>\n" +
+    "    </tr>\n" +
+    "  </thead>\n" +
+    "  <tbody>\n" +
+    "    <tr class=\"uib-years\" ng-repeat=\"row in rows track by $index\" role=\"row\">\n" +
+    "      <td ng-repeat=\"dt in row\" class=\"uib-year text-center\" role=\"gridcell\"\n" +
+    "        id=\"{{::dt.uid}}\"\n" +
+    "        ng-class=\"::dt.customClass\">\n" +
+    "        <button type=\"button\" class=\"btn btn-default\"\n" +
+    "          uib-is-class=\"\n" +
+    "            'btn-info' for selectedDt,\n" +
+    "            'active' for activeDt\n" +
+    "            on dt\"\n" +
+    "          ng-click=\"select(dt.date)\"\n" +
+    "          ng-disabled=\"::dt.disabled\"\n" +
+    "          tabindex=\"-1\"><span ng-class=\"::{'text-info': dt.current}\">{{::dt.label}}</span></button>\n" +
+    "      </td>\n" +
+    "    </tr>\n" +
+    "  </tbody>\n" +
+    "</table>\n" +
+    "");
+}]);
+
+angular.module("uib/template/datepickerPopup/popup.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/datepickerPopup/popup.html",
+    "<ul role=\"presentation\" class=\"uib-datepicker-popup dropdown-menu uib-position-measure\" dropdown-nested ng-if=\"isOpen\" ng-keydown=\"keydown($event)\" ng-click=\"$event.stopPropagation()\">\n" +
+    "  <li ng-transclude></li>\n" +
+    "  <li ng-if=\"showButtonBar\" class=\"uib-button-bar\">\n" +
+    "    <span class=\"btn-group pull-left\">\n" +
+    "      <button type=\"button\" class=\"btn btn-sm btn-info uib-datepicker-current\" ng-click=\"select('today', $event)\" ng-disabled=\"isDisabled('today')\">{{ getText('current') }}</button>\n" +
+    "      <button type=\"button\" class=\"btn btn-sm btn-danger uib-clear\" ng-click=\"select(null, $event)\">{{ getText('clear') }}</button>\n" +
+    "    </span>\n" +
+    "    <button type=\"button\" class=\"btn btn-sm btn-success pull-right uib-close\" ng-click=\"close($event)\">{{ getText('close') }}</button>\n" +
+    "  </li>\n" +
+    "</ul>\n" +
+    "");
+}]);
+
+angular.module("uib/template/modal/window.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/modal/window.html",
+    "<div class=\"modal-dialog {{size ? 'modal-' + size : ''}}\"><div class=\"modal-content\" uib-modal-transclude></div></div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/pager/pager.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/pager/pager.html",
+    "<li ng-class=\"{disabled: noPrevious()||ngDisabled, previous: align}\"><a href ng-click=\"selectPage(page - 1, $event)\" ng-disabled=\"noPrevious()||ngDisabled\" uib-tabindex-toggle>{{::getText('previous')}}</a></li>\n" +
+    "<li ng-class=\"{disabled: noNext()||ngDisabled, next: align}\"><a href ng-click=\"selectPage(page + 1, $event)\" ng-disabled=\"noNext()||ngDisabled\" uib-tabindex-toggle>{{::getText('next')}}</a></li>\n" +
+    "");
+}]);
+
+angular.module("uib/template/pagination/pagination.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/pagination/pagination.html",
+    "<li role=\"menuitem\" ng-if=\"::boundaryLinks\" ng-class=\"{disabled: noPrevious()||ngDisabled}\" class=\"pagination-first\"><a href ng-click=\"selectPage(1, $event)\" ng-disabled=\"noPrevious()||ngDisabled\" uib-tabindex-toggle>{{::getText('first')}}</a></li>\n" +
+    "<li role=\"menuitem\" ng-if=\"::directionLinks\" ng-class=\"{disabled: noPrevious()||ngDisabled}\" class=\"pagination-prev\"><a href ng-click=\"selectPage(page - 1, $event)\" ng-disabled=\"noPrevious()||ngDisabled\" uib-tabindex-toggle>{{::getText('previous')}}</a></li>\n" +
+    "<li role=\"menuitem\" ng-repeat=\"page in pages track by $index\" ng-class=\"{active: page.active,disabled: ngDisabled&&!page.active}\" class=\"pagination-page\"><a href ng-click=\"selectPage(page.number, $event)\" ng-disabled=\"ngDisabled&&!page.active\" uib-tabindex-toggle>{{page.text}}</a></li>\n" +
+    "<li role=\"menuitem\" ng-if=\"::directionLinks\" ng-class=\"{disabled: noNext()||ngDisabled}\" class=\"pagination-next\"><a href ng-click=\"selectPage(page + 1, $event)\" ng-disabled=\"noNext()||ngDisabled\" uib-tabindex-toggle>{{::getText('next')}}</a></li>\n" +
+    "<li role=\"menuitem\" ng-if=\"::boundaryLinks\" ng-class=\"{disabled: noNext()||ngDisabled}\" class=\"pagination-last\"><a href ng-click=\"selectPage(totalPages, $event)\" ng-disabled=\"noNext()||ngDisabled\" uib-tabindex-toggle>{{::getText('last')}}</a></li>\n" +
+    "");
+}]);
+
+angular.module("uib/template/tooltip/tooltip-html-popup.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/tooltip/tooltip-html-popup.html",
+    "<div class=\"tooltip-arrow\"></div>\n" +
+    "<div class=\"tooltip-inner\" ng-bind-html=\"contentExp()\"></div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/tooltip/tooltip-popup.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/tooltip/tooltip-popup.html",
+    "<div class=\"tooltip-arrow\"></div>\n" +
+    "<div class=\"tooltip-inner\" ng-bind=\"content\"></div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/tooltip/tooltip-template-popup.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/tooltip/tooltip-template-popup.html",
+    "<div class=\"tooltip-arrow\"></div>\n" +
+    "<div class=\"tooltip-inner\"\n" +
+    "  uib-tooltip-template-transclude=\"contentExp()\"\n" +
+    "  tooltip-template-transclude-scope=\"originScope()\"></div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/popover/popover-html.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/popover/popover-html.html",
+    "<div class=\"arrow\"></div>\n" +
+    "\n" +
+    "<div class=\"popover-inner\">\n" +
+    "    <h3 class=\"popover-title\" ng-bind=\"uibTitle\" ng-if=\"uibTitle\"></h3>\n" +
+    "    <div class=\"popover-content\" ng-bind-html=\"contentExp()\"></div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/popover/popover-template.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/popover/popover-template.html",
+    "<div class=\"arrow\"></div>\n" +
+    "\n" +
+    "<div class=\"popover-inner\">\n" +
+    "    <h3 class=\"popover-title\" ng-bind=\"uibTitle\" ng-if=\"uibTitle\"></h3>\n" +
+    "    <div class=\"popover-content\"\n" +
+    "      uib-tooltip-template-transclude=\"contentExp()\"\n" +
+    "      tooltip-template-transclude-scope=\"originScope()\"></div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/popover/popover.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/popover/popover.html",
+    "<div class=\"arrow\"></div>\n" +
+    "\n" +
+    "<div class=\"popover-inner\">\n" +
+    "    <h3 class=\"popover-title\" ng-bind=\"uibTitle\" ng-if=\"uibTitle\"></h3>\n" +
+    "    <div class=\"popover-content\" ng-bind=\"content\"></div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/progressbar/bar.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/progressbar/bar.html",
+    "<div class=\"progress-bar\" ng-class=\"type && 'progress-bar-' + type\" role=\"progressbar\" aria-valuenow=\"{{value}}\" aria-valuemin=\"0\" aria-valuemax=\"{{max}}\" ng-style=\"{width: (percent < 100 ? percent : 100) + '%'}\" aria-valuetext=\"{{percent | number:0}}%\" aria-labelledby=\"{{::title}}\" ng-transclude></div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/progressbar/progress.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/progressbar/progress.html",
+    "<div class=\"progress\" ng-transclude aria-labelledby=\"{{::title}}\"></div>");
+}]);
+
+angular.module("uib/template/progressbar/progressbar.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/progressbar/progressbar.html",
+    "<div class=\"progress\">\n" +
+    "  <div class=\"progress-bar\" ng-class=\"type && 'progress-bar-' + type\" role=\"progressbar\" aria-valuenow=\"{{value}}\" aria-valuemin=\"0\" aria-valuemax=\"{{max}}\" ng-style=\"{width: (percent < 100 ? percent : 100) + '%'}\" aria-valuetext=\"{{percent | number:0}}%\" aria-labelledby=\"{{::title}}\" ng-transclude></div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/rating/rating.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/rating/rating.html",
+    "<span ng-mouseleave=\"reset()\" ng-keydown=\"onKeydown($event)\" tabindex=\"0\" role=\"slider\" aria-valuemin=\"0\" aria-valuemax=\"{{range.length}}\" aria-valuenow=\"{{value}}\" aria-valuetext=\"{{title}}\">\n" +
+    "    <span ng-repeat-start=\"r in range track by $index\" class=\"sr-only\">({{ $index < value ? '*' : ' ' }})</span>\n" +
+    "    <i ng-repeat-end ng-mouseenter=\"enter($index + 1)\" ng-click=\"rate($index + 1)\" class=\"glyphicon\" ng-class=\"$index < value && (r.stateOn || 'glyphicon-star') || (r.stateOff || 'glyphicon-star-empty')\" ng-attr-title=\"{{r.title}}\"></i>\n" +
+    "</span>\n" +
+    "");
+}]);
+
+angular.module("uib/template/tabs/tab.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/tabs/tab.html",
+    "<li ng-class=\"[{active: active, disabled: disabled}, classes]\" class=\"uib-tab nav-item\">\n" +
+    "  <a href ng-click=\"select($event)\" class=\"nav-link\" uib-tab-heading-transclude>{{heading}}</a>\n" +
+    "</li>\n" +
+    "");
+}]);
+
+angular.module("uib/template/tabs/tabset.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/tabs/tabset.html",
+    "<div>\n" +
+    "  <ul class=\"nav nav-{{tabset.type || 'tabs'}}\" ng-class=\"{'nav-stacked': vertical, 'nav-justified': justified}\" ng-transclude></ul>\n" +
+    "  <div class=\"tab-content\">\n" +
+    "    <div class=\"tab-pane\"\n" +
+    "         ng-repeat=\"tab in tabset.tabs\"\n" +
+    "         ng-class=\"{active: tabset.active === tab.index}\"\n" +
+    "         uib-tab-content-transclude=\"tab\">\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("uib/template/timepicker/timepicker.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/timepicker/timepicker.html",
+    "<table class=\"uib-timepicker\">\n" +
+    "  <tbody>\n" +
+    "    <tr class=\"text-center\" ng-show=\"::showSpinners\">\n" +
+    "      <td class=\"uib-increment hours\"><a ng-click=\"incrementHours()\" ng-class=\"{disabled: noIncrementHours()}\" class=\"btn btn-link\" ng-disabled=\"noIncrementHours()\" tabindex=\"-1\"><span class=\"glyphicon glyphicon-chevron-up\"></span></a></td>\n" +
+    "      <td>&nbsp;</td>\n" +
+    "      <td class=\"uib-increment minutes\"><a ng-click=\"incrementMinutes()\" ng-class=\"{disabled: noIncrementMinutes()}\" class=\"btn btn-link\" ng-disabled=\"noIncrementMinutes()\" tabindex=\"-1\"><span class=\"glyphicon glyphicon-chevron-up\"></span></a></td>\n" +
+    "      <td ng-show=\"showSeconds\">&nbsp;</td>\n" +
+    "      <td ng-show=\"showSeconds\" class=\"uib-increment seconds\"><a ng-click=\"incrementSeconds()\" ng-class=\"{disabled: noIncrementSeconds()}\" class=\"btn btn-link\" ng-disabled=\"noIncrementSeconds()\" tabindex=\"-1\"><span class=\"glyphicon glyphicon-chevron-up\"></span></a></td>\n" +
+    "      <td ng-show=\"showMeridian\"></td>\n" +
+    "    </tr>\n" +
+    "    <tr>\n" +
+    "      <td class=\"form-group uib-time hours\" ng-class=\"{'has-error': invalidHours}\">\n" +
+    "        <input type=\"text\" placeholder=\"HH\" ng-model=\"hours\" ng-change=\"updateHours()\" class=\"form-control text-center\" ng-readonly=\"::readonlyInput\" maxlength=\"2\" tabindex=\"{{::tabindex}}\" ng-disabled=\"noIncrementHours()\" ng-blur=\"blur()\">\n" +
+    "      </td>\n" +
+    "      <td class=\"uib-separator\">:</td>\n" +
+    "      <td class=\"form-group uib-time minutes\" ng-class=\"{'has-error': invalidMinutes}\">\n" +
+    "        <input type=\"text\" placeholder=\"MM\" ng-model=\"minutes\" ng-change=\"updateMinutes()\" class=\"form-control text-center\" ng-readonly=\"::readonlyInput\" maxlength=\"2\" tabindex=\"{{::tabindex}}\" ng-disabled=\"noIncrementMinutes()\" ng-blur=\"blur()\">\n" +
+    "      </td>\n" +
+    "      <td ng-show=\"showSeconds\" class=\"uib-separator\">:</td>\n" +
+    "      <td class=\"form-group uib-time seconds\" ng-class=\"{'has-error': invalidSeconds}\" ng-show=\"showSeconds\">\n" +
+    "        <input type=\"text\" placeholder=\"SS\" ng-model=\"seconds\" ng-change=\"updateSeconds()\" class=\"form-control text-center\" ng-readonly=\"readonlyInput\" maxlength=\"2\" tabindex=\"{{::tabindex}}\" ng-disabled=\"noIncrementSeconds()\" ng-blur=\"blur()\">\n" +
+    "      </td>\n" +
+    "      <td ng-show=\"showMeridian\" class=\"uib-time am-pm\"><button type=\"button\" ng-class=\"{disabled: noToggleMeridian()}\" class=\"btn btn-default text-center\" ng-click=\"toggleMeridian()\" ng-disabled=\"noToggleMeridian()\" tabindex=\"{{::tabindex}}\">{{meridian}}</button></td>\n" +
+    "    </tr>\n" +
+    "    <tr class=\"text-center\" ng-show=\"::showSpinners\">\n" +
+    "      <td class=\"uib-decrement hours\"><a ng-click=\"decrementHours()\" ng-class=\"{disabled: noDecrementHours()}\" class=\"btn btn-link\" ng-disabled=\"noDecrementHours()\" tabindex=\"-1\"><span class=\"glyphicon glyphicon-chevron-down\"></span></a></td>\n" +
+    "      <td>&nbsp;</td>\n" +
+    "      <td class=\"uib-decrement minutes\"><a ng-click=\"decrementMinutes()\" ng-class=\"{disabled: noDecrementMinutes()}\" class=\"btn btn-link\" ng-disabled=\"noDecrementMinutes()\" tabindex=\"-1\"><span class=\"glyphicon glyphicon-chevron-down\"></span></a></td>\n" +
+    "      <td ng-show=\"showSeconds\">&nbsp;</td>\n" +
+    "      <td ng-show=\"showSeconds\" class=\"uib-decrement seconds\"><a ng-click=\"decrementSeconds()\" ng-class=\"{disabled: noDecrementSeconds()}\" class=\"btn btn-link\" ng-disabled=\"noDecrementSeconds()\" tabindex=\"-1\"><span class=\"glyphicon glyphicon-chevron-down\"></span></a></td>\n" +
+    "      <td ng-show=\"showMeridian\"></td>\n" +
+    "    </tr>\n" +
+    "  </tbody>\n" +
+    "</table>\n" +
+    "");
+}]);
+
+angular.module("uib/template/typeahead/typeahead-match.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/typeahead/typeahead-match.html",
+    "<a href\n" +
+    "   tabindex=\"-1\"\n" +
+    "   ng-bind-html=\"match.label | uibTypeaheadHighlight:query\"\n" +
+    "   ng-attr-title=\"{{match.label}}\"></a>\n" +
+    "");
+}]);
+
+angular.module("uib/template/typeahead/typeahead-popup.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("uib/template/typeahead/typeahead-popup.html",
+    "<ul class=\"dropdown-menu\" ng-show=\"isOpen() && !moveInProgress\" ng-style=\"{top: position().top+'px', left: position().left+'px'}\" role=\"listbox\" aria-hidden=\"{{!isOpen()}}\">\n" +
+    "    <li class=\"uib-typeahead-match\" ng-repeat=\"match in matches track by $index\" ng-class=\"{active: isActive($index) }\" ng-mouseenter=\"selectActive($index)\" ng-click=\"selectMatch($index, $event)\" role=\"option\" id=\"{{::match.id}}\">\n" +
+    "        <div uib-typeahead-match index=\"$index\" match=\"match\" query=\"query\" template-url=\"templateUrl\"></div>\n" +
+    "    </li>\n" +
+    "</ul>\n" +
+    "");
+}]);
+angular.module('ui.bootstrap.carousel').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibCarouselCss && angular.element(document).find('head').prepend('<style type="text/css">.ng-animate.item:not(.left):not(.right){-webkit-transition:0s ease-in-out left;transition:0s ease-in-out left}</style>'); angular.$$uibCarouselCss = true; });
+angular.module('ui.bootstrap.datepicker').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibDatepickerCss && angular.element(document).find('head').prepend('<style type="text/css">.uib-datepicker .uib-title{width:100%;}.uib-day button,.uib-month button,.uib-year button{min-width:100%;}.uib-left,.uib-right{width:100%}</style>'); angular.$$uibDatepickerCss = true; });
+angular.module('ui.bootstrap.position').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibPositionCss && angular.element(document).find('head').prepend('<style type="text/css">.uib-position-measure{display:block !important;visibility:hidden !important;position:absolute !important;top:-9999px !important;left:-9999px !important;}.uib-position-scrollbar-measure{position:absolute !important;top:-9999px !important;width:50px !important;height:50px !important;overflow:scroll !important;}.uib-position-body-scrollbar-measure{overflow:scroll !important;}</style>'); angular.$$uibPositionCss = true; });
+angular.module('ui.bootstrap.datepickerPopup').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibDatepickerpopupCss && angular.element(document).find('head').prepend('<style type="text/css">.uib-datepicker-popup.dropdown-menu{display:block;float:none;margin:0;}.uib-button-bar{padding:10px 9px 2px;}</style>'); angular.$$uibDatepickerpopupCss = true; });
+angular.module('ui.bootstrap.tooltip').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibTooltipCss && angular.element(document).find('head').prepend('<style type="text/css">[uib-tooltip-popup].tooltip.top-left > .tooltip-arrow,[uib-tooltip-popup].tooltip.top-right > .tooltip-arrow,[uib-tooltip-popup].tooltip.bottom-left > .tooltip-arrow,[uib-tooltip-popup].tooltip.bottom-right > .tooltip-arrow,[uib-tooltip-popup].tooltip.left-top > .tooltip-arrow,[uib-tooltip-popup].tooltip.left-bottom > .tooltip-arrow,[uib-tooltip-popup].tooltip.right-top > .tooltip-arrow,[uib-tooltip-popup].tooltip.right-bottom > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.top-left > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.top-right > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.bottom-left > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.bottom-right > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.left-top > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.left-bottom > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.right-top > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.right-bottom > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.top-left > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.top-right > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.bottom-left > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.bottom-right > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.left-top > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.left-bottom > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.right-top > .tooltip-arrow,[uib-tooltip-template-popup].tooltip.right-bottom > .tooltip-arrow,[uib-popover-popup].popover.top-left > .arrow,[uib-popover-popup].popover.top-right > .arrow,[uib-popover-popup].popover.bottom-left > .arrow,[uib-popover-popup].popover.bottom-right > .arrow,[uib-popover-popup].popover.left-top > .arrow,[uib-popover-popup].popover.left-bottom > .arrow,[uib-popover-popup].popover.right-top > .arrow,[uib-popover-popup].popover.right-bottom > .arrow,[uib-popover-html-popup].popover.top-left > .arrow,[uib-popover-html-popup].popover.top-right > .arrow,[uib-popover-html-popup].popover.bottom-left > .arrow,[uib-popover-html-popup].popover.bottom-right > .arrow,[uib-popover-html-popup].popover.left-top > .arrow,[uib-popover-html-popup].popover.left-bottom > .arrow,[uib-popover-html-popup].popover.right-top > .arrow,[uib-popover-html-popup].popover.right-bottom > .arrow,[uib-popover-template-popup].popover.top-left > .arrow,[uib-popover-template-popup].popover.top-right > .arrow,[uib-popover-template-popup].popover.bottom-left > .arrow,[uib-popover-template-popup].popover.bottom-right > .arrow,[uib-popover-template-popup].popover.left-top > .arrow,[uib-popover-template-popup].popover.left-bottom > .arrow,[uib-popover-template-popup].popover.right-top > .arrow,[uib-popover-template-popup].popover.right-bottom > .arrow{top:auto;bottom:auto;left:auto;right:auto;margin:0;}[uib-popover-popup].popover,[uib-popover-html-popup].popover,[uib-popover-template-popup].popover{display:block !important;}</style>'); angular.$$uibTooltipCss = true; });
+angular.module('ui.bootstrap.timepicker').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibTimepickerCss && angular.element(document).find('head').prepend('<style type="text/css">.uib-time input{width:50px;}</style>'); angular.$$uibTimepickerCss = true; });
+angular.module('ui.bootstrap.typeahead').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibTypeaheadCss && angular.element(document).find('head').prepend('<style type="text/css">[uib-typeahead-popup].dropdown-menu{display:block;}</style>'); angular.$$uibTypeaheadCss = true; });
+},{}],4:[function(require,module,exports){
+require('./dist/ui-bootstrap-tpls');
+
+module.exports = 'ui.bootstrap';
+
+},{"./dist/ui-bootstrap-tpls":3}],5:[function(require,module,exports){
 /**
  * State-based routing for AngularJS
  * @version v0.4.2
@@ -5428,7 +13210,7 @@ angular.module('ui.router.state')
   .filter('isState', $IsStateFilter)
   .filter('includedByState', $IncludedByStateFilter);
 })(window, window.angular);
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.1
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -38411,11 +46193,11 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":4}],6:[function(require,module,exports){
+},{"./angular":6}],8:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -38446,21 +46228,21 @@ define(String.prototype, "padRight", "".padEnd);
   [][key] && define(Array, key, Function.call.bind([][key]));
 });
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"core-js/fn/regexp/escape":7,"core-js/shim":300,"regenerator-runtime/runtime":302}],7:[function(require,module,exports){
+},{"core-js/fn/regexp/escape":9,"core-js/shim":302,"regenerator-runtime/runtime":304}],9:[function(require,module,exports){
 require('../../modules/core.regexp.escape');
 module.exports = require('../../modules/_core').RegExp.escape;
-},{"../../modules/_core":28,"../../modules/core.regexp.escape":124}],8:[function(require,module,exports){
+},{"../../modules/_core":30,"../../modules/core.regexp.escape":126}],10:[function(require,module,exports){
 module.exports = function(it){
   if(typeof it != 'function')throw TypeError(it + ' is not a function!');
   return it;
 };
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var cof = require('./_cof');
 module.exports = function(it, msg){
   if(typeof it != 'number' && cof(it) != 'Number')throw TypeError(msg);
   return +it;
 };
-},{"./_cof":23}],10:[function(require,module,exports){
+},{"./_cof":25}],12:[function(require,module,exports){
 // 22.1.3.31 Array.prototype[@@unscopables]
 var UNSCOPABLES = require('./_wks')('unscopables')
   , ArrayProto  = Array.prototype;
@@ -38468,19 +46250,19 @@ if(ArrayProto[UNSCOPABLES] == undefined)require('./_hide')(ArrayProto, UNSCOPABL
 module.exports = function(key){
   ArrayProto[UNSCOPABLES][key] = true;
 };
-},{"./_hide":45,"./_wks":122}],11:[function(require,module,exports){
+},{"./_hide":47,"./_wks":124}],13:[function(require,module,exports){
 module.exports = function(it, Constructor, name, forbiddenField){
   if(!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)){
     throw TypeError(name + ': incorrect invocation!');
   } return it;
 };
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var isObject = require('./_is-object');
 module.exports = function(it){
   if(!isObject(it))throw TypeError(it + ' is not an object!');
   return it;
 };
-},{"./_is-object":54}],13:[function(require,module,exports){
+},{"./_is-object":56}],15:[function(require,module,exports){
 // 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
 'use strict';
 var toObject = require('./_to-object')
@@ -38507,7 +46289,7 @@ module.exports = [].copyWithin || function copyWithin(target/*= 0*/, start/*= 0,
     from += inc;
   } return O;
 };
-},{"./_to-index":110,"./_to-length":113,"./_to-object":114}],14:[function(require,module,exports){
+},{"./_to-index":112,"./_to-length":115,"./_to-object":116}],16:[function(require,module,exports){
 // 22.1.3.6 Array.prototype.fill(value, start = 0, end = this.length)
 'use strict';
 var toObject = require('./_to-object')
@@ -38523,7 +46305,7 @@ module.exports = function fill(value /*, start = 0, end = @length */){
   while(endPos > index)O[index++] = value;
   return O;
 };
-},{"./_to-index":110,"./_to-length":113,"./_to-object":114}],15:[function(require,module,exports){
+},{"./_to-index":112,"./_to-length":115,"./_to-object":116}],17:[function(require,module,exports){
 var forOf = require('./_for-of');
 
 module.exports = function(iter, ITERATOR){
@@ -38532,7 +46314,7 @@ module.exports = function(iter, ITERATOR){
   return result;
 };
 
-},{"./_for-of":42}],16:[function(require,module,exports){
+},{"./_for-of":44}],18:[function(require,module,exports){
 // false -> Array#indexOf
 // true  -> Array#includes
 var toIObject = require('./_to-iobject')
@@ -38554,7 +46336,7 @@ module.exports = function(IS_INCLUDES){
     } return !IS_INCLUDES && -1;
   };
 };
-},{"./_to-index":110,"./_to-iobject":112,"./_to-length":113}],17:[function(require,module,exports){
+},{"./_to-index":112,"./_to-iobject":114,"./_to-length":115}],19:[function(require,module,exports){
 // 0 -> Array#forEach
 // 1 -> Array#map
 // 2 -> Array#filter
@@ -38599,7 +46381,7 @@ module.exports = function(TYPE, $create){
     return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : result;
   };
 };
-},{"./_array-species-create":20,"./_ctx":30,"./_iobject":50,"./_to-length":113,"./_to-object":114}],18:[function(require,module,exports){
+},{"./_array-species-create":22,"./_ctx":32,"./_iobject":52,"./_to-length":115,"./_to-object":116}],20:[function(require,module,exports){
 var aFunction = require('./_a-function')
   , toObject  = require('./_to-object')
   , IObject   = require('./_iobject')
@@ -38628,7 +46410,7 @@ module.exports = function(that, callbackfn, aLen, memo, isRight){
   }
   return memo;
 };
-},{"./_a-function":8,"./_iobject":50,"./_to-length":113,"./_to-object":114}],19:[function(require,module,exports){
+},{"./_a-function":10,"./_iobject":52,"./_to-length":115,"./_to-object":116}],21:[function(require,module,exports){
 var isObject = require('./_is-object')
   , isArray  = require('./_is-array')
   , SPECIES  = require('./_wks')('species');
@@ -38645,14 +46427,14 @@ module.exports = function(original){
     }
   } return C === undefined ? Array : C;
 };
-},{"./_is-array":52,"./_is-object":54,"./_wks":122}],20:[function(require,module,exports){
+},{"./_is-array":54,"./_is-object":56,"./_wks":124}],22:[function(require,module,exports){
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
 var speciesConstructor = require('./_array-species-constructor');
 
 module.exports = function(original, length){
   return new (speciesConstructor(original))(length);
 };
-},{"./_array-species-constructor":19}],21:[function(require,module,exports){
+},{"./_array-species-constructor":21}],23:[function(require,module,exports){
 'use strict';
 var aFunction  = require('./_a-function')
   , isObject   = require('./_is-object')
@@ -38677,7 +46459,7 @@ module.exports = Function.bind || function bind(that /*, args... */){
   if(isObject(fn.prototype))bound.prototype = fn.prototype;
   return bound;
 };
-},{"./_a-function":8,"./_invoke":49,"./_is-object":54}],22:[function(require,module,exports){
+},{"./_a-function":10,"./_invoke":51,"./_is-object":56}],24:[function(require,module,exports){
 // getting tag from 19.1.3.6 Object.prototype.toString()
 var cof = require('./_cof')
   , TAG = require('./_wks')('toStringTag')
@@ -38701,13 +46483,13 @@ module.exports = function(it){
     // ES3 arguments fallback
     : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
 };
-},{"./_cof":23,"./_wks":122}],23:[function(require,module,exports){
+},{"./_cof":25,"./_wks":124}],25:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = function(it){
   return toString.call(it).slice(8, -1);
 };
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 var dP          = require('./_object-dp').f
   , create      = require('./_object-create')
@@ -38850,7 +46632,7 @@ module.exports = {
     setSpecies(NAME);
   }
 };
-},{"./_an-instance":11,"./_ctx":30,"./_defined":32,"./_descriptors":33,"./_for-of":42,"./_iter-define":58,"./_iter-step":60,"./_meta":67,"./_object-create":71,"./_object-dp":72,"./_redefine-all":91,"./_set-species":96}],25:[function(require,module,exports){
+},{"./_an-instance":13,"./_ctx":32,"./_defined":34,"./_descriptors":35,"./_for-of":44,"./_iter-define":60,"./_iter-step":62,"./_meta":69,"./_object-create":73,"./_object-dp":74,"./_redefine-all":93,"./_set-species":98}],27:[function(require,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var classof = require('./_classof')
   , from    = require('./_array-from-iterable');
@@ -38860,7 +46642,7 @@ module.exports = function(NAME){
     return from(this);
   };
 };
-},{"./_array-from-iterable":15,"./_classof":22}],26:[function(require,module,exports){
+},{"./_array-from-iterable":17,"./_classof":24}],28:[function(require,module,exports){
 'use strict';
 var redefineAll       = require('./_redefine-all')
   , getWeak           = require('./_meta').getWeak
@@ -38944,7 +46726,7 @@ module.exports = {
   },
   ufstore: uncaughtFrozenStore
 };
-},{"./_an-instance":11,"./_an-object":12,"./_array-methods":17,"./_for-of":42,"./_has":44,"./_is-object":54,"./_meta":67,"./_redefine-all":91}],27:[function(require,module,exports){
+},{"./_an-instance":13,"./_an-object":14,"./_array-methods":19,"./_for-of":44,"./_has":46,"./_is-object":56,"./_meta":69,"./_redefine-all":93}],29:[function(require,module,exports){
 'use strict';
 var global            = require('./_global')
   , $export           = require('./_export')
@@ -39030,10 +46812,10 @@ module.exports = function(NAME, wrapper, methods, common, IS_MAP, IS_WEAK){
 
   return C;
 };
-},{"./_an-instance":11,"./_export":37,"./_fails":39,"./_for-of":42,"./_global":43,"./_inherit-if-required":48,"./_is-object":54,"./_iter-detect":59,"./_meta":67,"./_redefine":92,"./_redefine-all":91,"./_set-to-string-tag":97}],28:[function(require,module,exports){
+},{"./_an-instance":13,"./_export":39,"./_fails":41,"./_for-of":44,"./_global":45,"./_inherit-if-required":50,"./_is-object":56,"./_iter-detect":61,"./_meta":69,"./_redefine":94,"./_redefine-all":93,"./_set-to-string-tag":99}],30:[function(require,module,exports){
 var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 var $defineProperty = require('./_object-dp')
   , createDesc      = require('./_property-desc');
@@ -39042,7 +46824,7 @@ module.exports = function(object, index, value){
   if(index in object)$defineProperty.f(object, index, createDesc(0, value));
   else object[index] = value;
 };
-},{"./_object-dp":72,"./_property-desc":90}],30:[function(require,module,exports){
+},{"./_object-dp":74,"./_property-desc":92}],32:[function(require,module,exports){
 // optional / simple context binding
 var aFunction = require('./_a-function');
 module.exports = function(fn, that, length){
@@ -39063,7 +46845,7 @@ module.exports = function(fn, that, length){
     return fn.apply(that, arguments);
   };
 };
-},{"./_a-function":8}],31:[function(require,module,exports){
+},{"./_a-function":10}],33:[function(require,module,exports){
 'use strict';
 var anObject    = require('./_an-object')
   , toPrimitive = require('./_to-primitive')
@@ -39073,18 +46855,18 @@ module.exports = function(hint){
   if(hint !== 'string' && hint !== NUMBER && hint !== 'default')throw TypeError('Incorrect hint');
   return toPrimitive(anObject(this), hint != NUMBER);
 };
-},{"./_an-object":12,"./_to-primitive":115}],32:[function(require,module,exports){
+},{"./_an-object":14,"./_to-primitive":117}],34:[function(require,module,exports){
 // 7.2.1 RequireObjectCoercible(argument)
 module.exports = function(it){
   if(it == undefined)throw TypeError("Can't call method on  " + it);
   return it;
 };
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 // Thank's IE8 for his funny defineProperty
 module.exports = !require('./_fails')(function(){
   return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_fails":39}],34:[function(require,module,exports){
+},{"./_fails":41}],36:[function(require,module,exports){
 var isObject = require('./_is-object')
   , document = require('./_global').document
   // in old IE typeof document.createElement is 'object'
@@ -39092,12 +46874,12 @@ var isObject = require('./_is-object')
 module.exports = function(it){
   return is ? document.createElement(it) : {};
 };
-},{"./_global":43,"./_is-object":54}],35:[function(require,module,exports){
+},{"./_global":45,"./_is-object":56}],37:[function(require,module,exports){
 // IE 8- don't enum bug keys
 module.exports = (
   'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
 ).split(',');
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 // all enumerable object keys, includes symbols
 var getKeys = require('./_object-keys')
   , gOPS    = require('./_object-gops')
@@ -39113,7 +46895,7 @@ module.exports = function(it){
     while(symbols.length > i)if(isEnum.call(it, key = symbols[i++]))result.push(key);
   } return result;
 };
-},{"./_object-gops":78,"./_object-keys":81,"./_object-pie":82}],37:[function(require,module,exports){
+},{"./_object-gops":80,"./_object-keys":83,"./_object-pie":84}],39:[function(require,module,exports){
 var global    = require('./_global')
   , core      = require('./_core')
   , hide      = require('./_hide')
@@ -39157,7 +46939,7 @@ $export.W = 32;  // wrap
 $export.U = 64;  // safe
 $export.R = 128; // real proto method for `library` 
 module.exports = $export;
-},{"./_core":28,"./_ctx":30,"./_global":43,"./_hide":45,"./_redefine":92}],38:[function(require,module,exports){
+},{"./_core":30,"./_ctx":32,"./_global":45,"./_hide":47,"./_redefine":94}],40:[function(require,module,exports){
 var MATCH = require('./_wks')('match');
 module.exports = function(KEY){
   var re = /./;
@@ -39170,7 +46952,7 @@ module.exports = function(KEY){
     } catch(f){ /* empty */ }
   } return true;
 };
-},{"./_wks":122}],39:[function(require,module,exports){
+},{"./_wks":124}],41:[function(require,module,exports){
 module.exports = function(exec){
   try {
     return !!exec();
@@ -39178,7 +46960,7 @@ module.exports = function(exec){
     return true;
   }
 };
-},{}],40:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 'use strict';
 var hide     = require('./_hide')
   , redefine = require('./_redefine')
@@ -39207,7 +46989,7 @@ module.exports = function(KEY, length, exec){
     );
   }
 };
-},{"./_defined":32,"./_fails":39,"./_hide":45,"./_redefine":92,"./_wks":122}],41:[function(require,module,exports){
+},{"./_defined":34,"./_fails":41,"./_hide":47,"./_redefine":94,"./_wks":124}],43:[function(require,module,exports){
 'use strict';
 // 21.2.5.3 get RegExp.prototype.flags
 var anObject = require('./_an-object');
@@ -39221,7 +47003,7 @@ module.exports = function(){
   if(that.sticky)     result += 'y';
   return result;
 };
-},{"./_an-object":12}],42:[function(require,module,exports){
+},{"./_an-object":14}],44:[function(require,module,exports){
 var ctx         = require('./_ctx')
   , call        = require('./_iter-call')
   , isArrayIter = require('./_is-array-iter')
@@ -39247,17 +47029,17 @@ var exports = module.exports = function(iterable, entries, fn, that, ITERATOR){
 };
 exports.BREAK  = BREAK;
 exports.RETURN = RETURN;
-},{"./_an-object":12,"./_ctx":30,"./_is-array-iter":51,"./_iter-call":56,"./_to-length":113,"./core.get-iterator-method":123}],43:[function(require,module,exports){
+},{"./_an-object":14,"./_ctx":32,"./_is-array-iter":53,"./_iter-call":58,"./_to-length":115,"./core.get-iterator-method":125}],45:[function(require,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-},{}],44:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
 module.exports = function(it, key){
   return hasOwnProperty.call(it, key);
 };
-},{}],45:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 var dP         = require('./_object-dp')
   , createDesc = require('./_property-desc');
 module.exports = require('./_descriptors') ? function(object, key, value){
@@ -39266,13 +47048,13 @@ module.exports = require('./_descriptors') ? function(object, key, value){
   object[key] = value;
   return object;
 };
-},{"./_descriptors":33,"./_object-dp":72,"./_property-desc":90}],46:[function(require,module,exports){
+},{"./_descriptors":35,"./_object-dp":74,"./_property-desc":92}],48:[function(require,module,exports){
 module.exports = require('./_global').document && document.documentElement;
-},{"./_global":43}],47:[function(require,module,exports){
+},{"./_global":45}],49:[function(require,module,exports){
 module.exports = !require('./_descriptors') && !require('./_fails')(function(){
   return Object.defineProperty(require('./_dom-create')('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
-},{"./_descriptors":33,"./_dom-create":34,"./_fails":39}],48:[function(require,module,exports){
+},{"./_descriptors":35,"./_dom-create":36,"./_fails":41}],50:[function(require,module,exports){
 var isObject       = require('./_is-object')
   , setPrototypeOf = require('./_set-proto').set;
 module.exports = function(that, target, C){
@@ -39281,7 +47063,7 @@ module.exports = function(that, target, C){
     setPrototypeOf(that, P);
   } return that;
 };
-},{"./_is-object":54,"./_set-proto":95}],49:[function(require,module,exports){
+},{"./_is-object":56,"./_set-proto":97}],51:[function(require,module,exports){
 // fast apply, http://jsperf.lnkit.com/fast-apply/5
 module.exports = function(fn, args, that){
   var un = that === undefined;
@@ -39298,13 +47080,13 @@ module.exports = function(fn, args, that){
                       : fn.call(that, args[0], args[1], args[2], args[3]);
   } return              fn.apply(that, args);
 };
-},{}],50:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
 var cof = require('./_cof');
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
-},{"./_cof":23}],51:[function(require,module,exports){
+},{"./_cof":25}],53:[function(require,module,exports){
 // check on default Array iterator
 var Iterators  = require('./_iterators')
   , ITERATOR   = require('./_wks')('iterator')
@@ -39313,24 +47095,24 @@ var Iterators  = require('./_iterators')
 module.exports = function(it){
   return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
 };
-},{"./_iterators":61,"./_wks":122}],52:[function(require,module,exports){
+},{"./_iterators":63,"./_wks":124}],54:[function(require,module,exports){
 // 7.2.2 IsArray(argument)
 var cof = require('./_cof');
 module.exports = Array.isArray || function isArray(arg){
   return cof(arg) == 'Array';
 };
-},{"./_cof":23}],53:[function(require,module,exports){
+},{"./_cof":25}],55:[function(require,module,exports){
 // 20.1.2.3 Number.isInteger(number)
 var isObject = require('./_is-object')
   , floor    = Math.floor;
 module.exports = function isInteger(it){
   return !isObject(it) && isFinite(it) && floor(it) === it;
 };
-},{"./_is-object":54}],54:[function(require,module,exports){
+},{"./_is-object":56}],56:[function(require,module,exports){
 module.exports = function(it){
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
-},{}],55:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 // 7.2.8 IsRegExp(argument)
 var isObject = require('./_is-object')
   , cof      = require('./_cof')
@@ -39339,7 +47121,7 @@ module.exports = function(it){
   var isRegExp;
   return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : cof(it) == 'RegExp');
 };
-},{"./_cof":23,"./_is-object":54,"./_wks":122}],56:[function(require,module,exports){
+},{"./_cof":25,"./_is-object":56,"./_wks":124}],58:[function(require,module,exports){
 // call something on iterator step with safe closing on error
 var anObject = require('./_an-object');
 module.exports = function(iterator, fn, value, entries){
@@ -39352,7 +47134,7 @@ module.exports = function(iterator, fn, value, entries){
     throw e;
   }
 };
-},{"./_an-object":12}],57:[function(require,module,exports){
+},{"./_an-object":14}],59:[function(require,module,exports){
 'use strict';
 var create         = require('./_object-create')
   , descriptor     = require('./_property-desc')
@@ -39366,7 +47148,7 @@ module.exports = function(Constructor, NAME, next){
   Constructor.prototype = create(IteratorPrototype, {next: descriptor(1, next)});
   setToStringTag(Constructor, NAME + ' Iterator');
 };
-},{"./_hide":45,"./_object-create":71,"./_property-desc":90,"./_set-to-string-tag":97,"./_wks":122}],58:[function(require,module,exports){
+},{"./_hide":47,"./_object-create":73,"./_property-desc":92,"./_set-to-string-tag":99,"./_wks":124}],60:[function(require,module,exports){
 'use strict';
 var LIBRARY        = require('./_library')
   , $export        = require('./_export')
@@ -39437,7 +47219,7 @@ module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED
   }
   return methods;
 };
-},{"./_export":37,"./_has":44,"./_hide":45,"./_iter-create":57,"./_iterators":61,"./_library":63,"./_object-gpo":79,"./_redefine":92,"./_set-to-string-tag":97,"./_wks":122}],59:[function(require,module,exports){
+},{"./_export":39,"./_has":46,"./_hide":47,"./_iter-create":59,"./_iterators":63,"./_library":65,"./_object-gpo":81,"./_redefine":94,"./_set-to-string-tag":99,"./_wks":124}],61:[function(require,module,exports){
 var ITERATOR     = require('./_wks')('iterator')
   , SAFE_CLOSING = false;
 
@@ -39459,13 +47241,13 @@ module.exports = function(exec, skipClosing){
   } catch(e){ /* empty */ }
   return safe;
 };
-},{"./_wks":122}],60:[function(require,module,exports){
+},{"./_wks":124}],62:[function(require,module,exports){
 module.exports = function(done, value){
   return {value: value, done: !!done};
 };
-},{}],61:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 module.exports = {};
-},{}],62:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 var getKeys   = require('./_object-keys')
   , toIObject = require('./_to-iobject');
 module.exports = function(object, el){
@@ -39476,9 +47258,9 @@ module.exports = function(object, el){
     , key;
   while(length > index)if(O[key = keys[index++]] === el)return key;
 };
-},{"./_object-keys":81,"./_to-iobject":112}],63:[function(require,module,exports){
+},{"./_object-keys":83,"./_to-iobject":114}],65:[function(require,module,exports){
 module.exports = false;
-},{}],64:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 // 20.2.2.14 Math.expm1(x)
 var $expm1 = Math.expm1;
 module.exports = (!$expm1
@@ -39489,17 +47271,17 @@ module.exports = (!$expm1
 ) ? function expm1(x){
   return (x = +x) == 0 ? x : x > -1e-6 && x < 1e-6 ? x + x * x / 2 : Math.exp(x) - 1;
 } : $expm1;
-},{}],65:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 // 20.2.2.20 Math.log1p(x)
 module.exports = Math.log1p || function log1p(x){
   return (x = +x) > -1e-8 && x < 1e-8 ? x - x * x / 2 : Math.log(1 + x);
 };
-},{}],66:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 // 20.2.2.28 Math.sign(x)
 module.exports = Math.sign || function sign(x){
   return (x = +x) == 0 || x != x ? x : x < 0 ? -1 : 1;
 };
-},{}],67:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 var META     = require('./_uid')('meta')
   , isObject = require('./_is-object')
   , has      = require('./_has')
@@ -39553,7 +47335,7 @@ var meta = module.exports = {
   getWeak:  getWeak,
   onFreeze: onFreeze
 };
-},{"./_fails":39,"./_has":44,"./_is-object":54,"./_object-dp":72,"./_uid":119}],68:[function(require,module,exports){
+},{"./_fails":41,"./_has":46,"./_is-object":56,"./_object-dp":74,"./_uid":121}],70:[function(require,module,exports){
 var Map     = require('./es6.map')
   , $export = require('./_export')
   , shared  = require('./_shared')('metadata')
@@ -39605,7 +47387,7 @@ module.exports = {
   key: toMetaKey,
   exp: exp
 };
-},{"./_export":37,"./_shared":99,"./es6.map":154,"./es6.weak-map":260}],69:[function(require,module,exports){
+},{"./_export":39,"./_shared":101,"./es6.map":156,"./es6.weak-map":262}],71:[function(require,module,exports){
 var global    = require('./_global')
   , macrotask = require('./_task').set
   , Observer  = global.MutationObserver || global.WebKitMutationObserver
@@ -39674,7 +47456,7 @@ module.exports = function(){
     } last = task;
   };
 };
-},{"./_cof":23,"./_global":43,"./_task":109}],70:[function(require,module,exports){
+},{"./_cof":25,"./_global":45,"./_task":111}],72:[function(require,module,exports){
 'use strict';
 // 19.1.2.1 Object.assign(target, source, ...)
 var getKeys  = require('./_object-keys')
@@ -39708,7 +47490,7 @@ module.exports = !$assign || require('./_fails')(function(){
     while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
   } return T;
 } : $assign;
-},{"./_fails":39,"./_iobject":50,"./_object-gops":78,"./_object-keys":81,"./_object-pie":82,"./_to-object":114}],71:[function(require,module,exports){
+},{"./_fails":41,"./_iobject":52,"./_object-gops":80,"./_object-keys":83,"./_object-pie":84,"./_to-object":116}],73:[function(require,module,exports){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject    = require('./_an-object')
   , dPs         = require('./_object-dps')
@@ -39751,7 +47533,7 @@ module.exports = Object.create || function create(O, Properties){
   return Properties === undefined ? result : dPs(result, Properties);
 };
 
-},{"./_an-object":12,"./_dom-create":34,"./_enum-bug-keys":35,"./_html":46,"./_object-dps":73,"./_shared-key":98}],72:[function(require,module,exports){
+},{"./_an-object":14,"./_dom-create":36,"./_enum-bug-keys":37,"./_html":48,"./_object-dps":75,"./_shared-key":100}],74:[function(require,module,exports){
 var anObject       = require('./_an-object')
   , IE8_DOM_DEFINE = require('./_ie8-dom-define')
   , toPrimitive    = require('./_to-primitive')
@@ -39768,7 +47550,7 @@ exports.f = require('./_descriptors') ? Object.defineProperty : function defineP
   if('value' in Attributes)O[P] = Attributes.value;
   return O;
 };
-},{"./_an-object":12,"./_descriptors":33,"./_ie8-dom-define":47,"./_to-primitive":115}],73:[function(require,module,exports){
+},{"./_an-object":14,"./_descriptors":35,"./_ie8-dom-define":49,"./_to-primitive":117}],75:[function(require,module,exports){
 var dP       = require('./_object-dp')
   , anObject = require('./_an-object')
   , getKeys  = require('./_object-keys');
@@ -39782,7 +47564,7 @@ module.exports = require('./_descriptors') ? Object.defineProperties : function 
   while(length > i)dP.f(O, P = keys[i++], Properties[P]);
   return O;
 };
-},{"./_an-object":12,"./_descriptors":33,"./_object-dp":72,"./_object-keys":81}],74:[function(require,module,exports){
+},{"./_an-object":14,"./_descriptors":35,"./_object-dp":74,"./_object-keys":83}],76:[function(require,module,exports){
 // Forced replacement prototype accessors methods
 module.exports = require('./_library')|| !require('./_fails')(function(){
   var K = Math.random();
@@ -39790,7 +47572,7 @@ module.exports = require('./_library')|| !require('./_fails')(function(){
   __defineSetter__.call(null, K, function(){ /* empty */});
   delete require('./_global')[K];
 });
-},{"./_fails":39,"./_global":43,"./_library":63}],75:[function(require,module,exports){
+},{"./_fails":41,"./_global":45,"./_library":65}],77:[function(require,module,exports){
 var pIE            = require('./_object-pie')
   , createDesc     = require('./_property-desc')
   , toIObject      = require('./_to-iobject')
@@ -39807,7 +47589,7 @@ exports.f = require('./_descriptors') ? gOPD : function getOwnPropertyDescriptor
   } catch(e){ /* empty */ }
   if(has(O, P))return createDesc(!pIE.f.call(O, P), O[P]);
 };
-},{"./_descriptors":33,"./_has":44,"./_ie8-dom-define":47,"./_object-pie":82,"./_property-desc":90,"./_to-iobject":112,"./_to-primitive":115}],76:[function(require,module,exports){
+},{"./_descriptors":35,"./_has":46,"./_ie8-dom-define":49,"./_object-pie":84,"./_property-desc":92,"./_to-iobject":114,"./_to-primitive":117}],78:[function(require,module,exports){
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 var toIObject = require('./_to-iobject')
   , gOPN      = require('./_object-gopn').f
@@ -39828,7 +47610,7 @@ module.exports.f = function getOwnPropertyNames(it){
   return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
 };
 
-},{"./_object-gopn":77,"./_to-iobject":112}],77:[function(require,module,exports){
+},{"./_object-gopn":79,"./_to-iobject":114}],79:[function(require,module,exports){
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys      = require('./_object-keys-internal')
   , hiddenKeys = require('./_enum-bug-keys').concat('length', 'prototype');
@@ -39836,9 +47618,9 @@ var $keys      = require('./_object-keys-internal')
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
   return $keys(O, hiddenKeys);
 };
-},{"./_enum-bug-keys":35,"./_object-keys-internal":80}],78:[function(require,module,exports){
+},{"./_enum-bug-keys":37,"./_object-keys-internal":82}],80:[function(require,module,exports){
 exports.f = Object.getOwnPropertySymbols;
-},{}],79:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has         = require('./_has')
   , toObject    = require('./_to-object')
@@ -39852,7 +47634,7 @@ module.exports = Object.getPrototypeOf || function(O){
     return O.constructor.prototype;
   } return O instanceof Object ? ObjectProto : null;
 };
-},{"./_has":44,"./_shared-key":98,"./_to-object":114}],80:[function(require,module,exports){
+},{"./_has":46,"./_shared-key":100,"./_to-object":116}],82:[function(require,module,exports){
 var has          = require('./_has')
   , toIObject    = require('./_to-iobject')
   , arrayIndexOf = require('./_array-includes')(false)
@@ -39870,7 +47652,7 @@ module.exports = function(object, names){
   }
   return result;
 };
-},{"./_array-includes":16,"./_has":44,"./_shared-key":98,"./_to-iobject":112}],81:[function(require,module,exports){
+},{"./_array-includes":18,"./_has":46,"./_shared-key":100,"./_to-iobject":114}],83:[function(require,module,exports){
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys       = require('./_object-keys-internal')
   , enumBugKeys = require('./_enum-bug-keys');
@@ -39878,9 +47660,9 @@ var $keys       = require('./_object-keys-internal')
 module.exports = Object.keys || function keys(O){
   return $keys(O, enumBugKeys);
 };
-},{"./_enum-bug-keys":35,"./_object-keys-internal":80}],82:[function(require,module,exports){
+},{"./_enum-bug-keys":37,"./_object-keys-internal":82}],84:[function(require,module,exports){
 exports.f = {}.propertyIsEnumerable;
-},{}],83:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 // most Object methods by ES6 should accept primitives
 var $export = require('./_export')
   , core    = require('./_core')
@@ -39891,7 +47673,7 @@ module.exports = function(KEY, exec){
   exp[KEY] = exec(fn);
   $export($export.S + $export.F * fails(function(){ fn(1); }), 'Object', exp);
 };
-},{"./_core":28,"./_export":37,"./_fails":39}],84:[function(require,module,exports){
+},{"./_core":30,"./_export":39,"./_fails":41}],86:[function(require,module,exports){
 var getKeys   = require('./_object-keys')
   , toIObject = require('./_to-iobject')
   , isEnum    = require('./_object-pie').f;
@@ -39908,7 +47690,7 @@ module.exports = function(isEntries){
     } return result;
   };
 };
-},{"./_object-keys":81,"./_object-pie":82,"./_to-iobject":112}],85:[function(require,module,exports){
+},{"./_object-keys":83,"./_object-pie":84,"./_to-iobject":114}],87:[function(require,module,exports){
 // all object keys, includes non-enumerable and symbols
 var gOPN     = require('./_object-gopn')
   , gOPS     = require('./_object-gops')
@@ -39919,7 +47701,7 @@ module.exports = Reflect && Reflect.ownKeys || function ownKeys(it){
     , getSymbols = gOPS.f;
   return getSymbols ? keys.concat(getSymbols(it)) : keys;
 };
-},{"./_an-object":12,"./_global":43,"./_object-gopn":77,"./_object-gops":78}],86:[function(require,module,exports){
+},{"./_an-object":14,"./_global":45,"./_object-gopn":79,"./_object-gops":80}],88:[function(require,module,exports){
 var $parseFloat = require('./_global').parseFloat
   , $trim       = require('./_string-trim').trim;
 
@@ -39928,7 +47710,7 @@ module.exports = 1 / $parseFloat(require('./_string-ws') + '-0') !== -Infinity ?
     , result = $parseFloat(string);
   return result === 0 && string.charAt(0) == '-' ? -0 : result;
 } : $parseFloat;
-},{"./_global":43,"./_string-trim":107,"./_string-ws":108}],87:[function(require,module,exports){
+},{"./_global":45,"./_string-trim":109,"./_string-ws":110}],89:[function(require,module,exports){
 var $parseInt = require('./_global').parseInt
   , $trim     = require('./_string-trim').trim
   , ws        = require('./_string-ws')
@@ -39938,7 +47720,7 @@ module.exports = $parseInt(ws + '08') !== 8 || $parseInt(ws + '0x16') !== 22 ? f
   var string = $trim(String(str), 3);
   return $parseInt(string, (radix >>> 0) || (hex.test(string) ? 16 : 10));
 } : $parseInt;
-},{"./_global":43,"./_string-trim":107,"./_string-ws":108}],88:[function(require,module,exports){
+},{"./_global":45,"./_string-trim":109,"./_string-ws":110}],90:[function(require,module,exports){
 'use strict';
 var path      = require('./_path')
   , invoke    = require('./_invoke')
@@ -39962,9 +47744,9 @@ module.exports = function(/* ...pargs */){
     return invoke(fn, args, that);
   };
 };
-},{"./_a-function":8,"./_invoke":49,"./_path":89}],89:[function(require,module,exports){
+},{"./_a-function":10,"./_invoke":51,"./_path":91}],91:[function(require,module,exports){
 module.exports = require('./_global');
-},{"./_global":43}],90:[function(require,module,exports){
+},{"./_global":45}],92:[function(require,module,exports){
 module.exports = function(bitmap, value){
   return {
     enumerable  : !(bitmap & 1),
@@ -39973,13 +47755,13 @@ module.exports = function(bitmap, value){
     value       : value
   };
 };
-},{}],91:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 var redefine = require('./_redefine');
 module.exports = function(target, src, safe){
   for(var key in src)redefine(target, key, src[key], safe);
   return target;
 };
-},{"./_redefine":92}],92:[function(require,module,exports){
+},{"./_redefine":94}],94:[function(require,module,exports){
 var global    = require('./_global')
   , hide      = require('./_hide')
   , has       = require('./_has')
@@ -40012,7 +47794,7 @@ require('./_core').inspectSource = function(it){
 })(Function.prototype, TO_STRING, function toString(){
   return typeof this == 'function' && this[SRC] || $toString.call(this);
 });
-},{"./_core":28,"./_global":43,"./_has":44,"./_hide":45,"./_uid":119}],93:[function(require,module,exports){
+},{"./_core":30,"./_global":45,"./_has":46,"./_hide":47,"./_uid":121}],95:[function(require,module,exports){
 module.exports = function(regExp, replace){
   var replacer = replace === Object(replace) ? function(part){
     return replace[part];
@@ -40021,12 +47803,12 @@ module.exports = function(regExp, replace){
     return String(it).replace(regExp, replacer);
   };
 };
-},{}],94:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 // 7.2.9 SameValue(x, y)
 module.exports = Object.is || function is(x, y){
   return x === y ? x !== 0 || 1 / x === 1 / y : x != x && y != y;
 };
-},{}],95:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 // Works with __proto__ only. Old v8 can't work with null proto objects.
 /* eslint-disable no-proto */
 var isObject = require('./_is-object')
@@ -40052,7 +47834,7 @@ module.exports = {
     }({}, false) : undefined),
   check: check
 };
-},{"./_an-object":12,"./_ctx":30,"./_is-object":54,"./_object-gopd":75}],96:[function(require,module,exports){
+},{"./_an-object":14,"./_ctx":32,"./_is-object":56,"./_object-gopd":77}],98:[function(require,module,exports){
 'use strict';
 var global      = require('./_global')
   , dP          = require('./_object-dp')
@@ -40066,7 +47848,7 @@ module.exports = function(KEY){
     get: function(){ return this; }
   });
 };
-},{"./_descriptors":33,"./_global":43,"./_object-dp":72,"./_wks":122}],97:[function(require,module,exports){
+},{"./_descriptors":35,"./_global":45,"./_object-dp":74,"./_wks":124}],99:[function(require,module,exports){
 var def = require('./_object-dp').f
   , has = require('./_has')
   , TAG = require('./_wks')('toStringTag');
@@ -40074,20 +47856,20 @@ var def = require('./_object-dp').f
 module.exports = function(it, tag, stat){
   if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
 };
-},{"./_has":44,"./_object-dp":72,"./_wks":122}],98:[function(require,module,exports){
+},{"./_has":46,"./_object-dp":74,"./_wks":124}],100:[function(require,module,exports){
 var shared = require('./_shared')('keys')
   , uid    = require('./_uid');
 module.exports = function(key){
   return shared[key] || (shared[key] = uid(key));
 };
-},{"./_shared":99,"./_uid":119}],99:[function(require,module,exports){
+},{"./_shared":101,"./_uid":121}],101:[function(require,module,exports){
 var global = require('./_global')
   , SHARED = '__core-js_shared__'
   , store  = global[SHARED] || (global[SHARED] = {});
 module.exports = function(key){
   return store[key] || (store[key] = {});
 };
-},{"./_global":43}],100:[function(require,module,exports){
+},{"./_global":45}],102:[function(require,module,exports){
 // 7.3.20 SpeciesConstructor(O, defaultConstructor)
 var anObject  = require('./_an-object')
   , aFunction = require('./_a-function')
@@ -40096,7 +47878,7 @@ module.exports = function(O, D){
   var C = anObject(O).constructor, S;
   return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
 };
-},{"./_a-function":8,"./_an-object":12,"./_wks":122}],101:[function(require,module,exports){
+},{"./_a-function":10,"./_an-object":14,"./_wks":124}],103:[function(require,module,exports){
 var fails = require('./_fails');
 
 module.exports = function(method, arg){
@@ -40104,7 +47886,7 @@ module.exports = function(method, arg){
     arg ? method.call(null, function(){}, 1) : method.call(null);
   });
 };
-},{"./_fails":39}],102:[function(require,module,exports){
+},{"./_fails":41}],104:[function(require,module,exports){
 var toInteger = require('./_to-integer')
   , defined   = require('./_defined');
 // true  -> String#at
@@ -40122,7 +47904,7 @@ module.exports = function(TO_STRING){
       : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
   };
 };
-},{"./_defined":32,"./_to-integer":111}],103:[function(require,module,exports){
+},{"./_defined":34,"./_to-integer":113}],105:[function(require,module,exports){
 // helper for String#{startsWith, endsWith, includes}
 var isRegExp = require('./_is-regexp')
   , defined  = require('./_defined');
@@ -40131,7 +47913,7 @@ module.exports = function(that, searchString, NAME){
   if(isRegExp(searchString))throw TypeError('String#' + NAME + " doesn't accept regex!");
   return String(defined(that));
 };
-},{"./_defined":32,"./_is-regexp":55}],104:[function(require,module,exports){
+},{"./_defined":34,"./_is-regexp":57}],106:[function(require,module,exports){
 var $export = require('./_export')
   , fails   = require('./_fails')
   , defined = require('./_defined')
@@ -40151,7 +47933,7 @@ module.exports = function(NAME, exec){
     return test !== test.toLowerCase() || test.split('"').length > 3;
   }), 'String', O);
 };
-},{"./_defined":32,"./_export":37,"./_fails":39}],105:[function(require,module,exports){
+},{"./_defined":34,"./_export":39,"./_fails":41}],107:[function(require,module,exports){
 // https://github.com/tc39/proposal-string-pad-start-end
 var toLength = require('./_to-length')
   , repeat   = require('./_string-repeat')
@@ -40169,7 +47951,7 @@ module.exports = function(that, maxLength, fillString, left){
   return left ? stringFiller + S : S + stringFiller;
 };
 
-},{"./_defined":32,"./_string-repeat":106,"./_to-length":113}],106:[function(require,module,exports){
+},{"./_defined":34,"./_string-repeat":108,"./_to-length":115}],108:[function(require,module,exports){
 'use strict';
 var toInteger = require('./_to-integer')
   , defined   = require('./_defined');
@@ -40182,7 +47964,7 @@ module.exports = function repeat(count){
   for(;n > 0; (n >>>= 1) && (str += str))if(n & 1)res += str;
   return res;
 };
-},{"./_defined":32,"./_to-integer":111}],107:[function(require,module,exports){
+},{"./_defined":34,"./_to-integer":113}],109:[function(require,module,exports){
 var $export = require('./_export')
   , defined = require('./_defined')
   , fails   = require('./_fails')
@@ -40213,10 +47995,10 @@ var trim = exporter.trim = function(string, TYPE){
 };
 
 module.exports = exporter;
-},{"./_defined":32,"./_export":37,"./_fails":39,"./_string-ws":108}],108:[function(require,module,exports){
+},{"./_defined":34,"./_export":39,"./_fails":41,"./_string-ws":110}],110:[function(require,module,exports){
 module.exports = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' +
   '\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF';
-},{}],109:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 var ctx                = require('./_ctx')
   , invoke             = require('./_invoke')
   , html               = require('./_html')
@@ -40292,7 +48074,7 @@ module.exports = {
   set:   setTask,
   clear: clearTask
 };
-},{"./_cof":23,"./_ctx":30,"./_dom-create":34,"./_global":43,"./_html":46,"./_invoke":49}],110:[function(require,module,exports){
+},{"./_cof":25,"./_ctx":32,"./_dom-create":36,"./_global":45,"./_html":48,"./_invoke":51}],112:[function(require,module,exports){
 var toInteger = require('./_to-integer')
   , max       = Math.max
   , min       = Math.min;
@@ -40300,34 +48082,34 @@ module.exports = function(index, length){
   index = toInteger(index);
   return index < 0 ? max(index + length, 0) : min(index, length);
 };
-},{"./_to-integer":111}],111:[function(require,module,exports){
+},{"./_to-integer":113}],113:[function(require,module,exports){
 // 7.1.4 ToInteger
 var ceil  = Math.ceil
   , floor = Math.floor;
 module.exports = function(it){
   return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
 };
-},{}],112:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = require('./_iobject')
   , defined = require('./_defined');
 module.exports = function(it){
   return IObject(defined(it));
 };
-},{"./_defined":32,"./_iobject":50}],113:[function(require,module,exports){
+},{"./_defined":34,"./_iobject":52}],115:[function(require,module,exports){
 // 7.1.15 ToLength
 var toInteger = require('./_to-integer')
   , min       = Math.min;
 module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 };
-},{"./_to-integer":111}],114:[function(require,module,exports){
+},{"./_to-integer":113}],116:[function(require,module,exports){
 // 7.1.13 ToObject(argument)
 var defined = require('./_defined');
 module.exports = function(it){
   return Object(defined(it));
 };
-},{"./_defined":32}],115:[function(require,module,exports){
+},{"./_defined":34}],117:[function(require,module,exports){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = require('./_is-object');
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
@@ -40340,7 +48122,7 @@ module.exports = function(it, S){
   if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
   throw TypeError("Can't convert object to primitive value");
 };
-},{"./_is-object":54}],116:[function(require,module,exports){
+},{"./_is-object":56}],118:[function(require,module,exports){
 'use strict';
 if(require('./_descriptors')){
   var LIBRARY             = require('./_library')
@@ -40820,7 +48602,7 @@ if(require('./_descriptors')){
     if(!LIBRARY && !CORRECT_ITER_NAME)hide(TypedArrayPrototype, ITERATOR, $iterator);
   };
 } else module.exports = function(){ /* empty */ };
-},{"./_an-instance":11,"./_array-copy-within":13,"./_array-fill":14,"./_array-includes":16,"./_array-methods":17,"./_classof":22,"./_ctx":30,"./_descriptors":33,"./_export":37,"./_fails":39,"./_global":43,"./_has":44,"./_hide":45,"./_is-array-iter":51,"./_is-object":54,"./_iter-detect":59,"./_iterators":61,"./_library":63,"./_object-create":71,"./_object-dp":72,"./_object-gopd":75,"./_object-gopn":77,"./_object-gpo":79,"./_property-desc":90,"./_redefine-all":91,"./_same-value":94,"./_set-species":96,"./_species-constructor":100,"./_to-index":110,"./_to-integer":111,"./_to-length":113,"./_to-object":114,"./_to-primitive":115,"./_typed":118,"./_typed-buffer":117,"./_uid":119,"./_wks":122,"./core.get-iterator-method":123,"./es6.array.iterator":135}],117:[function(require,module,exports){
+},{"./_an-instance":13,"./_array-copy-within":15,"./_array-fill":16,"./_array-includes":18,"./_array-methods":19,"./_classof":24,"./_ctx":32,"./_descriptors":35,"./_export":39,"./_fails":41,"./_global":45,"./_has":46,"./_hide":47,"./_is-array-iter":53,"./_is-object":56,"./_iter-detect":61,"./_iterators":63,"./_library":65,"./_object-create":73,"./_object-dp":74,"./_object-gopd":77,"./_object-gopn":79,"./_object-gpo":81,"./_property-desc":92,"./_redefine-all":93,"./_same-value":96,"./_set-species":98,"./_species-constructor":102,"./_to-index":112,"./_to-integer":113,"./_to-length":115,"./_to-object":116,"./_to-primitive":117,"./_typed":120,"./_typed-buffer":119,"./_uid":121,"./_wks":124,"./core.get-iterator-method":125,"./es6.array.iterator":137}],119:[function(require,module,exports){
 'use strict';
 var global         = require('./_global')
   , DESCRIPTORS    = require('./_descriptors')
@@ -41094,7 +48876,7 @@ setToStringTag($DataView, DATA_VIEW);
 hide($DataView[PROTOTYPE], $typed.VIEW, true);
 exports[ARRAY_BUFFER] = $ArrayBuffer;
 exports[DATA_VIEW] = $DataView;
-},{"./_an-instance":11,"./_array-fill":14,"./_descriptors":33,"./_fails":39,"./_global":43,"./_hide":45,"./_library":63,"./_object-dp":72,"./_object-gopn":77,"./_redefine-all":91,"./_set-to-string-tag":97,"./_to-integer":111,"./_to-length":113,"./_typed":118}],118:[function(require,module,exports){
+},{"./_an-instance":13,"./_array-fill":16,"./_descriptors":35,"./_fails":41,"./_global":45,"./_hide":47,"./_library":65,"./_object-dp":74,"./_object-gopn":79,"./_redefine-all":93,"./_set-to-string-tag":99,"./_to-integer":113,"./_to-length":115,"./_typed":120}],120:[function(require,module,exports){
 var global = require('./_global')
   , hide   = require('./_hide')
   , uid    = require('./_uid')
@@ -41121,13 +48903,13 @@ module.exports = {
   TYPED:  TYPED,
   VIEW:   VIEW
 };
-},{"./_global":43,"./_hide":45,"./_uid":119}],119:[function(require,module,exports){
+},{"./_global":45,"./_hide":47,"./_uid":121}],121:[function(require,module,exports){
 var id = 0
   , px = Math.random();
 module.exports = function(key){
   return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
 };
-},{}],120:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 var global         = require('./_global')
   , core           = require('./_core')
   , LIBRARY        = require('./_library')
@@ -41137,9 +48919,9 @@ module.exports = function(name){
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
   if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
 };
-},{"./_core":28,"./_global":43,"./_library":63,"./_object-dp":72,"./_wks-ext":121}],121:[function(require,module,exports){
+},{"./_core":30,"./_global":45,"./_library":65,"./_object-dp":74,"./_wks-ext":123}],123:[function(require,module,exports){
 exports.f = require('./_wks');
-},{"./_wks":122}],122:[function(require,module,exports){
+},{"./_wks":124}],124:[function(require,module,exports){
 var store      = require('./_shared')('wks')
   , uid        = require('./_uid')
   , Symbol     = require('./_global').Symbol
@@ -41151,7 +48933,7 @@ var $exports = module.exports = function(name){
 };
 
 $exports.store = store;
-},{"./_global":43,"./_shared":99,"./_uid":119}],123:[function(require,module,exports){
+},{"./_global":45,"./_shared":101,"./_uid":121}],125:[function(require,module,exports){
 var classof   = require('./_classof')
   , ITERATOR  = require('./_wks')('iterator')
   , Iterators = require('./_iterators');
@@ -41160,21 +48942,21 @@ module.exports = require('./_core').getIteratorMethod = function(it){
     || it['@@iterator']
     || Iterators[classof(it)];
 };
-},{"./_classof":22,"./_core":28,"./_iterators":61,"./_wks":122}],124:[function(require,module,exports){
+},{"./_classof":24,"./_core":30,"./_iterators":63,"./_wks":124}],126:[function(require,module,exports){
 // https://github.com/benjamingr/RexExp.escape
 var $export = require('./_export')
   , $re     = require('./_replacer')(/[\\^$*+?.()|[\]{}]/g, '\\$&');
 
 $export($export.S, 'RegExp', {escape: function escape(it){ return $re(it); }});
 
-},{"./_export":37,"./_replacer":93}],125:[function(require,module,exports){
+},{"./_export":39,"./_replacer":95}],127:[function(require,module,exports){
 // 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
 var $export = require('./_export');
 
 $export($export.P, 'Array', {copyWithin: require('./_array-copy-within')});
 
 require('./_add-to-unscopables')('copyWithin');
-},{"./_add-to-unscopables":10,"./_array-copy-within":13,"./_export":37}],126:[function(require,module,exports){
+},{"./_add-to-unscopables":12,"./_array-copy-within":15,"./_export":39}],128:[function(require,module,exports){
 'use strict';
 var $export = require('./_export')
   , $every  = require('./_array-methods')(4);
@@ -41185,14 +48967,14 @@ $export($export.P + $export.F * !require('./_strict-method')([].every, true), 'A
     return $every(this, callbackfn, arguments[1]);
   }
 });
-},{"./_array-methods":17,"./_export":37,"./_strict-method":101}],127:[function(require,module,exports){
+},{"./_array-methods":19,"./_export":39,"./_strict-method":103}],129:[function(require,module,exports){
 // 22.1.3.6 Array.prototype.fill(value, start = 0, end = this.length)
 var $export = require('./_export');
 
 $export($export.P, 'Array', {fill: require('./_array-fill')});
 
 require('./_add-to-unscopables')('fill');
-},{"./_add-to-unscopables":10,"./_array-fill":14,"./_export":37}],128:[function(require,module,exports){
+},{"./_add-to-unscopables":12,"./_array-fill":16,"./_export":39}],130:[function(require,module,exports){
 'use strict';
 var $export = require('./_export')
   , $filter = require('./_array-methods')(2);
@@ -41203,7 +48985,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].filter, true), '
     return $filter(this, callbackfn, arguments[1]);
   }
 });
-},{"./_array-methods":17,"./_export":37,"./_strict-method":101}],129:[function(require,module,exports){
+},{"./_array-methods":19,"./_export":39,"./_strict-method":103}],131:[function(require,module,exports){
 'use strict';
 // 22.1.3.9 Array.prototype.findIndex(predicate, thisArg = undefined)
 var $export = require('./_export')
@@ -41218,7 +49000,7 @@ $export($export.P + $export.F * forced, 'Array', {
   }
 });
 require('./_add-to-unscopables')(KEY);
-},{"./_add-to-unscopables":10,"./_array-methods":17,"./_export":37}],130:[function(require,module,exports){
+},{"./_add-to-unscopables":12,"./_array-methods":19,"./_export":39}],132:[function(require,module,exports){
 'use strict';
 // 22.1.3.8 Array.prototype.find(predicate, thisArg = undefined)
 var $export = require('./_export')
@@ -41233,7 +49015,7 @@ $export($export.P + $export.F * forced, 'Array', {
   }
 });
 require('./_add-to-unscopables')(KEY);
-},{"./_add-to-unscopables":10,"./_array-methods":17,"./_export":37}],131:[function(require,module,exports){
+},{"./_add-to-unscopables":12,"./_array-methods":19,"./_export":39}],133:[function(require,module,exports){
 'use strict';
 var $export  = require('./_export')
   , $forEach = require('./_array-methods')(0)
@@ -41245,7 +49027,7 @@ $export($export.P + $export.F * !STRICT, 'Array', {
     return $forEach(this, callbackfn, arguments[1]);
   }
 });
-},{"./_array-methods":17,"./_export":37,"./_strict-method":101}],132:[function(require,module,exports){
+},{"./_array-methods":19,"./_export":39,"./_strict-method":103}],134:[function(require,module,exports){
 'use strict';
 var ctx            = require('./_ctx')
   , $export        = require('./_export')
@@ -41284,7 +49066,7 @@ $export($export.S + $export.F * !require('./_iter-detect')(function(iter){ Array
   }
 });
 
-},{"./_create-property":29,"./_ctx":30,"./_export":37,"./_is-array-iter":51,"./_iter-call":56,"./_iter-detect":59,"./_to-length":113,"./_to-object":114,"./core.get-iterator-method":123}],133:[function(require,module,exports){
+},{"./_create-property":31,"./_ctx":32,"./_export":39,"./_is-array-iter":53,"./_iter-call":58,"./_iter-detect":61,"./_to-length":115,"./_to-object":116,"./core.get-iterator-method":125}],135:[function(require,module,exports){
 'use strict';
 var $export       = require('./_export')
   , $indexOf      = require('./_array-includes')(false)
@@ -41300,12 +49082,12 @@ $export($export.P + $export.F * (NEGATIVE_ZERO || !require('./_strict-method')($
       : $indexOf(this, searchElement, arguments[1]);
   }
 });
-},{"./_array-includes":16,"./_export":37,"./_strict-method":101}],134:[function(require,module,exports){
+},{"./_array-includes":18,"./_export":39,"./_strict-method":103}],136:[function(require,module,exports){
 // 22.1.2.2 / 15.4.3.2 Array.isArray(arg)
 var $export = require('./_export');
 
 $export($export.S, 'Array', {isArray: require('./_is-array')});
-},{"./_export":37,"./_is-array":52}],135:[function(require,module,exports){
+},{"./_export":39,"./_is-array":54}],137:[function(require,module,exports){
 'use strict';
 var addToUnscopables = require('./_add-to-unscopables')
   , step             = require('./_iter-step')
@@ -41340,7 +49122,7 @@ Iterators.Arguments = Iterators.Array;
 addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
-},{"./_add-to-unscopables":10,"./_iter-define":58,"./_iter-step":60,"./_iterators":61,"./_to-iobject":112}],136:[function(require,module,exports){
+},{"./_add-to-unscopables":12,"./_iter-define":60,"./_iter-step":62,"./_iterators":63,"./_to-iobject":114}],138:[function(require,module,exports){
 'use strict';
 // 22.1.3.13 Array.prototype.join(separator)
 var $export   = require('./_export')
@@ -41353,7 +49135,7 @@ $export($export.P + $export.F * (require('./_iobject') != Object || !require('./
     return arrayJoin.call(toIObject(this), separator === undefined ? ',' : separator);
   }
 });
-},{"./_export":37,"./_iobject":50,"./_strict-method":101,"./_to-iobject":112}],137:[function(require,module,exports){
+},{"./_export":39,"./_iobject":52,"./_strict-method":103,"./_to-iobject":114}],139:[function(require,module,exports){
 'use strict';
 var $export       = require('./_export')
   , toIObject     = require('./_to-iobject')
@@ -41376,7 +49158,7 @@ $export($export.P + $export.F * (NEGATIVE_ZERO || !require('./_strict-method')($
     return -1;
   }
 });
-},{"./_export":37,"./_strict-method":101,"./_to-integer":111,"./_to-iobject":112,"./_to-length":113}],138:[function(require,module,exports){
+},{"./_export":39,"./_strict-method":103,"./_to-integer":113,"./_to-iobject":114,"./_to-length":115}],140:[function(require,module,exports){
 'use strict';
 var $export = require('./_export')
   , $map    = require('./_array-methods')(1);
@@ -41387,7 +49169,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].map, true), 'Arr
     return $map(this, callbackfn, arguments[1]);
   }
 });
-},{"./_array-methods":17,"./_export":37,"./_strict-method":101}],139:[function(require,module,exports){
+},{"./_array-methods":19,"./_export":39,"./_strict-method":103}],141:[function(require,module,exports){
 'use strict';
 var $export        = require('./_export')
   , createProperty = require('./_create-property');
@@ -41407,7 +49189,7 @@ $export($export.S + $export.F * require('./_fails')(function(){
     return result;
   }
 });
-},{"./_create-property":29,"./_export":37,"./_fails":39}],140:[function(require,module,exports){
+},{"./_create-property":31,"./_export":39,"./_fails":41}],142:[function(require,module,exports){
 'use strict';
 var $export = require('./_export')
   , $reduce = require('./_array-reduce');
@@ -41418,7 +49200,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].reduceRight, tru
     return $reduce(this, callbackfn, arguments.length, arguments[1], true);
   }
 });
-},{"./_array-reduce":18,"./_export":37,"./_strict-method":101}],141:[function(require,module,exports){
+},{"./_array-reduce":20,"./_export":39,"./_strict-method":103}],143:[function(require,module,exports){
 'use strict';
 var $export = require('./_export')
   , $reduce = require('./_array-reduce');
@@ -41429,7 +49211,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].reduce, true), '
     return $reduce(this, callbackfn, arguments.length, arguments[1], false);
   }
 });
-},{"./_array-reduce":18,"./_export":37,"./_strict-method":101}],142:[function(require,module,exports){
+},{"./_array-reduce":20,"./_export":39,"./_strict-method":103}],144:[function(require,module,exports){
 'use strict';
 var $export    = require('./_export')
   , html       = require('./_html')
@@ -41458,7 +49240,7 @@ $export($export.P + $export.F * require('./_fails')(function(){
     return cloned;
   }
 });
-},{"./_cof":23,"./_export":37,"./_fails":39,"./_html":46,"./_to-index":110,"./_to-length":113}],143:[function(require,module,exports){
+},{"./_cof":25,"./_export":39,"./_fails":41,"./_html":48,"./_to-index":112,"./_to-length":115}],145:[function(require,module,exports){
 'use strict';
 var $export = require('./_export')
   , $some   = require('./_array-methods')(3);
@@ -41469,7 +49251,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].some, true), 'Ar
     return $some(this, callbackfn, arguments[1]);
   }
 });
-},{"./_array-methods":17,"./_export":37,"./_strict-method":101}],144:[function(require,module,exports){
+},{"./_array-methods":19,"./_export":39,"./_strict-method":103}],146:[function(require,module,exports){
 'use strict';
 var $export   = require('./_export')
   , aFunction = require('./_a-function')
@@ -41493,14 +49275,14 @@ $export($export.P + $export.F * (fails(function(){
       : $sort.call(toObject(this), aFunction(comparefn));
   }
 });
-},{"./_a-function":8,"./_export":37,"./_fails":39,"./_strict-method":101,"./_to-object":114}],145:[function(require,module,exports){
+},{"./_a-function":10,"./_export":39,"./_fails":41,"./_strict-method":103,"./_to-object":116}],147:[function(require,module,exports){
 require('./_set-species')('Array');
-},{"./_set-species":96}],146:[function(require,module,exports){
+},{"./_set-species":98}],148:[function(require,module,exports){
 // 20.3.3.1 / 15.9.4.4 Date.now()
 var $export = require('./_export');
 
 $export($export.S, 'Date', {now: function(){ return new Date().getTime(); }});
-},{"./_export":37}],147:[function(require,module,exports){
+},{"./_export":39}],149:[function(require,module,exports){
 'use strict';
 // 20.3.4.36 / 15.9.5.43 Date.prototype.toISOString()
 var $export = require('./_export')
@@ -41529,7 +49311,7 @@ $export($export.P + $export.F * (fails(function(){
       ':' + lz(d.getUTCSeconds()) + '.' + (m > 99 ? m : '0' + lz(m)) + 'Z';
   }
 });
-},{"./_export":37,"./_fails":39}],148:[function(require,module,exports){
+},{"./_export":39,"./_fails":41}],150:[function(require,module,exports){
 'use strict';
 var $export     = require('./_export')
   , toObject    = require('./_to-object')
@@ -41544,12 +49326,12 @@ $export($export.P + $export.F * require('./_fails')(function(){
     return typeof pv == 'number' && !isFinite(pv) ? null : O.toISOString();
   }
 });
-},{"./_export":37,"./_fails":39,"./_to-object":114,"./_to-primitive":115}],149:[function(require,module,exports){
+},{"./_export":39,"./_fails":41,"./_to-object":116,"./_to-primitive":117}],151:[function(require,module,exports){
 var TO_PRIMITIVE = require('./_wks')('toPrimitive')
   , proto        = Date.prototype;
 
 if(!(TO_PRIMITIVE in proto))require('./_hide')(proto, TO_PRIMITIVE, require('./_date-to-primitive'));
-},{"./_date-to-primitive":31,"./_hide":45,"./_wks":122}],150:[function(require,module,exports){
+},{"./_date-to-primitive":33,"./_hide":47,"./_wks":124}],152:[function(require,module,exports){
 var DateProto    = Date.prototype
   , INVALID_DATE = 'Invalid Date'
   , TO_STRING    = 'toString'
@@ -41561,12 +49343,12 @@ if(new Date(NaN) + '' != INVALID_DATE){
     return value === value ? $toString.call(this) : INVALID_DATE;
   });
 }
-},{"./_redefine":92}],151:[function(require,module,exports){
+},{"./_redefine":94}],153:[function(require,module,exports){
 // 19.2.3.2 / 15.3.4.5 Function.prototype.bind(thisArg, args...)
 var $export = require('./_export');
 
 $export($export.P, 'Function', {bind: require('./_bind')});
-},{"./_bind":21,"./_export":37}],152:[function(require,module,exports){
+},{"./_bind":23,"./_export":39}],154:[function(require,module,exports){
 'use strict';
 var isObject       = require('./_is-object')
   , getPrototypeOf = require('./_object-gpo')
@@ -41580,7 +49362,7 @@ if(!(HAS_INSTANCE in FunctionProto))require('./_object-dp').f(FunctionProto, HAS
   while(O = getPrototypeOf(O))if(this.prototype === O)return true;
   return false;
 }});
-},{"./_is-object":54,"./_object-dp":72,"./_object-gpo":79,"./_wks":122}],153:[function(require,module,exports){
+},{"./_is-object":56,"./_object-dp":74,"./_object-gpo":81,"./_wks":124}],155:[function(require,module,exports){
 var dP         = require('./_object-dp').f
   , createDesc = require('./_property-desc')
   , has        = require('./_has')
@@ -41606,7 +49388,7 @@ NAME in FProto || require('./_descriptors') && dP(FProto, NAME, {
     }
   }
 });
-},{"./_descriptors":33,"./_has":44,"./_object-dp":72,"./_property-desc":90}],154:[function(require,module,exports){
+},{"./_descriptors":35,"./_has":46,"./_object-dp":74,"./_property-desc":92}],156:[function(require,module,exports){
 'use strict';
 var strong = require('./_collection-strong');
 
@@ -41624,7 +49406,7 @@ module.exports = require('./_collection')('Map', function(get){
     return strong.def(this, key === 0 ? 0 : key, value);
   }
 }, strong, true);
-},{"./_collection":27,"./_collection-strong":24}],155:[function(require,module,exports){
+},{"./_collection":29,"./_collection-strong":26}],157:[function(require,module,exports){
 // 20.2.2.3 Math.acosh(x)
 var $export = require('./_export')
   , log1p   = require('./_math-log1p')
@@ -41643,7 +49425,7 @@ $export($export.S + $export.F * !($acosh
       : log1p(x - 1 + sqrt(x - 1) * sqrt(x + 1));
   }
 });
-},{"./_export":37,"./_math-log1p":65}],156:[function(require,module,exports){
+},{"./_export":39,"./_math-log1p":67}],158:[function(require,module,exports){
 // 20.2.2.5 Math.asinh(x)
 var $export = require('./_export')
   , $asinh  = Math.asinh;
@@ -41654,7 +49436,7 @@ function asinh(x){
 
 // Tor Browser bug: Math.asinh(0) -> -0 
 $export($export.S + $export.F * !($asinh && 1 / $asinh(0) > 0), 'Math', {asinh: asinh});
-},{"./_export":37}],157:[function(require,module,exports){
+},{"./_export":39}],159:[function(require,module,exports){
 // 20.2.2.7 Math.atanh(x)
 var $export = require('./_export')
   , $atanh  = Math.atanh;
@@ -41665,7 +49447,7 @@ $export($export.S + $export.F * !($atanh && 1 / $atanh(-0) < 0), 'Math', {
     return (x = +x) == 0 ? x : Math.log((1 + x) / (1 - x)) / 2;
   }
 });
-},{"./_export":37}],158:[function(require,module,exports){
+},{"./_export":39}],160:[function(require,module,exports){
 // 20.2.2.9 Math.cbrt(x)
 var $export = require('./_export')
   , sign    = require('./_math-sign');
@@ -41675,7 +49457,7 @@ $export($export.S, 'Math', {
     return sign(x = +x) * Math.pow(Math.abs(x), 1 / 3);
   }
 });
-},{"./_export":37,"./_math-sign":66}],159:[function(require,module,exports){
+},{"./_export":39,"./_math-sign":68}],161:[function(require,module,exports){
 // 20.2.2.11 Math.clz32(x)
 var $export = require('./_export');
 
@@ -41684,7 +49466,7 @@ $export($export.S, 'Math', {
     return (x >>>= 0) ? 31 - Math.floor(Math.log(x + 0.5) * Math.LOG2E) : 32;
   }
 });
-},{"./_export":37}],160:[function(require,module,exports){
+},{"./_export":39}],162:[function(require,module,exports){
 // 20.2.2.12 Math.cosh(x)
 var $export = require('./_export')
   , exp     = Math.exp;
@@ -41694,13 +49476,13 @@ $export($export.S, 'Math', {
     return (exp(x = +x) + exp(-x)) / 2;
   }
 });
-},{"./_export":37}],161:[function(require,module,exports){
+},{"./_export":39}],163:[function(require,module,exports){
 // 20.2.2.14 Math.expm1(x)
 var $export = require('./_export')
   , $expm1  = require('./_math-expm1');
 
 $export($export.S + $export.F * ($expm1 != Math.expm1), 'Math', {expm1: $expm1});
-},{"./_export":37,"./_math-expm1":64}],162:[function(require,module,exports){
+},{"./_export":39,"./_math-expm1":66}],164:[function(require,module,exports){
 // 20.2.2.16 Math.fround(x)
 var $export   = require('./_export')
   , sign      = require('./_math-sign')
@@ -41727,7 +49509,7 @@ $export($export.S, 'Math', {
     return $sign * result;
   }
 });
-},{"./_export":37,"./_math-sign":66}],163:[function(require,module,exports){
+},{"./_export":39,"./_math-sign":68}],165:[function(require,module,exports){
 // 20.2.2.17 Math.hypot([value1[, value2[, … ]]])
 var $export = require('./_export')
   , abs     = Math.abs;
@@ -41753,7 +49535,7 @@ $export($export.S, 'Math', {
     return larg === Infinity ? Infinity : larg * Math.sqrt(sum);
   }
 });
-},{"./_export":37}],164:[function(require,module,exports){
+},{"./_export":39}],166:[function(require,module,exports){
 // 20.2.2.18 Math.imul(x, y)
 var $export = require('./_export')
   , $imul   = Math.imul;
@@ -41771,7 +49553,7 @@ $export($export.S + $export.F * require('./_fails')(function(){
     return 0 | xl * yl + ((UINT16 & xn >>> 16) * yl + xl * (UINT16 & yn >>> 16) << 16 >>> 0);
   }
 });
-},{"./_export":37,"./_fails":39}],165:[function(require,module,exports){
+},{"./_export":39,"./_fails":41}],167:[function(require,module,exports){
 // 20.2.2.21 Math.log10(x)
 var $export = require('./_export');
 
@@ -41780,12 +49562,12 @@ $export($export.S, 'Math', {
     return Math.log(x) / Math.LN10;
   }
 });
-},{"./_export":37}],166:[function(require,module,exports){
+},{"./_export":39}],168:[function(require,module,exports){
 // 20.2.2.20 Math.log1p(x)
 var $export = require('./_export');
 
 $export($export.S, 'Math', {log1p: require('./_math-log1p')});
-},{"./_export":37,"./_math-log1p":65}],167:[function(require,module,exports){
+},{"./_export":39,"./_math-log1p":67}],169:[function(require,module,exports){
 // 20.2.2.22 Math.log2(x)
 var $export = require('./_export');
 
@@ -41794,12 +49576,12 @@ $export($export.S, 'Math', {
     return Math.log(x) / Math.LN2;
   }
 });
-},{"./_export":37}],168:[function(require,module,exports){
+},{"./_export":39}],170:[function(require,module,exports){
 // 20.2.2.28 Math.sign(x)
 var $export = require('./_export');
 
 $export($export.S, 'Math', {sign: require('./_math-sign')});
-},{"./_export":37,"./_math-sign":66}],169:[function(require,module,exports){
+},{"./_export":39,"./_math-sign":68}],171:[function(require,module,exports){
 // 20.2.2.30 Math.sinh(x)
 var $export = require('./_export')
   , expm1   = require('./_math-expm1')
@@ -41815,7 +49597,7 @@ $export($export.S + $export.F * require('./_fails')(function(){
       : (exp(x - 1) - exp(-x - 1)) * (Math.E / 2);
   }
 });
-},{"./_export":37,"./_fails":39,"./_math-expm1":64}],170:[function(require,module,exports){
+},{"./_export":39,"./_fails":41,"./_math-expm1":66}],172:[function(require,module,exports){
 // 20.2.2.33 Math.tanh(x)
 var $export = require('./_export')
   , expm1   = require('./_math-expm1')
@@ -41828,7 +49610,7 @@ $export($export.S, 'Math', {
     return a == Infinity ? 1 : b == Infinity ? -1 : (a - b) / (exp(x) + exp(-x));
   }
 });
-},{"./_export":37,"./_math-expm1":64}],171:[function(require,module,exports){
+},{"./_export":39,"./_math-expm1":66}],173:[function(require,module,exports){
 // 20.2.2.34 Math.trunc(x)
 var $export = require('./_export');
 
@@ -41837,7 +49619,7 @@ $export($export.S, 'Math', {
     return (it > 0 ? Math.floor : Math.ceil)(it);
   }
 });
-},{"./_export":37}],172:[function(require,module,exports){
+},{"./_export":39}],174:[function(require,module,exports){
 'use strict';
 var global            = require('./_global')
   , has               = require('./_has')
@@ -41907,12 +49689,12 @@ if(!$Number(' 0o1') || !$Number('0b1') || $Number('+0x1')){
   proto.constructor = $Number;
   require('./_redefine')(global, NUMBER, $Number);
 }
-},{"./_cof":23,"./_descriptors":33,"./_fails":39,"./_global":43,"./_has":44,"./_inherit-if-required":48,"./_object-create":71,"./_object-dp":72,"./_object-gopd":75,"./_object-gopn":77,"./_redefine":92,"./_string-trim":107,"./_to-primitive":115}],173:[function(require,module,exports){
+},{"./_cof":25,"./_descriptors":35,"./_fails":41,"./_global":45,"./_has":46,"./_inherit-if-required":50,"./_object-create":73,"./_object-dp":74,"./_object-gopd":77,"./_object-gopn":79,"./_redefine":94,"./_string-trim":109,"./_to-primitive":117}],175:[function(require,module,exports){
 // 20.1.2.1 Number.EPSILON
 var $export = require('./_export');
 
 $export($export.S, 'Number', {EPSILON: Math.pow(2, -52)});
-},{"./_export":37}],174:[function(require,module,exports){
+},{"./_export":39}],176:[function(require,module,exports){
 // 20.1.2.2 Number.isFinite(number)
 var $export   = require('./_export')
   , _isFinite = require('./_global').isFinite;
@@ -41922,12 +49704,12 @@ $export($export.S, 'Number', {
     return typeof it == 'number' && _isFinite(it);
   }
 });
-},{"./_export":37,"./_global":43}],175:[function(require,module,exports){
+},{"./_export":39,"./_global":45}],177:[function(require,module,exports){
 // 20.1.2.3 Number.isInteger(number)
 var $export = require('./_export');
 
 $export($export.S, 'Number', {isInteger: require('./_is-integer')});
-},{"./_export":37,"./_is-integer":53}],176:[function(require,module,exports){
+},{"./_export":39,"./_is-integer":55}],178:[function(require,module,exports){
 // 20.1.2.4 Number.isNaN(number)
 var $export = require('./_export');
 
@@ -41936,7 +49718,7 @@ $export($export.S, 'Number', {
     return number != number;
   }
 });
-},{"./_export":37}],177:[function(require,module,exports){
+},{"./_export":39}],179:[function(require,module,exports){
 // 20.1.2.5 Number.isSafeInteger(number)
 var $export   = require('./_export')
   , isInteger = require('./_is-integer')
@@ -41947,27 +49729,27 @@ $export($export.S, 'Number', {
     return isInteger(number) && abs(number) <= 0x1fffffffffffff;
   }
 });
-},{"./_export":37,"./_is-integer":53}],178:[function(require,module,exports){
+},{"./_export":39,"./_is-integer":55}],180:[function(require,module,exports){
 // 20.1.2.6 Number.MAX_SAFE_INTEGER
 var $export = require('./_export');
 
 $export($export.S, 'Number', {MAX_SAFE_INTEGER: 0x1fffffffffffff});
-},{"./_export":37}],179:[function(require,module,exports){
+},{"./_export":39}],181:[function(require,module,exports){
 // 20.1.2.10 Number.MIN_SAFE_INTEGER
 var $export = require('./_export');
 
 $export($export.S, 'Number', {MIN_SAFE_INTEGER: -0x1fffffffffffff});
-},{"./_export":37}],180:[function(require,module,exports){
+},{"./_export":39}],182:[function(require,module,exports){
 var $export     = require('./_export')
   , $parseFloat = require('./_parse-float');
 // 20.1.2.12 Number.parseFloat(string)
 $export($export.S + $export.F * (Number.parseFloat != $parseFloat), 'Number', {parseFloat: $parseFloat});
-},{"./_export":37,"./_parse-float":86}],181:[function(require,module,exports){
+},{"./_export":39,"./_parse-float":88}],183:[function(require,module,exports){
 var $export   = require('./_export')
   , $parseInt = require('./_parse-int');
 // 20.1.2.13 Number.parseInt(string, radix)
 $export($export.S + $export.F * (Number.parseInt != $parseInt), 'Number', {parseInt: $parseInt});
-},{"./_export":37,"./_parse-int":87}],182:[function(require,module,exports){
+},{"./_export":39,"./_parse-int":89}],184:[function(require,module,exports){
 'use strict';
 var $export      = require('./_export')
   , toInteger    = require('./_to-integer')
@@ -42081,7 +49863,7 @@ $export($export.P + $export.F * (!!$toFixed && (
     } return m;
   }
 });
-},{"./_a-number-value":9,"./_export":37,"./_fails":39,"./_string-repeat":106,"./_to-integer":111}],183:[function(require,module,exports){
+},{"./_a-number-value":11,"./_export":39,"./_fails":41,"./_string-repeat":108,"./_to-integer":113}],185:[function(require,module,exports){
 'use strict';
 var $export      = require('./_export')
   , $fails       = require('./_fails')
@@ -42100,24 +49882,24 @@ $export($export.P + $export.F * ($fails(function(){
     return precision === undefined ? $toPrecision.call(that) : $toPrecision.call(that, precision); 
   }
 });
-},{"./_a-number-value":9,"./_export":37,"./_fails":39}],184:[function(require,module,exports){
+},{"./_a-number-value":11,"./_export":39,"./_fails":41}],186:[function(require,module,exports){
 // 19.1.3.1 Object.assign(target, source)
 var $export = require('./_export');
 
 $export($export.S + $export.F, 'Object', {assign: require('./_object-assign')});
-},{"./_export":37,"./_object-assign":70}],185:[function(require,module,exports){
+},{"./_export":39,"./_object-assign":72}],187:[function(require,module,exports){
 var $export = require('./_export')
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 $export($export.S, 'Object', {create: require('./_object-create')});
-},{"./_export":37,"./_object-create":71}],186:[function(require,module,exports){
+},{"./_export":39,"./_object-create":73}],188:[function(require,module,exports){
 var $export = require('./_export');
 // 19.1.2.3 / 15.2.3.7 Object.defineProperties(O, Properties)
 $export($export.S + $export.F * !require('./_descriptors'), 'Object', {defineProperties: require('./_object-dps')});
-},{"./_descriptors":33,"./_export":37,"./_object-dps":73}],187:[function(require,module,exports){
+},{"./_descriptors":35,"./_export":39,"./_object-dps":75}],189:[function(require,module,exports){
 var $export = require('./_export');
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 $export($export.S + $export.F * !require('./_descriptors'), 'Object', {defineProperty: require('./_object-dp').f});
-},{"./_descriptors":33,"./_export":37,"./_object-dp":72}],188:[function(require,module,exports){
+},{"./_descriptors":35,"./_export":39,"./_object-dp":74}],190:[function(require,module,exports){
 // 19.1.2.5 Object.freeze(O)
 var isObject = require('./_is-object')
   , meta     = require('./_meta').onFreeze;
@@ -42127,7 +49909,7 @@ require('./_object-sap')('freeze', function($freeze){
     return $freeze && isObject(it) ? $freeze(meta(it)) : it;
   };
 });
-},{"./_is-object":54,"./_meta":67,"./_object-sap":83}],189:[function(require,module,exports){
+},{"./_is-object":56,"./_meta":69,"./_object-sap":85}],191:[function(require,module,exports){
 // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
 var toIObject                 = require('./_to-iobject')
   , $getOwnPropertyDescriptor = require('./_object-gopd').f;
@@ -42137,12 +49919,12 @@ require('./_object-sap')('getOwnPropertyDescriptor', function(){
     return $getOwnPropertyDescriptor(toIObject(it), key);
   };
 });
-},{"./_object-gopd":75,"./_object-sap":83,"./_to-iobject":112}],190:[function(require,module,exports){
+},{"./_object-gopd":77,"./_object-sap":85,"./_to-iobject":114}],192:[function(require,module,exports){
 // 19.1.2.7 Object.getOwnPropertyNames(O)
 require('./_object-sap')('getOwnPropertyNames', function(){
   return require('./_object-gopn-ext').f;
 });
-},{"./_object-gopn-ext":76,"./_object-sap":83}],191:[function(require,module,exports){
+},{"./_object-gopn-ext":78,"./_object-sap":85}],193:[function(require,module,exports){
 // 19.1.2.9 Object.getPrototypeOf(O)
 var toObject        = require('./_to-object')
   , $getPrototypeOf = require('./_object-gpo');
@@ -42152,7 +49934,7 @@ require('./_object-sap')('getPrototypeOf', function(){
     return $getPrototypeOf(toObject(it));
   };
 });
-},{"./_object-gpo":79,"./_object-sap":83,"./_to-object":114}],192:[function(require,module,exports){
+},{"./_object-gpo":81,"./_object-sap":85,"./_to-object":116}],194:[function(require,module,exports){
 // 19.1.2.11 Object.isExtensible(O)
 var isObject = require('./_is-object');
 
@@ -42161,7 +49943,7 @@ require('./_object-sap')('isExtensible', function($isExtensible){
     return isObject(it) ? $isExtensible ? $isExtensible(it) : true : false;
   };
 });
-},{"./_is-object":54,"./_object-sap":83}],193:[function(require,module,exports){
+},{"./_is-object":56,"./_object-sap":85}],195:[function(require,module,exports){
 // 19.1.2.12 Object.isFrozen(O)
 var isObject = require('./_is-object');
 
@@ -42170,7 +49952,7 @@ require('./_object-sap')('isFrozen', function($isFrozen){
     return isObject(it) ? $isFrozen ? $isFrozen(it) : false : true;
   };
 });
-},{"./_is-object":54,"./_object-sap":83}],194:[function(require,module,exports){
+},{"./_is-object":56,"./_object-sap":85}],196:[function(require,module,exports){
 // 19.1.2.13 Object.isSealed(O)
 var isObject = require('./_is-object');
 
@@ -42179,11 +49961,11 @@ require('./_object-sap')('isSealed', function($isSealed){
     return isObject(it) ? $isSealed ? $isSealed(it) : false : true;
   };
 });
-},{"./_is-object":54,"./_object-sap":83}],195:[function(require,module,exports){
+},{"./_is-object":56,"./_object-sap":85}],197:[function(require,module,exports){
 // 19.1.3.10 Object.is(value1, value2)
 var $export = require('./_export');
 $export($export.S, 'Object', {is: require('./_same-value')});
-},{"./_export":37,"./_same-value":94}],196:[function(require,module,exports){
+},{"./_export":39,"./_same-value":96}],198:[function(require,module,exports){
 // 19.1.2.14 Object.keys(O)
 var toObject = require('./_to-object')
   , $keys    = require('./_object-keys');
@@ -42193,7 +49975,7 @@ require('./_object-sap')('keys', function(){
     return $keys(toObject(it));
   };
 });
-},{"./_object-keys":81,"./_object-sap":83,"./_to-object":114}],197:[function(require,module,exports){
+},{"./_object-keys":83,"./_object-sap":85,"./_to-object":116}],199:[function(require,module,exports){
 // 19.1.2.15 Object.preventExtensions(O)
 var isObject = require('./_is-object')
   , meta     = require('./_meta').onFreeze;
@@ -42203,7 +49985,7 @@ require('./_object-sap')('preventExtensions', function($preventExtensions){
     return $preventExtensions && isObject(it) ? $preventExtensions(meta(it)) : it;
   };
 });
-},{"./_is-object":54,"./_meta":67,"./_object-sap":83}],198:[function(require,module,exports){
+},{"./_is-object":56,"./_meta":69,"./_object-sap":85}],200:[function(require,module,exports){
 // 19.1.2.17 Object.seal(O)
 var isObject = require('./_is-object')
   , meta     = require('./_meta').onFreeze;
@@ -42213,11 +49995,11 @@ require('./_object-sap')('seal', function($seal){
     return $seal && isObject(it) ? $seal(meta(it)) : it;
   };
 });
-},{"./_is-object":54,"./_meta":67,"./_object-sap":83}],199:[function(require,module,exports){
+},{"./_is-object":56,"./_meta":69,"./_object-sap":85}],201:[function(require,module,exports){
 // 19.1.3.19 Object.setPrototypeOf(O, proto)
 var $export = require('./_export');
 $export($export.S, 'Object', {setPrototypeOf: require('./_set-proto').set});
-},{"./_export":37,"./_set-proto":95}],200:[function(require,module,exports){
+},{"./_export":39,"./_set-proto":97}],202:[function(require,module,exports){
 'use strict';
 // 19.1.3.6 Object.prototype.toString()
 var classof = require('./_classof')
@@ -42228,17 +50010,17 @@ if(test + '' != '[object z]'){
     return '[object ' + classof(this) + ']';
   }, true);
 }
-},{"./_classof":22,"./_redefine":92,"./_wks":122}],201:[function(require,module,exports){
+},{"./_classof":24,"./_redefine":94,"./_wks":124}],203:[function(require,module,exports){
 var $export     = require('./_export')
   , $parseFloat = require('./_parse-float');
 // 18.2.4 parseFloat(string)
 $export($export.G + $export.F * (parseFloat != $parseFloat), {parseFloat: $parseFloat});
-},{"./_export":37,"./_parse-float":86}],202:[function(require,module,exports){
+},{"./_export":39,"./_parse-float":88}],204:[function(require,module,exports){
 var $export   = require('./_export')
   , $parseInt = require('./_parse-int');
 // 18.2.5 parseInt(string, radix)
 $export($export.G + $export.F * (parseInt != $parseInt), {parseInt: $parseInt});
-},{"./_export":37,"./_parse-int":87}],203:[function(require,module,exports){
+},{"./_export":39,"./_parse-int":89}],205:[function(require,module,exports){
 'use strict';
 var LIBRARY            = require('./_library')
   , global             = require('./_global')
@@ -42538,7 +50320,7 @@ $export($export.S + $export.F * !(USE_NATIVE && require('./_iter-detect')(functi
     return capability.promise;
   }
 });
-},{"./_a-function":8,"./_an-instance":11,"./_classof":22,"./_core":28,"./_ctx":30,"./_export":37,"./_for-of":42,"./_global":43,"./_is-object":54,"./_iter-detect":59,"./_library":63,"./_microtask":69,"./_redefine-all":91,"./_set-species":96,"./_set-to-string-tag":97,"./_species-constructor":100,"./_task":109,"./_wks":122}],204:[function(require,module,exports){
+},{"./_a-function":10,"./_an-instance":13,"./_classof":24,"./_core":30,"./_ctx":32,"./_export":39,"./_for-of":44,"./_global":45,"./_is-object":56,"./_iter-detect":61,"./_library":65,"./_microtask":71,"./_redefine-all":93,"./_set-species":98,"./_set-to-string-tag":99,"./_species-constructor":102,"./_task":111,"./_wks":124}],206:[function(require,module,exports){
 // 26.1.1 Reflect.apply(target, thisArgument, argumentsList)
 var $export   = require('./_export')
   , aFunction = require('./_a-function')
@@ -42555,7 +50337,7 @@ $export($export.S + $export.F * !require('./_fails')(function(){
     return rApply ? rApply(T, thisArgument, L) : fApply.call(T, thisArgument, L);
   }
 });
-},{"./_a-function":8,"./_an-object":12,"./_export":37,"./_fails":39,"./_global":43}],205:[function(require,module,exports){
+},{"./_a-function":10,"./_an-object":14,"./_export":39,"./_fails":41,"./_global":45}],207:[function(require,module,exports){
 // 26.1.2 Reflect.construct(target, argumentsList [, newTarget])
 var $export    = require('./_export')
   , create     = require('./_object-create')
@@ -42603,7 +50385,7 @@ $export($export.S + $export.F * (NEW_TARGET_BUG || ARGS_BUG), 'Reflect', {
     return isObject(result) ? result : instance;
   }
 });
-},{"./_a-function":8,"./_an-object":12,"./_bind":21,"./_export":37,"./_fails":39,"./_global":43,"./_is-object":54,"./_object-create":71}],206:[function(require,module,exports){
+},{"./_a-function":10,"./_an-object":14,"./_bind":23,"./_export":39,"./_fails":41,"./_global":45,"./_is-object":56,"./_object-create":73}],208:[function(require,module,exports){
 // 26.1.3 Reflect.defineProperty(target, propertyKey, attributes)
 var dP          = require('./_object-dp')
   , $export     = require('./_export')
@@ -42626,7 +50408,7 @@ $export($export.S + $export.F * require('./_fails')(function(){
     }
   }
 });
-},{"./_an-object":12,"./_export":37,"./_fails":39,"./_object-dp":72,"./_to-primitive":115}],207:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_fails":41,"./_object-dp":74,"./_to-primitive":117}],209:[function(require,module,exports){
 // 26.1.4 Reflect.deleteProperty(target, propertyKey)
 var $export  = require('./_export')
   , gOPD     = require('./_object-gopd').f
@@ -42638,7 +50420,7 @@ $export($export.S, 'Reflect', {
     return desc && !desc.configurable ? false : delete target[propertyKey];
   }
 });
-},{"./_an-object":12,"./_export":37,"./_object-gopd":75}],208:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_object-gopd":77}],210:[function(require,module,exports){
 'use strict';
 // 26.1.5 Reflect.enumerate(target)
 var $export  = require('./_export')
@@ -42665,7 +50447,7 @@ $export($export.S, 'Reflect', {
     return new Enumerate(target);
   }
 });
-},{"./_an-object":12,"./_export":37,"./_iter-create":57}],209:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_iter-create":59}],211:[function(require,module,exports){
 // 26.1.7 Reflect.getOwnPropertyDescriptor(target, propertyKey)
 var gOPD     = require('./_object-gopd')
   , $export  = require('./_export')
@@ -42676,7 +50458,7 @@ $export($export.S, 'Reflect', {
     return gOPD.f(anObject(target), propertyKey);
   }
 });
-},{"./_an-object":12,"./_export":37,"./_object-gopd":75}],210:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_object-gopd":77}],212:[function(require,module,exports){
 // 26.1.8 Reflect.getPrototypeOf(target)
 var $export  = require('./_export')
   , getProto = require('./_object-gpo')
@@ -42687,7 +50469,7 @@ $export($export.S, 'Reflect', {
     return getProto(anObject(target));
   }
 });
-},{"./_an-object":12,"./_export":37,"./_object-gpo":79}],211:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_object-gpo":81}],213:[function(require,module,exports){
 // 26.1.6 Reflect.get(target, propertyKey [, receiver])
 var gOPD           = require('./_object-gopd')
   , getPrototypeOf = require('./_object-gpo')
@@ -42709,7 +50491,7 @@ function get(target, propertyKey/*, receiver*/){
 }
 
 $export($export.S, 'Reflect', {get: get});
-},{"./_an-object":12,"./_export":37,"./_has":44,"./_is-object":54,"./_object-gopd":75,"./_object-gpo":79}],212:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_has":46,"./_is-object":56,"./_object-gopd":77,"./_object-gpo":81}],214:[function(require,module,exports){
 // 26.1.9 Reflect.has(target, propertyKey)
 var $export = require('./_export');
 
@@ -42718,7 +50500,7 @@ $export($export.S, 'Reflect', {
     return propertyKey in target;
   }
 });
-},{"./_export":37}],213:[function(require,module,exports){
+},{"./_export":39}],215:[function(require,module,exports){
 // 26.1.10 Reflect.isExtensible(target)
 var $export       = require('./_export')
   , anObject      = require('./_an-object')
@@ -42730,12 +50512,12 @@ $export($export.S, 'Reflect', {
     return $isExtensible ? $isExtensible(target) : true;
   }
 });
-},{"./_an-object":12,"./_export":37}],214:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39}],216:[function(require,module,exports){
 // 26.1.11 Reflect.ownKeys(target)
 var $export = require('./_export');
 
 $export($export.S, 'Reflect', {ownKeys: require('./_own-keys')});
-},{"./_export":37,"./_own-keys":85}],215:[function(require,module,exports){
+},{"./_export":39,"./_own-keys":87}],217:[function(require,module,exports){
 // 26.1.12 Reflect.preventExtensions(target)
 var $export            = require('./_export')
   , anObject           = require('./_an-object')
@@ -42752,7 +50534,7 @@ $export($export.S, 'Reflect', {
     }
   }
 });
-},{"./_an-object":12,"./_export":37}],216:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39}],218:[function(require,module,exports){
 // 26.1.14 Reflect.setPrototypeOf(target, proto)
 var $export  = require('./_export')
   , setProto = require('./_set-proto');
@@ -42768,7 +50550,7 @@ if(setProto)$export($export.S, 'Reflect', {
     }
   }
 });
-},{"./_export":37,"./_set-proto":95}],217:[function(require,module,exports){
+},{"./_export":39,"./_set-proto":97}],219:[function(require,module,exports){
 // 26.1.13 Reflect.set(target, propertyKey, V [, receiver])
 var dP             = require('./_object-dp')
   , gOPD           = require('./_object-gopd')
@@ -42800,7 +50582,7 @@ function set(target, propertyKey, V/*, receiver*/){
 }
 
 $export($export.S, 'Reflect', {set: set});
-},{"./_an-object":12,"./_export":37,"./_has":44,"./_is-object":54,"./_object-dp":72,"./_object-gopd":75,"./_object-gpo":79,"./_property-desc":90}],218:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_has":46,"./_is-object":56,"./_object-dp":74,"./_object-gopd":77,"./_object-gpo":81,"./_property-desc":92}],220:[function(require,module,exports){
 var global            = require('./_global')
   , inheritIfRequired = require('./_inherit-if-required')
   , dP                = require('./_object-dp').f
@@ -42844,13 +50626,13 @@ if(require('./_descriptors') && (!CORRECT_NEW || require('./_fails')(function(){
 }
 
 require('./_set-species')('RegExp');
-},{"./_descriptors":33,"./_fails":39,"./_flags":41,"./_global":43,"./_inherit-if-required":48,"./_is-regexp":55,"./_object-dp":72,"./_object-gopn":77,"./_redefine":92,"./_set-species":96,"./_wks":122}],219:[function(require,module,exports){
+},{"./_descriptors":35,"./_fails":41,"./_flags":43,"./_global":45,"./_inherit-if-required":50,"./_is-regexp":57,"./_object-dp":74,"./_object-gopn":79,"./_redefine":94,"./_set-species":98,"./_wks":124}],221:[function(require,module,exports){
 // 21.2.5.3 get RegExp.prototype.flags()
 if(require('./_descriptors') && /./g.flags != 'g')require('./_object-dp').f(RegExp.prototype, 'flags', {
   configurable: true,
   get: require('./_flags')
 });
-},{"./_descriptors":33,"./_flags":41,"./_object-dp":72}],220:[function(require,module,exports){
+},{"./_descriptors":35,"./_flags":43,"./_object-dp":74}],222:[function(require,module,exports){
 // @@match logic
 require('./_fix-re-wks')('match', 1, function(defined, MATCH, $match){
   // 21.1.3.11 String.prototype.match(regexp)
@@ -42861,7 +50643,7 @@ require('./_fix-re-wks')('match', 1, function(defined, MATCH, $match){
     return fn !== undefined ? fn.call(regexp, O) : new RegExp(regexp)[MATCH](String(O));
   }, $match];
 });
-},{"./_fix-re-wks":40}],221:[function(require,module,exports){
+},{"./_fix-re-wks":42}],223:[function(require,module,exports){
 // @@replace logic
 require('./_fix-re-wks')('replace', 2, function(defined, REPLACE, $replace){
   // 21.1.3.14 String.prototype.replace(searchValue, replaceValue)
@@ -42874,7 +50656,7 @@ require('./_fix-re-wks')('replace', 2, function(defined, REPLACE, $replace){
       : $replace.call(String(O), searchValue, replaceValue);
   }, $replace];
 });
-},{"./_fix-re-wks":40}],222:[function(require,module,exports){
+},{"./_fix-re-wks":42}],224:[function(require,module,exports){
 // @@search logic
 require('./_fix-re-wks')('search', 1, function(defined, SEARCH, $search){
   // 21.1.3.15 String.prototype.search(regexp)
@@ -42885,7 +50667,7 @@ require('./_fix-re-wks')('search', 1, function(defined, SEARCH, $search){
     return fn !== undefined ? fn.call(regexp, O) : new RegExp(regexp)[SEARCH](String(O));
   }, $search];
 });
-},{"./_fix-re-wks":40}],223:[function(require,module,exports){
+},{"./_fix-re-wks":42}],225:[function(require,module,exports){
 // @@split logic
 require('./_fix-re-wks')('split', 2, function(defined, SPLIT, $split){
   'use strict';
@@ -42956,7 +50738,7 @@ require('./_fix-re-wks')('split', 2, function(defined, SPLIT, $split){
     return fn !== undefined ? fn.call(separator, O, limit) : $split.call(String(O), separator, limit);
   }, $split];
 });
-},{"./_fix-re-wks":40,"./_is-regexp":55}],224:[function(require,module,exports){
+},{"./_fix-re-wks":42,"./_is-regexp":57}],226:[function(require,module,exports){
 'use strict';
 require('./es6.regexp.flags');
 var anObject    = require('./_an-object')
@@ -42982,7 +50764,7 @@ if(require('./_fails')(function(){ return $toString.call({source: 'a', flags: 'b
     return $toString.call(this);
   });
 }
-},{"./_an-object":12,"./_descriptors":33,"./_fails":39,"./_flags":41,"./_redefine":92,"./es6.regexp.flags":219}],225:[function(require,module,exports){
+},{"./_an-object":14,"./_descriptors":35,"./_fails":41,"./_flags":43,"./_redefine":94,"./es6.regexp.flags":221}],227:[function(require,module,exports){
 'use strict';
 var strong = require('./_collection-strong');
 
@@ -42995,7 +50777,7 @@ module.exports = require('./_collection')('Set', function(get){
     return strong.def(this, value = value === 0 ? 0 : value, value);
   }
 }, strong);
-},{"./_collection":27,"./_collection-strong":24}],226:[function(require,module,exports){
+},{"./_collection":29,"./_collection-strong":26}],228:[function(require,module,exports){
 'use strict';
 // B.2.3.2 String.prototype.anchor(name)
 require('./_string-html')('anchor', function(createHTML){
@@ -43003,7 +50785,7 @@ require('./_string-html')('anchor', function(createHTML){
     return createHTML(this, 'a', 'name', name);
   }
 });
-},{"./_string-html":104}],227:[function(require,module,exports){
+},{"./_string-html":106}],229:[function(require,module,exports){
 'use strict';
 // B.2.3.3 String.prototype.big()
 require('./_string-html')('big', function(createHTML){
@@ -43011,7 +50793,7 @@ require('./_string-html')('big', function(createHTML){
     return createHTML(this, 'big', '', '');
   }
 });
-},{"./_string-html":104}],228:[function(require,module,exports){
+},{"./_string-html":106}],230:[function(require,module,exports){
 'use strict';
 // B.2.3.4 String.prototype.blink()
 require('./_string-html')('blink', function(createHTML){
@@ -43019,7 +50801,7 @@ require('./_string-html')('blink', function(createHTML){
     return createHTML(this, 'blink', '', '');
   }
 });
-},{"./_string-html":104}],229:[function(require,module,exports){
+},{"./_string-html":106}],231:[function(require,module,exports){
 'use strict';
 // B.2.3.5 String.prototype.bold()
 require('./_string-html')('bold', function(createHTML){
@@ -43027,7 +50809,7 @@ require('./_string-html')('bold', function(createHTML){
     return createHTML(this, 'b', '', '');
   }
 });
-},{"./_string-html":104}],230:[function(require,module,exports){
+},{"./_string-html":106}],232:[function(require,module,exports){
 'use strict';
 var $export = require('./_export')
   , $at     = require('./_string-at')(false);
@@ -43037,7 +50819,7 @@ $export($export.P, 'String', {
     return $at(this, pos);
   }
 });
-},{"./_export":37,"./_string-at":102}],231:[function(require,module,exports){
+},{"./_export":39,"./_string-at":104}],233:[function(require,module,exports){
 // 21.1.3.6 String.prototype.endsWith(searchString [, endPosition])
 'use strict';
 var $export   = require('./_export')
@@ -43058,7 +50840,7 @@ $export($export.P + $export.F * require('./_fails-is-regexp')(ENDS_WITH), 'Strin
       : that.slice(end - search.length, end) === search;
   }
 });
-},{"./_export":37,"./_fails-is-regexp":38,"./_string-context":103,"./_to-length":113}],232:[function(require,module,exports){
+},{"./_export":39,"./_fails-is-regexp":40,"./_string-context":105,"./_to-length":115}],234:[function(require,module,exports){
 'use strict';
 // B.2.3.6 String.prototype.fixed()
 require('./_string-html')('fixed', function(createHTML){
@@ -43066,7 +50848,7 @@ require('./_string-html')('fixed', function(createHTML){
     return createHTML(this, 'tt', '', '');
   }
 });
-},{"./_string-html":104}],233:[function(require,module,exports){
+},{"./_string-html":106}],235:[function(require,module,exports){
 'use strict';
 // B.2.3.7 String.prototype.fontcolor(color)
 require('./_string-html')('fontcolor', function(createHTML){
@@ -43074,7 +50856,7 @@ require('./_string-html')('fontcolor', function(createHTML){
     return createHTML(this, 'font', 'color', color);
   }
 });
-},{"./_string-html":104}],234:[function(require,module,exports){
+},{"./_string-html":106}],236:[function(require,module,exports){
 'use strict';
 // B.2.3.8 String.prototype.fontsize(size)
 require('./_string-html')('fontsize', function(createHTML){
@@ -43082,7 +50864,7 @@ require('./_string-html')('fontsize', function(createHTML){
     return createHTML(this, 'font', 'size', size);
   }
 });
-},{"./_string-html":104}],235:[function(require,module,exports){
+},{"./_string-html":106}],237:[function(require,module,exports){
 var $export        = require('./_export')
   , toIndex        = require('./_to-index')
   , fromCharCode   = String.fromCharCode
@@ -43106,7 +50888,7 @@ $export($export.S + $export.F * (!!$fromCodePoint && $fromCodePoint.length != 1)
     } return res.join('');
   }
 });
-},{"./_export":37,"./_to-index":110}],236:[function(require,module,exports){
+},{"./_export":39,"./_to-index":112}],238:[function(require,module,exports){
 // 21.1.3.7 String.prototype.includes(searchString, position = 0)
 'use strict';
 var $export  = require('./_export')
@@ -43119,7 +50901,7 @@ $export($export.P + $export.F * require('./_fails-is-regexp')(INCLUDES), 'String
       .indexOf(searchString, arguments.length > 1 ? arguments[1] : undefined);
   }
 });
-},{"./_export":37,"./_fails-is-regexp":38,"./_string-context":103}],237:[function(require,module,exports){
+},{"./_export":39,"./_fails-is-regexp":40,"./_string-context":105}],239:[function(require,module,exports){
 'use strict';
 // B.2.3.9 String.prototype.italics()
 require('./_string-html')('italics', function(createHTML){
@@ -43127,7 +50909,7 @@ require('./_string-html')('italics', function(createHTML){
     return createHTML(this, 'i', '', '');
   }
 });
-},{"./_string-html":104}],238:[function(require,module,exports){
+},{"./_string-html":106}],240:[function(require,module,exports){
 'use strict';
 var $at  = require('./_string-at')(true);
 
@@ -43145,7 +50927,7 @@ require('./_iter-define')(String, 'String', function(iterated){
   this._i += point.length;
   return {value: point, done: false};
 });
-},{"./_iter-define":58,"./_string-at":102}],239:[function(require,module,exports){
+},{"./_iter-define":60,"./_string-at":104}],241:[function(require,module,exports){
 'use strict';
 // B.2.3.10 String.prototype.link(url)
 require('./_string-html')('link', function(createHTML){
@@ -43153,7 +50935,7 @@ require('./_string-html')('link', function(createHTML){
     return createHTML(this, 'a', 'href', url);
   }
 });
-},{"./_string-html":104}],240:[function(require,module,exports){
+},{"./_string-html":106}],242:[function(require,module,exports){
 var $export   = require('./_export')
   , toIObject = require('./_to-iobject')
   , toLength  = require('./_to-length');
@@ -43172,14 +50954,14 @@ $export($export.S, 'String', {
     } return res.join('');
   }
 });
-},{"./_export":37,"./_to-iobject":112,"./_to-length":113}],241:[function(require,module,exports){
+},{"./_export":39,"./_to-iobject":114,"./_to-length":115}],243:[function(require,module,exports){
 var $export = require('./_export');
 
 $export($export.P, 'String', {
   // 21.1.3.13 String.prototype.repeat(count)
   repeat: require('./_string-repeat')
 });
-},{"./_export":37,"./_string-repeat":106}],242:[function(require,module,exports){
+},{"./_export":39,"./_string-repeat":108}],244:[function(require,module,exports){
 'use strict';
 // B.2.3.11 String.prototype.small()
 require('./_string-html')('small', function(createHTML){
@@ -43187,7 +50969,7 @@ require('./_string-html')('small', function(createHTML){
     return createHTML(this, 'small', '', '');
   }
 });
-},{"./_string-html":104}],243:[function(require,module,exports){
+},{"./_string-html":106}],245:[function(require,module,exports){
 // 21.1.3.18 String.prototype.startsWith(searchString [, position ])
 'use strict';
 var $export     = require('./_export')
@@ -43206,7 +50988,7 @@ $export($export.P + $export.F * require('./_fails-is-regexp')(STARTS_WITH), 'Str
       : that.slice(index, index + search.length) === search;
   }
 });
-},{"./_export":37,"./_fails-is-regexp":38,"./_string-context":103,"./_to-length":113}],244:[function(require,module,exports){
+},{"./_export":39,"./_fails-is-regexp":40,"./_string-context":105,"./_to-length":115}],246:[function(require,module,exports){
 'use strict';
 // B.2.3.12 String.prototype.strike()
 require('./_string-html')('strike', function(createHTML){
@@ -43214,7 +50996,7 @@ require('./_string-html')('strike', function(createHTML){
     return createHTML(this, 'strike', '', '');
   }
 });
-},{"./_string-html":104}],245:[function(require,module,exports){
+},{"./_string-html":106}],247:[function(require,module,exports){
 'use strict';
 // B.2.3.13 String.prototype.sub()
 require('./_string-html')('sub', function(createHTML){
@@ -43222,7 +51004,7 @@ require('./_string-html')('sub', function(createHTML){
     return createHTML(this, 'sub', '', '');
   }
 });
-},{"./_string-html":104}],246:[function(require,module,exports){
+},{"./_string-html":106}],248:[function(require,module,exports){
 'use strict';
 // B.2.3.14 String.prototype.sup()
 require('./_string-html')('sup', function(createHTML){
@@ -43230,7 +51012,7 @@ require('./_string-html')('sup', function(createHTML){
     return createHTML(this, 'sup', '', '');
   }
 });
-},{"./_string-html":104}],247:[function(require,module,exports){
+},{"./_string-html":106}],249:[function(require,module,exports){
 'use strict';
 // 21.1.3.25 String.prototype.trim()
 require('./_string-trim')('trim', function($trim){
@@ -43238,7 +51020,7 @@ require('./_string-trim')('trim', function($trim){
     return $trim(this, 3);
   };
 });
-},{"./_string-trim":107}],248:[function(require,module,exports){
+},{"./_string-trim":109}],250:[function(require,module,exports){
 'use strict';
 // ECMAScript 6 symbols shim
 var global         = require('./_global')
@@ -43474,7 +51256,7 @@ setToStringTag($Symbol, 'Symbol');
 setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setToStringTag(global.JSON, 'JSON', true);
-},{"./_an-object":12,"./_descriptors":33,"./_enum-keys":36,"./_export":37,"./_fails":39,"./_global":43,"./_has":44,"./_hide":45,"./_is-array":52,"./_keyof":62,"./_library":63,"./_meta":67,"./_object-create":71,"./_object-dp":72,"./_object-gopd":75,"./_object-gopn":77,"./_object-gopn-ext":76,"./_object-gops":78,"./_object-keys":81,"./_object-pie":82,"./_property-desc":90,"./_redefine":92,"./_set-to-string-tag":97,"./_shared":99,"./_to-iobject":112,"./_to-primitive":115,"./_uid":119,"./_wks":122,"./_wks-define":120,"./_wks-ext":121}],249:[function(require,module,exports){
+},{"./_an-object":14,"./_descriptors":35,"./_enum-keys":38,"./_export":39,"./_fails":41,"./_global":45,"./_has":46,"./_hide":47,"./_is-array":54,"./_keyof":64,"./_library":65,"./_meta":69,"./_object-create":73,"./_object-dp":74,"./_object-gopd":77,"./_object-gopn":79,"./_object-gopn-ext":78,"./_object-gops":80,"./_object-keys":83,"./_object-pie":84,"./_property-desc":92,"./_redefine":94,"./_set-to-string-tag":99,"./_shared":101,"./_to-iobject":114,"./_to-primitive":117,"./_uid":121,"./_wks":124,"./_wks-define":122,"./_wks-ext":123}],251:[function(require,module,exports){
 'use strict';
 var $export      = require('./_export')
   , $typed       = require('./_typed')
@@ -43521,66 +51303,66 @@ $export($export.P + $export.U + $export.F * require('./_fails')(function(){
 });
 
 require('./_set-species')(ARRAY_BUFFER);
-},{"./_an-object":12,"./_export":37,"./_fails":39,"./_global":43,"./_is-object":54,"./_set-species":96,"./_species-constructor":100,"./_to-index":110,"./_to-length":113,"./_typed":118,"./_typed-buffer":117}],250:[function(require,module,exports){
+},{"./_an-object":14,"./_export":39,"./_fails":41,"./_global":45,"./_is-object":56,"./_set-species":98,"./_species-constructor":102,"./_to-index":112,"./_to-length":115,"./_typed":120,"./_typed-buffer":119}],252:[function(require,module,exports){
 var $export = require('./_export');
 $export($export.G + $export.W + $export.F * !require('./_typed').ABV, {
   DataView: require('./_typed-buffer').DataView
 });
-},{"./_export":37,"./_typed":118,"./_typed-buffer":117}],251:[function(require,module,exports){
+},{"./_export":39,"./_typed":120,"./_typed-buffer":119}],253:[function(require,module,exports){
 require('./_typed-array')('Float32', 4, function(init){
   return function Float32Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],252:[function(require,module,exports){
+},{"./_typed-array":118}],254:[function(require,module,exports){
 require('./_typed-array')('Float64', 8, function(init){
   return function Float64Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],253:[function(require,module,exports){
+},{"./_typed-array":118}],255:[function(require,module,exports){
 require('./_typed-array')('Int16', 2, function(init){
   return function Int16Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],254:[function(require,module,exports){
+},{"./_typed-array":118}],256:[function(require,module,exports){
 require('./_typed-array')('Int32', 4, function(init){
   return function Int32Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],255:[function(require,module,exports){
+},{"./_typed-array":118}],257:[function(require,module,exports){
 require('./_typed-array')('Int8', 1, function(init){
   return function Int8Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],256:[function(require,module,exports){
+},{"./_typed-array":118}],258:[function(require,module,exports){
 require('./_typed-array')('Uint16', 2, function(init){
   return function Uint16Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],257:[function(require,module,exports){
+},{"./_typed-array":118}],259:[function(require,module,exports){
 require('./_typed-array')('Uint32', 4, function(init){
   return function Uint32Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],258:[function(require,module,exports){
+},{"./_typed-array":118}],260:[function(require,module,exports){
 require('./_typed-array')('Uint8', 1, function(init){
   return function Uint8Array(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 });
-},{"./_typed-array":116}],259:[function(require,module,exports){
+},{"./_typed-array":118}],261:[function(require,module,exports){
 require('./_typed-array')('Uint8', 1, function(init){
   return function Uint8ClampedArray(data, byteOffset, length){
     return init(this, data, byteOffset, length);
   };
 }, true);
-},{"./_typed-array":116}],260:[function(require,module,exports){
+},{"./_typed-array":118}],262:[function(require,module,exports){
 'use strict';
 var each         = require('./_array-methods')(0)
   , redefine     = require('./_redefine')
@@ -43637,7 +51419,7 @@ if(new $WeakMap().set((Object.freeze || Object)(tmp), 7).get(tmp) != 7){
     });
   });
 }
-},{"./_array-methods":17,"./_collection":27,"./_collection-weak":26,"./_is-object":54,"./_meta":67,"./_object-assign":70,"./_redefine":92}],261:[function(require,module,exports){
+},{"./_array-methods":19,"./_collection":29,"./_collection-weak":28,"./_is-object":56,"./_meta":69,"./_object-assign":72,"./_redefine":94}],263:[function(require,module,exports){
 'use strict';
 var weak = require('./_collection-weak');
 
@@ -43650,7 +51432,7 @@ require('./_collection')('WeakSet', function(get){
     return weak.def(this, value, true);
   }
 }, weak, false, true);
-},{"./_collection":27,"./_collection-weak":26}],262:[function(require,module,exports){
+},{"./_collection":29,"./_collection-weak":28}],264:[function(require,module,exports){
 'use strict';
 // https://github.com/tc39/Array.prototype.includes
 var $export   = require('./_export')
@@ -43663,7 +51445,7 @@ $export($export.P, 'Array', {
 });
 
 require('./_add-to-unscopables')('includes');
-},{"./_add-to-unscopables":10,"./_array-includes":16,"./_export":37}],263:[function(require,module,exports){
+},{"./_add-to-unscopables":12,"./_array-includes":18,"./_export":39}],265:[function(require,module,exports){
 // https://github.com/rwaldron/tc39-notes/blob/master/es6/2014-09/sept-25.md#510-globalasap-for-enqueuing-a-microtask
 var $export   = require('./_export')
   , microtask = require('./_microtask')()
@@ -43676,7 +51458,7 @@ $export($export.G, {
     microtask(domain ? domain.bind(fn) : fn);
   }
 });
-},{"./_cof":23,"./_export":37,"./_global":43,"./_microtask":69}],264:[function(require,module,exports){
+},{"./_cof":25,"./_export":39,"./_global":45,"./_microtask":71}],266:[function(require,module,exports){
 // https://github.com/ljharb/proposal-is-error
 var $export = require('./_export')
   , cof     = require('./_cof');
@@ -43686,12 +51468,12 @@ $export($export.S, 'Error', {
     return cof(it) === 'Error';
   }
 });
-},{"./_cof":23,"./_export":37}],265:[function(require,module,exports){
+},{"./_cof":25,"./_export":39}],267:[function(require,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var $export  = require('./_export');
 
 $export($export.P + $export.R, 'Map', {toJSON: require('./_collection-to-json')('Map')});
-},{"./_collection-to-json":25,"./_export":37}],266:[function(require,module,exports){
+},{"./_collection-to-json":27,"./_export":39}],268:[function(require,module,exports){
 // https://gist.github.com/BrendanEich/4294d5c212a6d2254703
 var $export = require('./_export');
 
@@ -43703,7 +51485,7 @@ $export($export.S, 'Math', {
     return $x1 + (y1 >>> 0) + (($x0 & $y0 | ($x0 | $y0) & ~($x0 + $y0 >>> 0)) >>> 31) | 0;
   }
 });
-},{"./_export":37}],267:[function(require,module,exports){
+},{"./_export":39}],269:[function(require,module,exports){
 // https://gist.github.com/BrendanEich/4294d5c212a6d2254703
 var $export = require('./_export');
 
@@ -43720,7 +51502,7 @@ $export($export.S, 'Math', {
     return u1 * v1 + (t >> 16) + ((u0 * v1 >>> 0) + (t & UINT16) >> 16);
   }
 });
-},{"./_export":37}],268:[function(require,module,exports){
+},{"./_export":39}],270:[function(require,module,exports){
 // https://gist.github.com/BrendanEich/4294d5c212a6d2254703
 var $export = require('./_export');
 
@@ -43732,7 +51514,7 @@ $export($export.S, 'Math', {
     return $x1 - (y1 >>> 0) - ((~$x0 & $y0 | ~($x0 ^ $y0) & $x0 - $y0 >>> 0) >>> 31) | 0;
   }
 });
-},{"./_export":37}],269:[function(require,module,exports){
+},{"./_export":39}],271:[function(require,module,exports){
 // https://gist.github.com/BrendanEich/4294d5c212a6d2254703
 var $export = require('./_export');
 
@@ -43749,7 +51531,7 @@ $export($export.S, 'Math', {
     return u1 * v1 + (t >>> 16) + ((u0 * v1 >>> 0) + (t & UINT16) >>> 16);
   }
 });
-},{"./_export":37}],270:[function(require,module,exports){
+},{"./_export":39}],272:[function(require,module,exports){
 'use strict';
 var $export         = require('./_export')
   , toObject        = require('./_to-object')
@@ -43762,7 +51544,7 @@ require('./_descriptors') && $export($export.P + require('./_object-forced-pam')
     $defineProperty.f(toObject(this), P, {get: aFunction(getter), enumerable: true, configurable: true});
   }
 });
-},{"./_a-function":8,"./_descriptors":33,"./_export":37,"./_object-dp":72,"./_object-forced-pam":74,"./_to-object":114}],271:[function(require,module,exports){
+},{"./_a-function":10,"./_descriptors":35,"./_export":39,"./_object-dp":74,"./_object-forced-pam":76,"./_to-object":116}],273:[function(require,module,exports){
 'use strict';
 var $export         = require('./_export')
   , toObject        = require('./_to-object')
@@ -43775,7 +51557,7 @@ require('./_descriptors') && $export($export.P + require('./_object-forced-pam')
     $defineProperty.f(toObject(this), P, {set: aFunction(setter), enumerable: true, configurable: true});
   }
 });
-},{"./_a-function":8,"./_descriptors":33,"./_export":37,"./_object-dp":72,"./_object-forced-pam":74,"./_to-object":114}],272:[function(require,module,exports){
+},{"./_a-function":10,"./_descriptors":35,"./_export":39,"./_object-dp":74,"./_object-forced-pam":76,"./_to-object":116}],274:[function(require,module,exports){
 // https://github.com/tc39/proposal-object-values-entries
 var $export  = require('./_export')
   , $entries = require('./_object-to-array')(true);
@@ -43785,7 +51567,7 @@ $export($export.S, 'Object', {
     return $entries(it);
   }
 });
-},{"./_export":37,"./_object-to-array":84}],273:[function(require,module,exports){
+},{"./_export":39,"./_object-to-array":86}],275:[function(require,module,exports){
 // https://github.com/tc39/proposal-object-getownpropertydescriptors
 var $export        = require('./_export')
   , ownKeys        = require('./_own-keys')
@@ -43805,7 +51587,7 @@ $export($export.S, 'Object', {
     return result;
   }
 });
-},{"./_create-property":29,"./_export":37,"./_object-gopd":75,"./_own-keys":85,"./_to-iobject":112}],274:[function(require,module,exports){
+},{"./_create-property":31,"./_export":39,"./_object-gopd":77,"./_own-keys":87,"./_to-iobject":114}],276:[function(require,module,exports){
 'use strict';
 var $export                  = require('./_export')
   , toObject                 = require('./_to-object')
@@ -43824,7 +51606,7 @@ require('./_descriptors') && $export($export.P + require('./_object-forced-pam')
     } while(O = getPrototypeOf(O));
   }
 });
-},{"./_descriptors":33,"./_export":37,"./_object-forced-pam":74,"./_object-gopd":75,"./_object-gpo":79,"./_to-object":114,"./_to-primitive":115}],275:[function(require,module,exports){
+},{"./_descriptors":35,"./_export":39,"./_object-forced-pam":76,"./_object-gopd":77,"./_object-gpo":81,"./_to-object":116,"./_to-primitive":117}],277:[function(require,module,exports){
 'use strict';
 var $export                  = require('./_export')
   , toObject                 = require('./_to-object')
@@ -43843,7 +51625,7 @@ require('./_descriptors') && $export($export.P + require('./_object-forced-pam')
     } while(O = getPrototypeOf(O));
   }
 });
-},{"./_descriptors":33,"./_export":37,"./_object-forced-pam":74,"./_object-gopd":75,"./_object-gpo":79,"./_to-object":114,"./_to-primitive":115}],276:[function(require,module,exports){
+},{"./_descriptors":35,"./_export":39,"./_object-forced-pam":76,"./_object-gopd":77,"./_object-gpo":81,"./_to-object":116,"./_to-primitive":117}],278:[function(require,module,exports){
 // https://github.com/tc39/proposal-object-values-entries
 var $export = require('./_export')
   , $values = require('./_object-to-array')(false);
@@ -43853,7 +51635,7 @@ $export($export.S, 'Object', {
     return $values(it);
   }
 });
-},{"./_export":37,"./_object-to-array":84}],277:[function(require,module,exports){
+},{"./_export":39,"./_object-to-array":86}],279:[function(require,module,exports){
 'use strict';
 // https://github.com/zenparsing/es-observable
 var $export     = require('./_export')
@@ -44053,7 +51835,7 @@ hide($Observable.prototype, OBSERVABLE, function(){ return this; });
 $export($export.G, {Observable: $Observable});
 
 require('./_set-species')('Observable');
-},{"./_a-function":8,"./_an-instance":11,"./_an-object":12,"./_core":28,"./_export":37,"./_for-of":42,"./_global":43,"./_hide":45,"./_microtask":69,"./_redefine-all":91,"./_set-species":96,"./_wks":122}],278:[function(require,module,exports){
+},{"./_a-function":10,"./_an-instance":13,"./_an-object":14,"./_core":30,"./_export":39,"./_for-of":44,"./_global":45,"./_hide":47,"./_microtask":71,"./_redefine-all":93,"./_set-species":98,"./_wks":124}],280:[function(require,module,exports){
 var metadata                  = require('./_metadata')
   , anObject                  = require('./_an-object')
   , toMetaKey                 = metadata.key
@@ -44062,7 +51844,7 @@ var metadata                  = require('./_metadata')
 metadata.exp({defineMetadata: function defineMetadata(metadataKey, metadataValue, target, targetKey){
   ordinaryDefineOwnMetadata(metadataKey, metadataValue, anObject(target), toMetaKey(targetKey));
 }});
-},{"./_an-object":12,"./_metadata":68}],279:[function(require,module,exports){
+},{"./_an-object":14,"./_metadata":70}],281:[function(require,module,exports){
 var metadata               = require('./_metadata')
   , anObject               = require('./_an-object')
   , toMetaKey              = metadata.key
@@ -44078,7 +51860,7 @@ metadata.exp({deleteMetadata: function deleteMetadata(metadataKey, target /*, ta
   targetMetadata['delete'](targetKey);
   return !!targetMetadata.size || store['delete'](target);
 }});
-},{"./_an-object":12,"./_metadata":68}],280:[function(require,module,exports){
+},{"./_an-object":14,"./_metadata":70}],282:[function(require,module,exports){
 var Set                     = require('./es6.set')
   , from                    = require('./_array-from-iterable')
   , metadata                = require('./_metadata')
@@ -44098,7 +51880,7 @@ var ordinaryMetadataKeys = function(O, P){
 metadata.exp({getMetadataKeys: function getMetadataKeys(target /*, targetKey */){
   return ordinaryMetadataKeys(anObject(target), arguments.length < 2 ? undefined : toMetaKey(arguments[1]));
 }});
-},{"./_an-object":12,"./_array-from-iterable":15,"./_metadata":68,"./_object-gpo":79,"./es6.set":225}],281:[function(require,module,exports){
+},{"./_an-object":14,"./_array-from-iterable":17,"./_metadata":70,"./_object-gpo":81,"./es6.set":227}],283:[function(require,module,exports){
 var metadata               = require('./_metadata')
   , anObject               = require('./_an-object')
   , getPrototypeOf         = require('./_object-gpo')
@@ -44116,7 +51898,7 @@ var ordinaryGetMetadata = function(MetadataKey, O, P){
 metadata.exp({getMetadata: function getMetadata(metadataKey, target /*, targetKey */){
   return ordinaryGetMetadata(metadataKey, anObject(target), arguments.length < 3 ? undefined : toMetaKey(arguments[2]));
 }});
-},{"./_an-object":12,"./_metadata":68,"./_object-gpo":79}],282:[function(require,module,exports){
+},{"./_an-object":14,"./_metadata":70,"./_object-gpo":81}],284:[function(require,module,exports){
 var metadata                = require('./_metadata')
   , anObject                = require('./_an-object')
   , ordinaryOwnMetadataKeys = metadata.keys
@@ -44125,7 +51907,7 @@ var metadata                = require('./_metadata')
 metadata.exp({getOwnMetadataKeys: function getOwnMetadataKeys(target /*, targetKey */){
   return ordinaryOwnMetadataKeys(anObject(target), arguments.length < 2 ? undefined : toMetaKey(arguments[1]));
 }});
-},{"./_an-object":12,"./_metadata":68}],283:[function(require,module,exports){
+},{"./_an-object":14,"./_metadata":70}],285:[function(require,module,exports){
 var metadata               = require('./_metadata')
   , anObject               = require('./_an-object')
   , ordinaryGetOwnMetadata = metadata.get
@@ -44135,7 +51917,7 @@ metadata.exp({getOwnMetadata: function getOwnMetadata(metadataKey, target /*, ta
   return ordinaryGetOwnMetadata(metadataKey, anObject(target)
     , arguments.length < 3 ? undefined : toMetaKey(arguments[2]));
 }});
-},{"./_an-object":12,"./_metadata":68}],284:[function(require,module,exports){
+},{"./_an-object":14,"./_metadata":70}],286:[function(require,module,exports){
 var metadata               = require('./_metadata')
   , anObject               = require('./_an-object')
   , getPrototypeOf         = require('./_object-gpo')
@@ -44152,7 +51934,7 @@ var ordinaryHasMetadata = function(MetadataKey, O, P){
 metadata.exp({hasMetadata: function hasMetadata(metadataKey, target /*, targetKey */){
   return ordinaryHasMetadata(metadataKey, anObject(target), arguments.length < 3 ? undefined : toMetaKey(arguments[2]));
 }});
-},{"./_an-object":12,"./_metadata":68,"./_object-gpo":79}],285:[function(require,module,exports){
+},{"./_an-object":14,"./_metadata":70,"./_object-gpo":81}],287:[function(require,module,exports){
 var metadata               = require('./_metadata')
   , anObject               = require('./_an-object')
   , ordinaryHasOwnMetadata = metadata.has
@@ -44162,7 +51944,7 @@ metadata.exp({hasOwnMetadata: function hasOwnMetadata(metadataKey, target /*, ta
   return ordinaryHasOwnMetadata(metadataKey, anObject(target)
     , arguments.length < 3 ? undefined : toMetaKey(arguments[2]));
 }});
-},{"./_an-object":12,"./_metadata":68}],286:[function(require,module,exports){
+},{"./_an-object":14,"./_metadata":70}],288:[function(require,module,exports){
 var metadata                  = require('./_metadata')
   , anObject                  = require('./_an-object')
   , aFunction                 = require('./_a-function')
@@ -44178,12 +51960,12 @@ metadata.exp({metadata: function metadata(metadataKey, metadataValue){
     );
   };
 }});
-},{"./_a-function":8,"./_an-object":12,"./_metadata":68}],287:[function(require,module,exports){
+},{"./_a-function":10,"./_an-object":14,"./_metadata":70}],289:[function(require,module,exports){
 // https://github.com/DavidBruant/Map-Set.prototype.toJSON
 var $export  = require('./_export');
 
 $export($export.P + $export.R, 'Set', {toJSON: require('./_collection-to-json')('Set')});
-},{"./_collection-to-json":25,"./_export":37}],288:[function(require,module,exports){
+},{"./_collection-to-json":27,"./_export":39}],290:[function(require,module,exports){
 'use strict';
 // https://github.com/mathiasbynens/String.prototype.at
 var $export = require('./_export')
@@ -44194,7 +51976,7 @@ $export($export.P, 'String', {
     return $at(this, pos);
   }
 });
-},{"./_export":37,"./_string-at":102}],289:[function(require,module,exports){
+},{"./_export":39,"./_string-at":104}],291:[function(require,module,exports){
 'use strict';
 // https://tc39.github.io/String.prototype.matchAll/
 var $export     = require('./_export')
@@ -44225,7 +52007,7 @@ $export($export.P, 'String', {
     return new $RegExpStringIterator(rx, S);
   }
 });
-},{"./_defined":32,"./_export":37,"./_flags":41,"./_is-regexp":55,"./_iter-create":57,"./_to-length":113}],290:[function(require,module,exports){
+},{"./_defined":34,"./_export":39,"./_flags":43,"./_is-regexp":57,"./_iter-create":59,"./_to-length":115}],292:[function(require,module,exports){
 'use strict';
 // https://github.com/tc39/proposal-string-pad-start-end
 var $export = require('./_export')
@@ -44236,7 +52018,7 @@ $export($export.P, 'String', {
     return $pad(this, maxLength, arguments.length > 1 ? arguments[1] : undefined, false);
   }
 });
-},{"./_export":37,"./_string-pad":105}],291:[function(require,module,exports){
+},{"./_export":39,"./_string-pad":107}],293:[function(require,module,exports){
 'use strict';
 // https://github.com/tc39/proposal-string-pad-start-end
 var $export = require('./_export')
@@ -44247,7 +52029,7 @@ $export($export.P, 'String', {
     return $pad(this, maxLength, arguments.length > 1 ? arguments[1] : undefined, true);
   }
 });
-},{"./_export":37,"./_string-pad":105}],292:[function(require,module,exports){
+},{"./_export":39,"./_string-pad":107}],294:[function(require,module,exports){
 'use strict';
 // https://github.com/sebmarkbage/ecmascript-string-left-right-trim
 require('./_string-trim')('trimLeft', function($trim){
@@ -44255,7 +52037,7 @@ require('./_string-trim')('trimLeft', function($trim){
     return $trim(this, 1);
   };
 }, 'trimStart');
-},{"./_string-trim":107}],293:[function(require,module,exports){
+},{"./_string-trim":109}],295:[function(require,module,exports){
 'use strict';
 // https://github.com/sebmarkbage/ecmascript-string-left-right-trim
 require('./_string-trim')('trimRight', function($trim){
@@ -44263,16 +52045,16 @@ require('./_string-trim')('trimRight', function($trim){
     return $trim(this, 2);
   };
 }, 'trimEnd');
-},{"./_string-trim":107}],294:[function(require,module,exports){
+},{"./_string-trim":109}],296:[function(require,module,exports){
 require('./_wks-define')('asyncIterator');
-},{"./_wks-define":120}],295:[function(require,module,exports){
+},{"./_wks-define":122}],297:[function(require,module,exports){
 require('./_wks-define')('observable');
-},{"./_wks-define":120}],296:[function(require,module,exports){
+},{"./_wks-define":122}],298:[function(require,module,exports){
 // https://github.com/ljharb/proposal-global
 var $export = require('./_export');
 
 $export($export.S, 'System', {global: require('./_global')});
-},{"./_export":37,"./_global":43}],297:[function(require,module,exports){
+},{"./_export":39,"./_global":45}],299:[function(require,module,exports){
 var $iterators    = require('./es6.array.iterator')
   , redefine      = require('./_redefine')
   , global        = require('./_global')
@@ -44295,14 +52077,14 @@ for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList'
     for(key in $iterators)if(!proto[key])redefine(proto, key, $iterators[key], true);
   }
 }
-},{"./_global":43,"./_hide":45,"./_iterators":61,"./_redefine":92,"./_wks":122,"./es6.array.iterator":135}],298:[function(require,module,exports){
+},{"./_global":45,"./_hide":47,"./_iterators":63,"./_redefine":94,"./_wks":124,"./es6.array.iterator":137}],300:[function(require,module,exports){
 var $export = require('./_export')
   , $task   = require('./_task');
 $export($export.G + $export.B, {
   setImmediate:   $task.set,
   clearImmediate: $task.clear
 });
-},{"./_export":37,"./_task":109}],299:[function(require,module,exports){
+},{"./_export":39,"./_task":111}],301:[function(require,module,exports){
 // ie9- setTimeout & setInterval additional parameters fix
 var global     = require('./_global')
   , $export    = require('./_export')
@@ -44323,7 +52105,7 @@ $export($export.G + $export.B + $export.F * MSIE, {
   setTimeout:  wrap(global.setTimeout),
   setInterval: wrap(global.setInterval)
 });
-},{"./_export":37,"./_global":43,"./_invoke":49,"./_partial":88}],300:[function(require,module,exports){
+},{"./_export":39,"./_global":45,"./_invoke":51,"./_partial":90}],302:[function(require,module,exports){
 require('./modules/es6.symbol');
 require('./modules/es6.object.create');
 require('./modules/es6.object.define-property');
@@ -44500,7 +52282,7 @@ require('./modules/web.timers');
 require('./modules/web.immediate');
 require('./modules/web.dom.iterable');
 module.exports = require('./modules/_core');
-},{"./modules/_core":28,"./modules/es6.array.copy-within":125,"./modules/es6.array.every":126,"./modules/es6.array.fill":127,"./modules/es6.array.filter":128,"./modules/es6.array.find":130,"./modules/es6.array.find-index":129,"./modules/es6.array.for-each":131,"./modules/es6.array.from":132,"./modules/es6.array.index-of":133,"./modules/es6.array.is-array":134,"./modules/es6.array.iterator":135,"./modules/es6.array.join":136,"./modules/es6.array.last-index-of":137,"./modules/es6.array.map":138,"./modules/es6.array.of":139,"./modules/es6.array.reduce":141,"./modules/es6.array.reduce-right":140,"./modules/es6.array.slice":142,"./modules/es6.array.some":143,"./modules/es6.array.sort":144,"./modules/es6.array.species":145,"./modules/es6.date.now":146,"./modules/es6.date.to-iso-string":147,"./modules/es6.date.to-json":148,"./modules/es6.date.to-primitive":149,"./modules/es6.date.to-string":150,"./modules/es6.function.bind":151,"./modules/es6.function.has-instance":152,"./modules/es6.function.name":153,"./modules/es6.map":154,"./modules/es6.math.acosh":155,"./modules/es6.math.asinh":156,"./modules/es6.math.atanh":157,"./modules/es6.math.cbrt":158,"./modules/es6.math.clz32":159,"./modules/es6.math.cosh":160,"./modules/es6.math.expm1":161,"./modules/es6.math.fround":162,"./modules/es6.math.hypot":163,"./modules/es6.math.imul":164,"./modules/es6.math.log10":165,"./modules/es6.math.log1p":166,"./modules/es6.math.log2":167,"./modules/es6.math.sign":168,"./modules/es6.math.sinh":169,"./modules/es6.math.tanh":170,"./modules/es6.math.trunc":171,"./modules/es6.number.constructor":172,"./modules/es6.number.epsilon":173,"./modules/es6.number.is-finite":174,"./modules/es6.number.is-integer":175,"./modules/es6.number.is-nan":176,"./modules/es6.number.is-safe-integer":177,"./modules/es6.number.max-safe-integer":178,"./modules/es6.number.min-safe-integer":179,"./modules/es6.number.parse-float":180,"./modules/es6.number.parse-int":181,"./modules/es6.number.to-fixed":182,"./modules/es6.number.to-precision":183,"./modules/es6.object.assign":184,"./modules/es6.object.create":185,"./modules/es6.object.define-properties":186,"./modules/es6.object.define-property":187,"./modules/es6.object.freeze":188,"./modules/es6.object.get-own-property-descriptor":189,"./modules/es6.object.get-own-property-names":190,"./modules/es6.object.get-prototype-of":191,"./modules/es6.object.is":195,"./modules/es6.object.is-extensible":192,"./modules/es6.object.is-frozen":193,"./modules/es6.object.is-sealed":194,"./modules/es6.object.keys":196,"./modules/es6.object.prevent-extensions":197,"./modules/es6.object.seal":198,"./modules/es6.object.set-prototype-of":199,"./modules/es6.object.to-string":200,"./modules/es6.parse-float":201,"./modules/es6.parse-int":202,"./modules/es6.promise":203,"./modules/es6.reflect.apply":204,"./modules/es6.reflect.construct":205,"./modules/es6.reflect.define-property":206,"./modules/es6.reflect.delete-property":207,"./modules/es6.reflect.enumerate":208,"./modules/es6.reflect.get":211,"./modules/es6.reflect.get-own-property-descriptor":209,"./modules/es6.reflect.get-prototype-of":210,"./modules/es6.reflect.has":212,"./modules/es6.reflect.is-extensible":213,"./modules/es6.reflect.own-keys":214,"./modules/es6.reflect.prevent-extensions":215,"./modules/es6.reflect.set":217,"./modules/es6.reflect.set-prototype-of":216,"./modules/es6.regexp.constructor":218,"./modules/es6.regexp.flags":219,"./modules/es6.regexp.match":220,"./modules/es6.regexp.replace":221,"./modules/es6.regexp.search":222,"./modules/es6.regexp.split":223,"./modules/es6.regexp.to-string":224,"./modules/es6.set":225,"./modules/es6.string.anchor":226,"./modules/es6.string.big":227,"./modules/es6.string.blink":228,"./modules/es6.string.bold":229,"./modules/es6.string.code-point-at":230,"./modules/es6.string.ends-with":231,"./modules/es6.string.fixed":232,"./modules/es6.string.fontcolor":233,"./modules/es6.string.fontsize":234,"./modules/es6.string.from-code-point":235,"./modules/es6.string.includes":236,"./modules/es6.string.italics":237,"./modules/es6.string.iterator":238,"./modules/es6.string.link":239,"./modules/es6.string.raw":240,"./modules/es6.string.repeat":241,"./modules/es6.string.small":242,"./modules/es6.string.starts-with":243,"./modules/es6.string.strike":244,"./modules/es6.string.sub":245,"./modules/es6.string.sup":246,"./modules/es6.string.trim":247,"./modules/es6.symbol":248,"./modules/es6.typed.array-buffer":249,"./modules/es6.typed.data-view":250,"./modules/es6.typed.float32-array":251,"./modules/es6.typed.float64-array":252,"./modules/es6.typed.int16-array":253,"./modules/es6.typed.int32-array":254,"./modules/es6.typed.int8-array":255,"./modules/es6.typed.uint16-array":256,"./modules/es6.typed.uint32-array":257,"./modules/es6.typed.uint8-array":258,"./modules/es6.typed.uint8-clamped-array":259,"./modules/es6.weak-map":260,"./modules/es6.weak-set":261,"./modules/es7.array.includes":262,"./modules/es7.asap":263,"./modules/es7.error.is-error":264,"./modules/es7.map.to-json":265,"./modules/es7.math.iaddh":266,"./modules/es7.math.imulh":267,"./modules/es7.math.isubh":268,"./modules/es7.math.umulh":269,"./modules/es7.object.define-getter":270,"./modules/es7.object.define-setter":271,"./modules/es7.object.entries":272,"./modules/es7.object.get-own-property-descriptors":273,"./modules/es7.object.lookup-getter":274,"./modules/es7.object.lookup-setter":275,"./modules/es7.object.values":276,"./modules/es7.observable":277,"./modules/es7.reflect.define-metadata":278,"./modules/es7.reflect.delete-metadata":279,"./modules/es7.reflect.get-metadata":281,"./modules/es7.reflect.get-metadata-keys":280,"./modules/es7.reflect.get-own-metadata":283,"./modules/es7.reflect.get-own-metadata-keys":282,"./modules/es7.reflect.has-metadata":284,"./modules/es7.reflect.has-own-metadata":285,"./modules/es7.reflect.metadata":286,"./modules/es7.set.to-json":287,"./modules/es7.string.at":288,"./modules/es7.string.match-all":289,"./modules/es7.string.pad-end":290,"./modules/es7.string.pad-start":291,"./modules/es7.string.trim-left":292,"./modules/es7.string.trim-right":293,"./modules/es7.symbol.async-iterator":294,"./modules/es7.symbol.observable":295,"./modules/es7.system.global":296,"./modules/web.dom.iterable":297,"./modules/web.immediate":298,"./modules/web.timers":299}],301:[function(require,module,exports){
+},{"./modules/_core":30,"./modules/es6.array.copy-within":127,"./modules/es6.array.every":128,"./modules/es6.array.fill":129,"./modules/es6.array.filter":130,"./modules/es6.array.find":132,"./modules/es6.array.find-index":131,"./modules/es6.array.for-each":133,"./modules/es6.array.from":134,"./modules/es6.array.index-of":135,"./modules/es6.array.is-array":136,"./modules/es6.array.iterator":137,"./modules/es6.array.join":138,"./modules/es6.array.last-index-of":139,"./modules/es6.array.map":140,"./modules/es6.array.of":141,"./modules/es6.array.reduce":143,"./modules/es6.array.reduce-right":142,"./modules/es6.array.slice":144,"./modules/es6.array.some":145,"./modules/es6.array.sort":146,"./modules/es6.array.species":147,"./modules/es6.date.now":148,"./modules/es6.date.to-iso-string":149,"./modules/es6.date.to-json":150,"./modules/es6.date.to-primitive":151,"./modules/es6.date.to-string":152,"./modules/es6.function.bind":153,"./modules/es6.function.has-instance":154,"./modules/es6.function.name":155,"./modules/es6.map":156,"./modules/es6.math.acosh":157,"./modules/es6.math.asinh":158,"./modules/es6.math.atanh":159,"./modules/es6.math.cbrt":160,"./modules/es6.math.clz32":161,"./modules/es6.math.cosh":162,"./modules/es6.math.expm1":163,"./modules/es6.math.fround":164,"./modules/es6.math.hypot":165,"./modules/es6.math.imul":166,"./modules/es6.math.log10":167,"./modules/es6.math.log1p":168,"./modules/es6.math.log2":169,"./modules/es6.math.sign":170,"./modules/es6.math.sinh":171,"./modules/es6.math.tanh":172,"./modules/es6.math.trunc":173,"./modules/es6.number.constructor":174,"./modules/es6.number.epsilon":175,"./modules/es6.number.is-finite":176,"./modules/es6.number.is-integer":177,"./modules/es6.number.is-nan":178,"./modules/es6.number.is-safe-integer":179,"./modules/es6.number.max-safe-integer":180,"./modules/es6.number.min-safe-integer":181,"./modules/es6.number.parse-float":182,"./modules/es6.number.parse-int":183,"./modules/es6.number.to-fixed":184,"./modules/es6.number.to-precision":185,"./modules/es6.object.assign":186,"./modules/es6.object.create":187,"./modules/es6.object.define-properties":188,"./modules/es6.object.define-property":189,"./modules/es6.object.freeze":190,"./modules/es6.object.get-own-property-descriptor":191,"./modules/es6.object.get-own-property-names":192,"./modules/es6.object.get-prototype-of":193,"./modules/es6.object.is":197,"./modules/es6.object.is-extensible":194,"./modules/es6.object.is-frozen":195,"./modules/es6.object.is-sealed":196,"./modules/es6.object.keys":198,"./modules/es6.object.prevent-extensions":199,"./modules/es6.object.seal":200,"./modules/es6.object.set-prototype-of":201,"./modules/es6.object.to-string":202,"./modules/es6.parse-float":203,"./modules/es6.parse-int":204,"./modules/es6.promise":205,"./modules/es6.reflect.apply":206,"./modules/es6.reflect.construct":207,"./modules/es6.reflect.define-property":208,"./modules/es6.reflect.delete-property":209,"./modules/es6.reflect.enumerate":210,"./modules/es6.reflect.get":213,"./modules/es6.reflect.get-own-property-descriptor":211,"./modules/es6.reflect.get-prototype-of":212,"./modules/es6.reflect.has":214,"./modules/es6.reflect.is-extensible":215,"./modules/es6.reflect.own-keys":216,"./modules/es6.reflect.prevent-extensions":217,"./modules/es6.reflect.set":219,"./modules/es6.reflect.set-prototype-of":218,"./modules/es6.regexp.constructor":220,"./modules/es6.regexp.flags":221,"./modules/es6.regexp.match":222,"./modules/es6.regexp.replace":223,"./modules/es6.regexp.search":224,"./modules/es6.regexp.split":225,"./modules/es6.regexp.to-string":226,"./modules/es6.set":227,"./modules/es6.string.anchor":228,"./modules/es6.string.big":229,"./modules/es6.string.blink":230,"./modules/es6.string.bold":231,"./modules/es6.string.code-point-at":232,"./modules/es6.string.ends-with":233,"./modules/es6.string.fixed":234,"./modules/es6.string.fontcolor":235,"./modules/es6.string.fontsize":236,"./modules/es6.string.from-code-point":237,"./modules/es6.string.includes":238,"./modules/es6.string.italics":239,"./modules/es6.string.iterator":240,"./modules/es6.string.link":241,"./modules/es6.string.raw":242,"./modules/es6.string.repeat":243,"./modules/es6.string.small":244,"./modules/es6.string.starts-with":245,"./modules/es6.string.strike":246,"./modules/es6.string.sub":247,"./modules/es6.string.sup":248,"./modules/es6.string.trim":249,"./modules/es6.symbol":250,"./modules/es6.typed.array-buffer":251,"./modules/es6.typed.data-view":252,"./modules/es6.typed.float32-array":253,"./modules/es6.typed.float64-array":254,"./modules/es6.typed.int16-array":255,"./modules/es6.typed.int32-array":256,"./modules/es6.typed.int8-array":257,"./modules/es6.typed.uint16-array":258,"./modules/es6.typed.uint32-array":259,"./modules/es6.typed.uint8-array":260,"./modules/es6.typed.uint8-clamped-array":261,"./modules/es6.weak-map":262,"./modules/es6.weak-set":263,"./modules/es7.array.includes":264,"./modules/es7.asap":265,"./modules/es7.error.is-error":266,"./modules/es7.map.to-json":267,"./modules/es7.math.iaddh":268,"./modules/es7.math.imulh":269,"./modules/es7.math.isubh":270,"./modules/es7.math.umulh":271,"./modules/es7.object.define-getter":272,"./modules/es7.object.define-setter":273,"./modules/es7.object.entries":274,"./modules/es7.object.get-own-property-descriptors":275,"./modules/es7.object.lookup-getter":276,"./modules/es7.object.lookup-setter":277,"./modules/es7.object.values":278,"./modules/es7.observable":279,"./modules/es7.reflect.define-metadata":280,"./modules/es7.reflect.delete-metadata":281,"./modules/es7.reflect.get-metadata":283,"./modules/es7.reflect.get-metadata-keys":282,"./modules/es7.reflect.get-own-metadata":285,"./modules/es7.reflect.get-own-metadata-keys":284,"./modules/es7.reflect.has-metadata":286,"./modules/es7.reflect.has-own-metadata":287,"./modules/es7.reflect.metadata":288,"./modules/es7.set.to-json":289,"./modules/es7.string.at":290,"./modules/es7.string.match-all":291,"./modules/es7.string.pad-end":292,"./modules/es7.string.pad-start":293,"./modules/es7.string.trim-left":294,"./modules/es7.string.trim-right":295,"./modules/es7.symbol.async-iterator":296,"./modules/es7.symbol.observable":297,"./modules/es7.system.global":298,"./modules/web.dom.iterable":299,"./modules/web.immediate":300,"./modules/web.timers":301}],303:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -61588,7 +69370,7 @@ module.exports = require('./modules/_core');
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],302:[function(require,module,exports){
+},{}],304:[function(require,module,exports){
 (function (process,global){
 /**
  * Copyright (c) 2014, Facebook, Inc.
@@ -62275,7 +70057,7 @@ module.exports = require('./modules/_core');
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":305}],303:[function(require,module,exports){
+},{"_process":307}],305:[function(require,module,exports){
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define(['angular', 'lodash'], factory);
@@ -63635,15 +71417,16 @@ restangular.provider('Restangular', function() {
 
 return restangular.name;
 }));
-},{"angular":5,"lodash":301}],304:[function(require,module,exports){
+},{"angular":7,"lodash":303}],306:[function(require,module,exports){
 window.Angular = require('angular')
 window.AngularMessages = require('angular-messages')
 window.AngularUiRouter = require('angular-ui-router')
 window.Lodash = require('lodash')
 window.RestangularUmd = require('restangular-umd')
 window.BabelPolyfill = require('babel-polyfill')
+window.AngularUiBootstrap = require('angular-ui-bootstrap')
 
-},{"angular":5,"angular-messages":2,"angular-ui-router":3,"babel-polyfill":6,"lodash":301,"restangular-umd":303}],305:[function(require,module,exports){
+},{"angular":7,"angular-messages":2,"angular-ui-bootstrap":4,"angular-ui-router":5,"babel-polyfill":8,"lodash":303,"restangular-umd":305}],307:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -63825,4 +71608,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[304]);
+},{}]},{},[306]);

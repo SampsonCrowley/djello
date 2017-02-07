@@ -1,14 +1,7 @@
 djello.factory('listService', [
-  'Restangular', 'cardService',
-  function(restangular, cardService){
+  '$q', '_', 'Restangular', 'cardService',
+  function($q, _, restangular, cardService){
 
-    //extend the list collection to create new lists
-    restangular.extendCollection('lists', function(collection) {
-      collection.create = function _createList(params){
-        collection.post(params);
-      }
-      return collection;
-    });
 
     restangular.extendModel('lists', function(model) {
 
@@ -19,6 +12,17 @@ djello.factory('listService', [
           return response;
         })
       };
+
+      model.destroyCard = function(card) {
+        return card.remove()
+          .catch(function(err){
+            console.log(err);
+          })
+          .finally(function(){
+            var id = _.findIndex(model.cards, ['id', card.id])
+            if(id !== -1) return model.cards.splice(id, 1);
+          })
+      }
 
       cardService.all(model);
 

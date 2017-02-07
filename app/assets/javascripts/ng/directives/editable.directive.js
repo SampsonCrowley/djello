@@ -2,7 +2,7 @@ djello.directive('editable', [
   '$document', '$timeout',
   function($document, $timeout){
 
-    var setup = function setup(s,el,a){
+    var setup = function setup(s, el, a){
       s.input = el[0].querySelector('input[type="text"].form-control.editable-input')
 
       s.get = function() {

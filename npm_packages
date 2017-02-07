@@ -5,7 +5,9 @@ npm 'browserify', require: false, development: true
 # Add some npm packages
 npm "angular"
 npm 'angular-messages'
+npm 'angular-animate'
 npm "angular-ui-router"
 npm 'lodash'
 npm "restangular-umd"
 npm "babel-polyfill"
+npm "angular-ui-bootstrap"

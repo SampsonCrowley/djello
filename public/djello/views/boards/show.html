@@ -1,31 +1,45 @@
 <div class="row">
-  <div class="col-xs-12">
-    <div class=pull-right>
-      <a ng-click="addList()">Add List..</a>
+  <div class="col-xs-12" horizontal-scroll width-el="#scroll-item-0" data-scroll="#horizontal-scroll">
+    <div class="row">
+      <div class="col-md-8">
+        <h1 class="board-header" editable edit-model="board" edit-val="title">{{ board.title || "Add Board Title.." }}</h1>
+      </div>
+      <div class="col-md-4">
+        <a class='align-bottom pull-right' ng-click="board.addList()">Add List..</a>
+      </div>
     </div>
-    <h1>{{ board.title || "Add Board Title.." }}</h1>
   </div>
 </div>
-<div class="row">
-  <div class="col-md-4 col-sm-6" ng-repeat="list in board.lists">
-    <div class="panel panel-default companies visible" id="list_{{ list.id }}">
+<div class="clearfix"></div>
+<div class="row horizontal-scroll" id="horizontal-scroll" to-bottom>
+  <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 scroll-item" ng-repeat="list in board.lists" id="scroll-item-{{$index}}">
+    <div class="panel panel-default" id="list_{{ list.id }}">
       <div class="panel-heading clearfix">
         <img ng-src="{{ list.img }}" ng-if="list.img">
         <h3 class="panel-title pull-left" editable edit-model="list" edit-val="title">{{ list.title || "Add List Title.." }}</h3>
+        <span class="pull-right text-muted align-bottom">(click an item to view details)</span>
       </div>
-      <div class="list-group">
-        <div class="list-group-item" ng-repeat="card in list.cards" ng-click="activeCard.value = card._id">
-          <h4 class="list-group-item-heading" editable edit-model="card" edit-val="title">{{ card.title || "Add Card Title.." }}</h4>
-          <p class="list-group-item-text" editable edit-model="card" edit-val="description">{{ card.description || "Add Card Description.."}}</p>
-          <div ng-if="activeCard.value === card._id">
+      <div class="list-group flip">
+        <div class="list-group-item" ng-class="{'flipped':activeCard.value === card.id }" ng-repeat="card in list.cards" ng-click="">
+
+          <!--
+          ng-show="!(activeCard.value === card.id)"
+          -->
+          <div class="face front" ng-click="setActive(card)">
+            <h4 class="list-group-item-heading">{{ card.title || 'untitled' }}</h4>
+          </div>
+          <div class="face back" ng-show="activeCard.value === card.id">
+            <h4 class="list-group-item-heading" editable edit-model="card" edit-val="title">{{ card.title || 'Add Title...'}}</h4>
+            <p class="list-group-item-text" editable edit-model="card" edit-val="description">{{ card.description || 'Add Description...'}}</p>
             <p>
               {{card.members}}
             </p>
+            <a ng-click="setActive({})">Hide Details</a>
           </div>
         </div>
       </div>
       <div class="panel-footer">
-        <small>{{ list.title }}<a class="pull-right" ng-click="list.addCard()">New Card</a></small>
+        <small><a class="pull-left" ng-click="board.destroyList(list)">Destroy List</a>{{ list.title }}<a class="pull-right" ng-click="addCard(list)">New Card</a></small>
       </div>
     </div>
   </div>

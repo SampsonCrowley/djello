@@ -16,9 +16,7 @@ class BoardsController < ApplicationController
   end
 
   def create
-    puts current_user
-    board = current_user.owned_boards.build(board_params)
-    puts board.owner
+    board = build_board
     if board.save
       render json: board, status: 200
     else
@@ -52,5 +50,13 @@ class BoardsController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def board_params
       params.require(:board).permit(:title, :lists)
+    end
+
+    def build_board
+      if params[:board].empty?
+        current_user.owned_boards.build()
+      else
+        current_user.owned_boards.build(board_params)
+      end
     end
 end

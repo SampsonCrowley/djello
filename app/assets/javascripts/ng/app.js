@@ -1,5 +1,5 @@
 var _ = window.Lodash
-var djello = angular.module('djello', ['ui.router', 'Devise', 'restangular', 'ngMessages'])
+var djello = angular.module('djello', ['ui.router', 'ui.bootstrap', 'Devise', 'restangular', 'ngMessages'])
 
 djello.constant('_', _)
 

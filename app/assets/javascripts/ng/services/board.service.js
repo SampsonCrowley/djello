@@ -9,13 +9,11 @@ djello.factory('boardService',[
     // Private method for creating a Board
     var _createBoard = function _createBoard(params) {
       return _rest.post({
-        board: {
-          title: params.title,
-        }
+        board: params
       })
       .then(function(response) {
-        _boards.unshift(response);
-        return _boards;
+        _denormalize(response);
+        return response;
       });
     };
 
@@ -29,8 +27,19 @@ djello.factory('boardService',[
         })
       };
 
+      model.destroyList = function(list) {
+        return list.remove()
+          .catch(function(err){
+            console.log(err);
+          })
+          .finally(function(){
+            var id = _.findIndex(model.lists, ['id', list.id])
+            if(id !== -1) return model.lists.splice(id, 1);
+          })
+      }
+
       model.destroy = function(){
-        destroy(board)
+        destroy(model)
       }
 
       listService.all(model);
@@ -60,7 +69,6 @@ djello.factory('boardService',[
       if(_.isEmpty(_boards)){
         return _rest.getList().then(function(boards){
           angular.copy({}, _boards);
-          _extend()
 
           return _denormalizeCollection(boards);
         }).catch(function(err){
@@ -78,7 +86,6 @@ djello.factory('boardService',[
 
     var show = function show(id){
       return index().then(function(){
-        console.log(_boards)
         if(!_boards[id]) throw 'Board Not Found';
         return _boards[id]
       })

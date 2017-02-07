@@ -18,9 +18,9 @@ djello.controller('BoardsIndexCtrl',[
       }
     }
 
-    $scope.deleteBoard = function deleteBoard(id, $event) {
+    $scope.deleteBoard = function deleteBoard(board, $event) {
       $event.stopPropagation();
-      boardService.destroy(id);
+      boardService.destroy(board);
     }
 
     $scope.goToBoard = function goToBoard(id) {
