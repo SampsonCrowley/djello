@@ -1,7 +1,7 @@
 class ListsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_board
-  before_action :set_list, only: [:show, :edit, :update, :destroy]
+  before_action :set_list, only: [:show, :edit, :destroy]
 
   # GET /lists
   # GET /lists.json
@@ -26,10 +26,15 @@ class ListsController < ApplicationController
   end
 
   def update
-    if @list.update(list_params)
-      render json: @list, status: 200
+    if params[:reorder]
+      reorder
     else
-      render json: @list.errors.full_messages, status: 422
+      set_list
+      if @list.update(list_params)
+        render json: @list, status: 200
+      else
+        render json: @list.errors.full_messages, status: 422
+      end
     end
   end
 
@@ -39,6 +44,14 @@ class ListsController < ApplicationController
   end
 
   private
+
+    def reorder
+      if Card.reorder(reorder_params)
+        render json: { success: result }, status: 200
+      else
+        render json: result, status: 422
+      end
+    end
     # Use callbacks to share common setup or constraints between actions.
     def set_board
       @board = current_user.boards.find_by(id: params[:board_id])
@@ -52,7 +65,11 @@ class ListsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def list_params
-      params.require(:list).permit(:title)
+      params.require(:list).permit(:title, :reorder)
+    end
+
+    def reorder_params
+      params.permit(reorder: [:id, :order])
     end
 
     def build_list
