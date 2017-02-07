@@ -4,6 +4,7 @@ class CreateCards < ActiveRecord::Migration[5.0]
       t.references :list, foreign_key: true
       t.string :title
       t.text :description
+      t.integer :order
 
       t.timestamps
     end

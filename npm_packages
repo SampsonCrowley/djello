@@ -4,6 +4,7 @@ npm 'browserify', require: false, development: true
 
 # Add some npm packages
 npm "angular"
+npm 'ng-sortable'
 npm 'angular-messages'
 npm 'angular-animate'
 npm "angular-ui-router"

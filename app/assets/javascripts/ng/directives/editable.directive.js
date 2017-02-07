@@ -22,6 +22,21 @@ djello.directive('editable', [
         });
       };
 
+      angular.element(s.input).bind('keydown keypress', function (event) {
+        if(event.which === 27) { // 27 = esc key
+          s.$apply(function (){
+            s.active = false;
+            s.clicked = false
+          });
+
+          event.preventDefault();
+        } else if(event.which === 13) { // 27 = esc key
+          s.save(event)
+
+          event.preventDefault();
+        }
+
+      });
 
       $document.on('click', function(event){
         if(!s.clicked){

@@ -62,12 +62,12 @@ class CardsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white card through.
     def card_params
-      params.require(:card).permit(:title, :description)
+      params.require(:card).permit(:title, :description, :order)
     end
 
     def build_card
       if params[:card].empty?
-        @list.cards.build()
+        @list.cards.build(order: @list.cards.length)
       else
         @list.cards.build(card_params)
       end

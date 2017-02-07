@@ -4,6 +4,7 @@ djello.controller('BoardsShowCtrl',[
     $scope.activeCard = {
       value: "ooga booga"
     }
+    $scope.moving = null;
 
     boardService.show($stateParams.id).then(function(board){
       $scope.board = board

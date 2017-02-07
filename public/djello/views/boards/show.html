@@ -19,8 +19,8 @@
         <h3 class="panel-title pull-left" editable edit-model="list" edit-val="title">{{ list.title || "Add List Title.." }}</h3>
         <span class="pull-right text-muted align-bottom">(click an item to view details)</span>
       </div>
-      <div class="list-group flip">
-        <div class="list-group-item" ng-class="{'flipped':activeCard.value === card.id }" ng-repeat="card in list.cards" ng-click="">
+      <div class="list-group flip" dnd-list="list.cards" dnd-effect-allowed="move" dnd-drop="list.rearrange(index, item, external, type)">
+        <div class="list-group-item" ng-hide="moving === card.id" ng-class="{'flipped':activeCard.value === card.id }" ng-repeat="card in list.cards | orderBy:'order'" draggable="true" dnd-draggable="card" dnd-effect-allowed="move" dnd-moved="moving = card.id" dnd-dragend="moving = false">
 
           <!--
           ng-show="!(activeCard.value === card.id)"
@@ -39,7 +39,12 @@
         </div>
       </div>
       <div class="panel-footer">
-        <small><a class="pull-left" ng-click="board.destroyList(list)">Destroy List</a>{{ list.title }}<a class="pull-right" ng-click="addCard(list)">New Card</a></small>
+        <small class="flex-distribute">
+          <a class="pull-left" ng-click="board.destroyList(list)">Destroy List</a>
+          <span>
+            {{ list.title }}
+          </span>
+          <a class="pull-right" ng-click="addCard(list)">New Card</a></small>
       </div>
     </div>
   </div>

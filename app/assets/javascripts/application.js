@@ -13,5 +13,7 @@
 //= require jquery
 //= require jquery_ujs
 //= require npm-dependencies
+//= require dnd-shim
+//= require dnd-list
 //= require angular-devise
 //= require_tree .

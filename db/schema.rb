@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(version: 20170204032554) do
     t.integer  "list_id"
     t.string   "title"
     t.text     "description"
+    t.integer  "order"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
     t.index ["list_id"], name: "index_cards_on_list_id", using: :btree
