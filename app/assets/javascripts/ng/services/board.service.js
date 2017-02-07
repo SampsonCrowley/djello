@@ -28,8 +28,7 @@ djello.factory('boardService',[
       };
 
       model.destroyList = function(list) {
-        // return 
-        list.remove()
+        return list.remove()
           .catch(function(err){
             console.log(err);
           })
