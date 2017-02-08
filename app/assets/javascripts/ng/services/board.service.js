@@ -1,6 +1,6 @@
 djello.factory('boardService',[
-  '$q', '_', 'Restangular', 'listService',
-  function($q, _, restangular, listService){
+  '$q', '_', 'Restangular', 'listService', 'memberService',
+  function($q, _, restangular, listService, memberService){
         //store resource for DRYer calls;
     var _rest = restangular.all('boards'),
         //private wrapper for all boards
@@ -36,13 +36,27 @@ djello.factory('boardService',[
             var id = _.findIndex(model.lists, ['id', list.id])
             if(id !== -1) return model.lists.splice(id, 1);
           })
-      }
+      };
 
       model.destroy = function(){
         destroy(model)
       }
 
+      model.getMember = function getMember(id){
+        if(!model.memberIdMap[id]){
+          return model.one('members').get().then(function(member){
+            model.memberIdMap[id] = model.members.length;
+            model.members.push(member)
+          })
+          .catch(function(error){
+            console.log(error);
+            throw "Member Does Not Have Access to This Board"
+          })
+        }
+      }
+
       listService.all(model);
+      memberService.all(model);
 
       return model;
     });

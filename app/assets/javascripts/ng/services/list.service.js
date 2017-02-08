@@ -5,7 +5,7 @@ djello.factory('listService', [
     var _rearrange = function _rearrange(index, card, external, type) {
       var old_i   = _.findIndex(this.cards, ['id', card.id]),
           new_i   = (old_i < index ? index - 1 : index),
-          max     = (old_i < index ? index : old_i),
+          max     = Math.min((old_i < index ? index : old_i), this.cards.length-1),
           reorder = [];
 
       this.cards.splice(new_i, 0, this.cards.splice(old_i, 1)[0])
@@ -13,10 +13,9 @@ djello.factory('listService', [
       for(var i = Math.min(old_i, new_i); i <= max; i++){
         reorder.push({id: this.cards[i].id, order: i})
         this.cards[i].order = i;
-        // this.cards[i].put()
       }
+
       this.doPUT({reorder: reorder})
-      console.log(reorder)
       return true
     }
 

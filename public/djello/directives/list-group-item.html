@@ -1,0 +1,12 @@
+<!--
+ng-show="!(activeCard.value === card.id)"
+-->
+<div class="face front" ng-click="setActive(card)">
+  <h4 class="list-group-item-heading">{{ card.title || 'untitled' }}</h4>
+</div>
+<div class="face back" ng-show="activeCard.value === card.id">
+  <h4 class="list-group-item-heading" editable edit-model="card" edit-val="title">{{ card.title || 'Add Title...'}}</h4>
+  <p class="list-group-item-text" editable edit-model="card" edit-val="description" textarea="{{ true }}">{{ card.description || 'Add Description...'}}</p>
+  <members board="board" ids="card.user_ids"></members>
+  <a ng-click="setActive({})">Hide Details</a>
+</div>

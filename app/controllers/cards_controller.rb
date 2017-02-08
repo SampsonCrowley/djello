@@ -8,13 +8,13 @@ class CardsController < ApplicationController
   # GET /cards.json
   def index
     @cards = current_user.cards
-    render json: @cards
+    render json: @cards.as_json({methods: [:user_ids]})
   end
 
   # GET /cards/1
   # GET /cards/1.json
   def show
-    render json: @card.as_json(include: [cards: {include: [cards: {methods: :user_ids}]}])
+    render json: @card.as_json({methods: [:user_ids]})
   end
 
   def create

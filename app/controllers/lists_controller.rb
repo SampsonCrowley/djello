@@ -7,13 +7,13 @@ class ListsController < ApplicationController
   # GET /lists.json
   def index
     @lists = @board.lists
-    render json: @lists.as_json(include: [cards: {methods: :user_ids}])
+    render json: @lists.as_json(include: [cards: {methods: [:user_ids]}])
   end
 
   # GET /lists/1
   # GET /lists/1.json
   def show
-    render json: @list.as_json(include: [lists: {include: [cards: {methods: :user_ids}]}])
+    render json: @list.as_json(include: [lists: {include: [cards: {methods: [:user_ids]}]}])
   end
 
   def create
@@ -40,14 +40,14 @@ class ListsController < ApplicationController
 
   def destroy
     @list.destroy
-    render json: @list, status: 200
+    render json: {success: true}, status: 200
   end
 
   private
 
     def reorder
       if Card.reorder(reorder_params)
-        render json: { success: result }, status: 200
+        render json: { success: true }, status: 200
       else
         render json: result, status: 422
       end

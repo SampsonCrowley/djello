@@ -2,8 +2,21 @@ djello.directive('editable', [
   '$document', '$timeout',
   function($document, $timeout){
 
+    var inputSelect = function inputSelect(s, el){
+      $timeout(function(){
+        if(s.textarea){
+          s.input = el[0].querySelector('textarea.form-control.editable-input')
+        } else {
+          s.input = el[0].querySelector('input[type="text"].form-control.editable-input')
+        }
+        if(!s.input) inputSelect(s, el);
+      }, 100)
+    }
+
     var setup = function setup(s, el, a){
-      s.input = el[0].querySelector('input[type="text"].form-control.editable-input')
+      s.textarea = s.textarea || false
+      s.input = null
+      inputSelect(s, el);
 
       s.get = function() {
         return s.editModel[s.editVal];
@@ -48,6 +61,7 @@ djello.directive('editable', [
 
       s.save = function save($ev){
         $ev.stopPropagation();
+        console.log(s)
         s.set(s.newVal);
         s.active = false;
         s.editModel.put()
@@ -56,17 +70,26 @@ djello.directive('editable', [
     return {
       scope: {
         editVal: '@',
-        editModel: '='
+        editModel: '=',
+        textarea: '@'
       },
       link: setup,
       transclude: true,
       template:`
       <div ng-click="edit($event)">
         <span ng-show="!active" ng-transclude></span>
-        <div class="input-group" ng-show="active">
+
+        <div ng-show="textarea && active">
+          <div class=".form-group">
+            <textarea class="form-control editable-input" ng-model="newVal"></textarea>
+          </div>
+          <button class="btn btn-primary" type="button" ng-click="save($event)">Save</button>
+        </div>
+
+        <div class="input-group" ng-show="!textarea && active">
           <input type="text" class="form-control editable-input" ng-model="newVal">
           <span class="input-group-btn">
-            <button class="btn btn-secondary" type="button" ng-click="save($event)">Save</button>
+            <button class="btn btn-primary" type="button" ng-click="save($event)">Save</button>
           </span>
         </div>
       </div>

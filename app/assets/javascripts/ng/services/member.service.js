@@ -1,59 +1,45 @@
-djello.factory('memberService',[
-  'Restangular',
-  function(restangular){
+djello.factory('memberService', [
+  '$q', '_', 'Restangular', 'cardService',
+  function($q, _, restangular, cardService){
 
-    // PRIVATE
-    var _rest = restangular.all('users'),
-        _users = {};
-
-    var _denormalize = function _denormalize(board){
-      var id = board["_id"]["$oid"];
-      _boards[id] = {
-        id: id,
-        title: board["title"],
-        created: new Date(board['created_at']),
-        members: board["members"]
-      }
-      show(id);
-      return _boards[id]
-    }
-
-    var _denormalizeCollection = function _denormalizeCollection(collection){
-      for(var i = 0; i < collection.length; i++){
-        _denormalize(collection[i]);
-      }
-      return _boards
-    }
-
-
-    // PUBLIC
     var index = function index(){
-      return _rest.getList().then(function(boards){
-        angular.copy({}, _boards);
 
-        return _denormalizeCollection(boards);
-      }).catch(function(err){
-        console.log(err)
-      })
     }
 
-    var show = function show(id){
-      return restangular.one('boards', id).get().then(function(board){
-        console.log(board)
-      }).catch(function(err){
-        console.log(err)
-      })
+    var _denormalizeMembers = function _denormalizeMembers(board){
+      board.memberIdMap = {}
+      for(var i = 0; i < board.members.length; i++){
+        var member = board.members[i]
+        board.memberIdMap[member.id] = i;
+      }
     }
 
-    var create = function create(data){
-      return _rest.post({board: {title: data.title}}).then(function(board){
-        return _denormalize(board)
-      })
+    var boardMembers = function boardMembers(board){
+      if(board.members){
+        restangular.restangularizeCollection(board, board.members, 'members');
+        _denormalizeMembers(board);
+      } else {
+        board.getList("members").then(function(members){
+          board.members = members;
+          _denormalizeMembers(board);
+        })
+      }
+    }
+
+    var whereIdIn = function whereIdIn(board, arr){
+      var members = [], map = board.memberIdMap;
+      for(var i = 0; i < arr.length; i++){
+        // var member = board.members[map[arr[i]]]
+        board.getMember(arr[i]).then(function(member){
+          if(member) members.push(member);
+        })
+      }
+      return $q.resolve(members);
     }
 
     return {
-      index: index,
-      create: create
+      all: boardMembers,
+      whereIdIn: whereIdIn
     }
   }
 ])

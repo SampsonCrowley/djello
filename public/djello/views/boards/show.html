@@ -5,6 +5,7 @@
         <h1 class="board-header" editable edit-model="board" edit-val="title">{{ board.title || "Add Board Title.." }}</h1>
       </div>
       <div class="col-md-4">
+        <a class='align-bottom pull-right' ng-click="addMember()">Add Member..</a>
         <a class='align-bottom pull-right' ng-click="board.addList()">Add List..</a>
       </div>
     </div>
@@ -19,24 +20,22 @@
         <h3 class="panel-title pull-left" editable edit-model="list" edit-val="title">{{ list.title || "Add List Title.." }}</h3>
         <span class="pull-right text-muted align-bottom">(click an item to view details)</span>
       </div>
-      <div class="list-group flip" dnd-list="list.cards" dnd-effect-allowed="move" dnd-drop="list.rearrange(index, item, external, type)">
-        <div class="list-group-item" ng-hide="moving === card.id" ng-class="{'flipped':activeCard.value === card.id }" ng-repeat="card in list.cards | orderBy:'order'" draggable="true" dnd-draggable="card" dnd-effect-allowed="move" dnd-moved="moving = card.id" dnd-dragend="moving = false">
+      <div class="list-group flip"
+           dnd-list="list.cards"
+           dnd-effect-allowed="move"
+           dnd-drop="list.rearrange(index, item, external, type)">
 
-          <!--
-          ng-show="!(activeCard.value === card.id)"
-          -->
-          <div class="face front" ng-click="setActive(card)">
-            <h4 class="list-group-item-heading">{{ card.title || 'untitled' }}</h4>
-          </div>
-          <div class="face back" ng-show="activeCard.value === card.id">
-            <h4 class="list-group-item-heading" editable edit-model="card" edit-val="title">{{ card.title || 'Add Title...'}}</h4>
-            <p class="list-group-item-text" editable edit-model="card" edit-val="description">{{ card.description || 'Add Description...'}}</p>
-            <p>
-              {{card.members}}
-            </p>
-            <a ng-click="setActive({})">Hide Details</a>
-          </div>
+        <div class="list-group-item"
+             ng-hide="moving === card.id"
+             ng-class="{'flipped':activeCard.value === card.id }"
+             ng-repeat="card in list.cards | orderBy:'order'"
+             draggable="true" dnd-draggable="card"
+             dnd-effect-allowed="move"
+             dnd-moved="moving = card.id"
+             dnd-dragend="moving = false"
+             list-group-item>
         </div>
+        
       </div>
       <div class="panel-footer">
         <small class="flex-distribute">

@@ -7,8 +7,8 @@ class UsersController < ApplicationController
   end
 
   def show
-    @user = User.find_by(_id: BSON::ObjectId(params[:id]))
-    render json: @user.as_document
+    @user = User.find_by(id: params[:id])
+    render json: @user.as_json(include: [:boards])
   end
 
 end
