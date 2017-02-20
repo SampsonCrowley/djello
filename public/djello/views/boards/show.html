@@ -5,7 +5,7 @@
         <h1 class="board-header" editable edit-model="board" edit-val="title">{{ board.title || "Add Board Title.." }}</h1>
       </div>
       <div class="col-md-4">
-        <a class='align-bottom pull-right' ng-click="addMember()">Add Member..</a>
+        <!-- <a class='align-bottom pull-right' ng-click="addMember()">Add Member..</a> -->
         <a class='align-bottom pull-right' ng-click="board.addList()">Add List..</a>
       </div>
     </div>
@@ -35,16 +35,15 @@
              dnd-dragend="moving = false"
              list-group-item>
         </div>
-        
+
       </div>
       <div class="panel-footer">
         <small class="flex-distribute">
-          <a class="pull-left" ng-click="board.destroyList(list)">Destroy List</a>
+          <a ng-click="board.destroyList(list)">Destroy List</a>
           <span>
             {{ list.title }}
           </span>
-          <a class="pull-right" ng-click="addCard(list)">New Card</a></small>
-          <div class="clearfix"></div>
+          <a ng-click="addCard(list)">New Card</a></small>
       </div>
     </div>
   </div>

@@ -178,3 +178,9 @@ a.list-group-item:before {
     }
   }
 }
+
+.flex-distribute {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
