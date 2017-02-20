@@ -1,4 +1,4 @@
-# dJello
+# Djello
 Project management with that great wobbly taste.
 
 ## [View Demo](https://salty-lake-71247.herokuapp.com)
